@@ -5,6 +5,8 @@ import {LandingAccordion} from "./LandingAccordion";
 import {UploadDropzone} from "@/components/uploader/UploadDropzone";
 import {MergeUploader} from "@/components/uploader/MergeUploader";
 import {SplitUploader} from "@/components/uploader/SplitUploader";
+import {ImageToPdfUploader} from "@/components/uploader/ImageToPdfUploader";
+import {PdfToImageUploader} from "@/components/uploader/PdfToImageUploader";
 import {tools} from "@/content/tools";
 import {getToolAction} from "@/content/tools/actions";
 
@@ -12,6 +14,79 @@ type LandingPageProps = {
   locale: string;
   activeTool?: string;
 };
+
+const catalogSections = [
+  {
+    group: "fromPdf",
+    links: [
+      ["pdf-en-word", "pdfToWord"],
+      ["pdf-en-excel", "pdfToExcel"],
+      ["pdf-en-powerpoint", "pdfToPowerpoint"],
+      ["pdf-en-image", "pdfToImage"],
+      ["pdf-en-jpg", "pdfToJpg"],
+      ["pdf-en-png", "pdfToPng"]
+    ]
+  },
+  {
+    group: "toPdf",
+    links: [
+      ["word-en-pdf", "wordToPdf"],
+      ["excel-en-pdf", "excelToPdf"],
+      ["powerpoint-en-pdf", "powerpointToPdf"],
+      ["image-en-pdf", "imageToPdf"],
+      ["jpg-en-pdf", "jpgToPdf"],
+      ["png-en-pdf", "pngToPdf"],
+      ["markdown-en-pdf", "markdownToPdf"]
+    ]
+  },
+  {
+    group: "compress",
+    links: [
+      ["compresser-pdf", "compressPdf"],
+      ["compresser-image", "compressImage"]
+    ]
+  },
+  {
+    group: "edit",
+    links: [
+      ["fusionner-pdf", "mergePdf"],
+      ["diviser-pdf", "splitPdf"],
+      ["reorganiser-pdf", "reorderPdf"],
+      ["pivoter-pdf", "rotatePdf"],
+      ["supprimer-pages-pdf", "deletePages"],
+      ["extraire-pages-pdf", "extractPages"],
+      ["inserer-pages-pdf", "insertPages"],
+      ["filigrane-pdf", "watermark"],
+      ["numeroter-pages-pdf", "pageNumbers"],
+      ["ajouter-texte-pdf", "addText"],
+      ["remplir-pdf", "fillPdf"]
+    ]
+  },
+  {
+    group: "secure",
+    links: [
+      ["proteger-pdf", "protectPdf"],
+      ["deverrouiller-pdf", "unlockPdf"],
+      ["signer-pdf", "signPdf"]
+    ]
+  },
+  {
+    group: "image",
+    links: [
+      ["heic-en-jpg", "heicToJpg"],
+      ["heic-en-png", "heicToPng"]
+    ]
+  },
+  {
+    group: "ai",
+    links: [
+      ["image-en-texte", "imageToText"],
+      ["ocr-pdf", "ocrPdf"],
+      ["resumer-document", "summarizeDocument"],
+      ["traduire-pdf", "translatePdf"]
+    ]
+  }
+] as const;
 
 export function LandingPage({locale, activeTool}: LandingPageProps) {
   const t = useTranslations("home");
@@ -103,6 +178,77 @@ export function LandingPage({locale, activeTool}: LandingPageProps) {
                 loginText: t("upload.compression.loginText"),
                 login: t("upload.compression.login"),
                 another: t("upload.split.another"),
+                error: t("upload.error"),
+                errorTooLarge: t("upload.errorTooLarge"),
+                errorUnsupportedType: t("upload.errorUnsupportedType"),
+                errorInvalidFile: t("upload.errorInvalidFile")
+              }}
+            />
+          ) : toolAction === "image_to_pdf" ? (
+            <ImageToPdfUploader
+              tool={toolAction}
+              accept={accept}
+              note={uploadNote}
+              labels={{
+                add: t("upload.imagePdf.add"),
+                close: t("upload.close"),
+                uploadingTitle: t("upload.imagePdf.uploading"),
+                readyTitle: t("upload.imagePdf.order"),
+                creatingTitle: t("upload.imagePdf.creating"),
+                successTitle: t("upload.imagePdf.done"),
+                successSubtitle: t("upload.imagePdf.successSubtitle"),
+                filesCount: t("upload.imagePdf.filesCount"),
+                totalSize: t("upload.imagePdf.totalSize"),
+                onePdf: t("upload.imagePdf.onePdf"),
+                create: t("upload.imagePdf.create"),
+                moveUp: t("upload.imagePdf.moveUp"),
+                moveDown: t("upload.imagePdf.moveDown"),
+                remove: t("upload.imagePdf.remove"),
+                empty: t("upload.imagePdf.empty"),
+                download: t("upload.download"),
+                emailTitle: t("upload.compression.emailTitle"),
+                emailPlaceholder: t("upload.compression.emailPlaceholder"),
+                terms: t("upload.compression.terms"),
+                continue: t("upload.compression.continue"),
+                loginText: t("upload.compression.loginText"),
+                login: t("upload.compression.login"),
+                another: t("upload.imagePdf.another"),
+                error: t("upload.error"),
+                errorTooLarge: t("upload.errorTooLarge"),
+                errorUnsupportedType: t("upload.errorUnsupportedType"),
+                errorInvalidFile: t("upload.errorInvalidFile")
+              }}
+            />
+          ) : toolAction === "pdf_to_image" ? (
+            <PdfToImageUploader
+              tool={toolAction}
+              accept={accept}
+              note={uploadNote}
+              defaultFormat={activeTool === "pdf-en-png" ? "png" : "jpg"}
+              labels={{
+                add: t("upload.pdfToImage.add"),
+                close: t("upload.close"),
+                uploading: t("upload.pdfToImage.uploading"),
+                readyTitle: t("upload.pdfToImage.readyTitle"),
+                selectFormat: t("upload.pdfToImage.selectFormat"),
+                jpg: t("upload.pdfToImage.jpg"),
+                jpgText: t("upload.pdfToImage.jpgText"),
+                png: t("upload.pdfToImage.png"),
+                pngText: t("upload.pdfToImage.pngText"),
+                convert: t("upload.pdfToImage.convert"),
+                converting: t("upload.pdfToImage.converting"),
+                done: t("upload.pdfToImage.done"),
+                successSubtitle: t("upload.pdfToImage.successSubtitle"),
+                fileName: t("upload.compression.fileName"),
+                currentSize: t("upload.compression.currentSize"),
+                download: t("upload.download"),
+                emailTitle: t("upload.compression.emailTitle"),
+                emailPlaceholder: t("upload.compression.emailPlaceholder"),
+                terms: t("upload.compression.terms"),
+                continue: t("upload.compression.continue"),
+                loginText: t("upload.compression.loginText"),
+                login: t("upload.compression.login"),
+                another: t("upload.pdfToImage.another"),
                 error: t("upload.error"),
                 errorTooLarge: t("upload.errorTooLarge"),
                 errorUnsupportedType: t("upload.errorUnsupportedType"),
@@ -222,11 +368,14 @@ export function LandingPage({locale, activeTool}: LandingPageProps) {
             <Link className="tool-card" href={`/${locale}/signer-pdf`}><i className="ti ti-signature" aria-hidden="true" /><span>{catalog("tools.signPdf")}</span></Link>
           </div>
           <div className="catalog">
-            <div><h3>{catalog("groups.fromPdf")}</h3><Link href={`/${locale}/pdf-en-word`}>{catalog("tools.pdfToWord")}</Link><Link href={`/${locale}/pdf-en-excel`}>{catalog("tools.pdfToExcel")}</Link><Link href={`/${locale}/pdf-en-powerpoint`}>{catalog("tools.pdfToPowerpoint")}</Link><Link href={`/${locale}/pdf-en-image`}>{catalog("tools.pdfToImage")}</Link></div>
-            <div><h3>{catalog("groups.toPdf")}</h3><Link href={`/${locale}/word-en-pdf`}>{catalog("tools.wordToPdf")}</Link><Link href={`/${locale}/excel-en-pdf`}>{catalog("tools.excelToPdf")}</Link><Link href={`/${locale}/powerpoint-en-pdf`}>{catalog("tools.powerpointToPdf")}</Link><Link href={`/${locale}/image-en-pdf`}>{catalog("tools.imageToPdf")}</Link></div>
-            <div><h3>{catalog("groups.compress")}</h3><Link href={`/${locale}/compresser-pdf`}>{catalog("tools.compressPdf")}</Link><Link href={`/${locale}/compresser-image`}>{catalog("tools.compressImage")}</Link></div>
-            <div><h3>{catalog("groups.edit")}</h3><Link href={`/${locale}/fusionner-pdf`}>{catalog("tools.mergePdf")}</Link><Link href={`/${locale}/diviser-pdf`}>{catalog("tools.splitPdf")}</Link><Link href={`/${locale}/reorganiser-pdf`}>{catalog("tools.reorderPdf")}</Link><Link href={`/${locale}/supprimer-pages-pdf`}>{catalog("tools.deletePages")}</Link><Link href={`/${locale}/filigrane-pdf`}>{catalog("tools.watermark")}</Link><Link href={`/${locale}/numeroter-pages-pdf`}>{catalog("tools.pageNumbers")}</Link></div>
-            <div><h3>{catalog("groups.secure")}</h3><Link href={`/${locale}/proteger-pdf`}>{catalog("tools.protectPdf")}</Link><Link href={`/${locale}/deverrouiller-pdf`}>{catalog("tools.unlockPdf")}</Link><Link href={`/${locale}/signer-pdf`}>{catalog("tools.signPdf")}</Link></div>
+            {catalogSections.map((section) => (
+              <div key={section.group}>
+                <h3>{catalog(`groups.${section.group}`)}</h3>
+                {section.links.map(([slug, label]) => (
+                  <Link key={slug} href={`/${locale}/${slug}`}>{catalog(`tools.${label}`)}</Link>
+                ))}
+              </div>
+            ))}
           </div>
         </section>
       </main>

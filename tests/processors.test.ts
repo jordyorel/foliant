@@ -6,6 +6,8 @@ import {compressPdf} from "@/processors/compression/pdf";
 import {compressImage} from "@/processors/compression/image";
 import {mergePdfs} from "@/processors/pdf/merge";
 import {parsePageRange, splitPdf} from "@/processors/pdf/split";
+import {imageToPdf} from "@/processors/image/to-pdf";
+import {pdfToImage} from "@/processors/pdf/to-image";
 import {PDFDocument} from "pdf-lib";
 import JSZip from "jszip";
 import {isAppError} from "@/lib/validation/errors";
@@ -146,5 +148,60 @@ describe("splitPdf", () => {
 
     const doc = await PDFDocument.load(selectedBytes!);
     expect(doc.getPageCount()).toBe(1);
+  });
+});
+
+describe("imageToPdf", () => {
+  it("creates a multi-page PDF from multiple images", async () => {
+    const output = out("images-to-pdf.pdf");
+
+    await imageToPdf([fixturePath("image.jpg"), fixturePath("image.png")], output);
+
+    const bytes = await readFile(output);
+    expect(bytes.subarray(0, 5).toString()).toBe("%PDF-");
+
+    const doc = await PDFDocument.load(bytes);
+    expect(doc.getPageCount()).toBe(2);
+  });
+
+  it("rejects an invalid image input", async () => {
+    await expect(
+      imageToPdf([fixturePath("invalid.jpg")], out("invalid-image.pdf"))
+    ).rejects.toSatisfy((e) => isAppError(e));
+  });
+});
+
+describe("pdfToImage", () => {
+  it("renders each PDF page to a JPG inside a ZIP", async () => {
+    const output = out("pdf-images.zip");
+
+    await pdfToImage(fixturePath("light.pdf"), output, {format: "jpg"});
+
+    const zip = await JSZip.loadAsync(await readFile(output));
+    const names = Object.keys(zip.files).filter((name) => !zip.files[name].dir);
+    expect(names).toEqual(["page-001.jpg"]);
+
+    const jpgBytes = await zip.file("page-001.jpg")?.async("uint8array");
+    expect(jpgBytes).toBeTruthy();
+    expect(jpgBytes![0]).toBe(0xff);
+    expect(jpgBytes![1]).toBe(0xd8);
+  });
+
+  it("renders each page of a multi-page PDF", async () => {
+    const source = out("two-pages.pdf");
+    await mergePdfs([fixturePath("light.pdf"), fixturePath("light.pdf")], source);
+
+    const output = out("two-images.zip");
+    await pdfToImage(source, output, {format: "png"});
+
+    const zip = await JSZip.loadAsync(await readFile(output));
+    const names = Object.keys(zip.files).filter((name) => !zip.files[name].dir).sort();
+    expect(names).toEqual(["page-001.png", "page-002.png"]);
+  });
+
+  it("rejects an invalid PDF input", async () => {
+    await expect(
+      pdfToImage(fixturePath("invalid.pdf"), out("invalid-images.zip"))
+    ).rejects.toSatisfy((e) => isAppError(e));
   });
 });

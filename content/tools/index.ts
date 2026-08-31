@@ -103,6 +103,32 @@ export const tools: Record<string, ToolConfig> = {
     processor: {id: "pdf_to_image", inputTypes: ["pdf"], outputType: "zip"},
     options: ["JPG", "PNG"]
   }),
+  "pdf-en-jpg": defineTool({
+    slug: "pdf-en-jpg",
+    labelKey: "pdfToJpg",
+    category: "convert",
+    archetype: "file",
+    title: "Convertir PDF en JPG",
+    description: "Exportez les pages d'un PDF en images JPG prêtes à partager.",
+    uploadTitle: "Déposez votre PDF ici",
+    uploadNote: "PDF uniquement. Les images JPG seront fournies dans un ZIP.",
+    accept: ".pdf,application/pdf",
+    processor: {id: "pdf_to_image", inputTypes: ["pdf"], outputType: "zip"},
+    options: ["JPG"]
+  }),
+  "pdf-en-png": defineTool({
+    slug: "pdf-en-png",
+    labelKey: "pdfToPng",
+    category: "convert",
+    archetype: "file",
+    title: "Convertir PDF en PNG",
+    description: "Exportez les pages d'un PDF en images PNG de haute qualité.",
+    uploadTitle: "Déposez votre PDF ici",
+    uploadNote: "PDF uniquement. Les images PNG seront fournies dans un ZIP.",
+    accept: ".pdf,application/pdf",
+    processor: {id: "pdf_to_image", inputTypes: ["pdf"], outputType: "zip"},
+    options: ["PNG"]
+  }),
   "compresser-pdf": defineTool({
     slug: "compresser-pdf",
     labelKey: "compressPdf",
@@ -206,8 +232,68 @@ export const tools: Record<string, ToolConfig> = {
     description: "Transformez vos images JPG ou PNG en document PDF.",
     uploadTitle: "Déposez vos images ici",
     uploadNote: "JPG, PNG et HEIC acceptés.",
-    accept: ".jpg,.jpeg,.png,.heic,image/jpeg,image/png",
+    accept: ".jpg,.jpeg,.png,.heic,.heif,image/jpeg,image/png,image/heic,image/heif",
     processor: {id: "image_to_pdf", inputTypes: ["jpg", "png", "heic"], outputType: "pdf"}
+  }),
+  "jpg-en-pdf": defineTool({
+    slug: "jpg-en-pdf",
+    labelKey: "jpgToPdf",
+    category: "convert",
+    archetype: "file",
+    title: "Convertir JPG en PDF",
+    description: "Transformez une ou plusieurs images JPG en document PDF.",
+    uploadTitle: "Déposez vos JPG ici",
+    uploadNote: "Images JPG uniquement. Plusieurs fichiers peuvent créer un seul PDF.",
+    accept: ".jpg,.jpeg,image/jpeg",
+    processor: {id: "image_to_pdf", inputTypes: ["jpg"], outputType: "pdf"}
+  }),
+  "png-en-pdf": defineTool({
+    slug: "png-en-pdf",
+    labelKey: "pngToPdf",
+    category: "convert",
+    archetype: "file",
+    title: "Convertir PNG en PDF",
+    description: "Transformez une ou plusieurs images PNG en document PDF.",
+    uploadTitle: "Déposez vos PNG ici",
+    uploadNote: "Images PNG uniquement. Les transparences sont placées sur fond blanc.",
+    accept: ".png,image/png",
+    processor: {id: "image_to_pdf", inputTypes: ["png"], outputType: "pdf"}
+  }),
+  "markdown-en-pdf": defineTool({
+    slug: "markdown-en-pdf",
+    labelKey: "markdownToPdf",
+    category: "convert",
+    archetype: "file",
+    title: "Convertir Markdown en PDF",
+    description: "Transformez un fichier Markdown en PDF lisible et partageable.",
+    uploadTitle: "Déposez votre fichier Markdown ici",
+    uploadNote: "Format MD accepté. Le moteur sera branché dans une prochaine brique.",
+    accept: ".md,.markdown,text/markdown,text/plain",
+    processor: {id: "markdown_to_pdf", inputTypes: ["md"], outputType: "pdf"}
+  }),
+  "heic-en-jpg": defineTool({
+    slug: "heic-en-jpg",
+    labelKey: "heicToJpg",
+    category: "convert",
+    archetype: "file",
+    title: "Convertir HEIC en JPG",
+    description: "Convertissez une image HEIC en JPG compatible avec tous les services.",
+    uploadTitle: "Déposez votre image HEIC ici",
+    uploadNote: "Images HEIC et HEIF acceptées.",
+    accept: ".heic,.heif,image/heic,image/heif",
+    processor: {id: "heic_to_jpg", inputTypes: ["heic"], outputType: "jpg"}
+  }),
+  "heic-en-png": defineTool({
+    slug: "heic-en-png",
+    labelKey: "heicToPng",
+    category: "convert",
+    archetype: "file",
+    title: "Convertir HEIC en PNG",
+    description: "Convertissez une image HEIC en PNG de haute qualité.",
+    uploadTitle: "Déposez votre image HEIC ici",
+    uploadNote: "Images HEIC et HEIF acceptées.",
+    accept: ".heic,.heif,image/heic,image/heif",
+    processor: {id: "heic_to_png", inputTypes: ["heic"], outputType: "png"}
   }),
   "reorganiser-pdf": defineTool({
     slug: "reorganiser-pdf",
@@ -234,6 +320,45 @@ export const tools: Record<string, ToolConfig> = {
     accept: ".pdf,application/pdf",
     processor: {id: "delete_pdf_pages", inputTypes: ["pdf"], outputType: "pdf"},
     related: ["Réorganiser PDF", "Fusionner PDF", "Compresser PDF", "Signer PDF"]
+  }),
+  "extraire-pages-pdf": defineTool({
+    slug: "extraire-pages-pdf",
+    labelKey: "extractPages",
+    category: "edit",
+    archetype: "file",
+    title: "Extraire des pages PDF",
+    description: "Créez un nouveau PDF à partir des pages que vous indiquez.",
+    uploadTitle: "Déposez votre PDF ici",
+    uploadNote: "Version simple prévue avec une plage de pages à saisir.",
+    accept: ".pdf,application/pdf",
+    processor: {id: "extract_pdf_pages", inputTypes: ["pdf"], outputType: "pdf"},
+    related: ["Diviser PDF", "Supprimer des pages", "Réorganiser PDF", "Fusionner PDF"]
+  }),
+  "pivoter-pdf": defineTool({
+    slug: "pivoter-pdf",
+    labelKey: "rotatePdf",
+    category: "edit",
+    archetype: "file",
+    title: "Pivoter un PDF",
+    description: "Tournez toutes les pages d'un PDF dans le bon sens.",
+    uploadTitle: "Déposez votre PDF ici",
+    uploadNote: "Version simple prévue pour pivoter tout le document.",
+    accept: ".pdf,application/pdf",
+    processor: {id: "rotate_pdf", inputTypes: ["pdf"], outputType: "pdf"},
+    related: ["Réorganiser PDF", "Supprimer des pages", "Compresser PDF", "Fusionner PDF"]
+  }),
+  "inserer-pages-pdf": defineTool({
+    slug: "inserer-pages-pdf",
+    labelKey: "insertPages",
+    category: "edit",
+    archetype: "file",
+    title: "Insérer des pages PDF",
+    description: "Ajoutez des pages d'un PDF dans un autre document.",
+    uploadTitle: "Déposez votre PDF ici",
+    uploadNote: "Cette fonction demandera plusieurs fichiers dans une prochaine brique.",
+    accept: ".pdf,application/pdf",
+    processor: {id: "insert_pdf_pages", inputTypes: ["pdf"], outputType: "pdf"},
+    related: ["Fusionner PDF", "Réorganiser PDF", "Diviser PDF", "Extraire des pages"]
   }),
   "filigrane-pdf": defineTool({
     slug: "filigrane-pdf",
@@ -262,6 +387,32 @@ export const tools: Record<string, ToolConfig> = {
     processor: {id: "number_pdf_pages", inputTypes: ["pdf"], outputType: "pdf"},
     options: ["Bas centre", "Bas droite", "Page 1"],
     related: ["Filigrane PDF", "Réorganiser PDF", "Fusionner PDF", "Protéger PDF"]
+  }),
+  "ajouter-texte-pdf": defineTool({
+    slug: "ajouter-texte-pdf",
+    labelKey: "addText",
+    category: "edit",
+    archetype: "file",
+    title: "Ajouter du texte à un PDF",
+    description: "Ajoutez du texte sur un PDF avant de le télécharger.",
+    uploadTitle: "Déposez votre PDF ici",
+    uploadNote: "La version avancée utilisera un éditeur visuel dans le navigateur.",
+    accept: ".pdf,application/pdf",
+    processor: {id: "add_text_pdf", inputTypes: ["pdf"], outputType: "pdf"},
+    related: ["Signer PDF", "Ajouter un filigrane", "Numéroter les pages", "Réorganiser PDF"]
+  }),
+  "remplir-pdf": defineTool({
+    slug: "remplir-pdf",
+    labelKey: "fillPdf",
+    category: "edit",
+    archetype: "file",
+    title: "Remplir un PDF",
+    description: "Complétez un formulaire PDF directement en ligne.",
+    uploadTitle: "Déposez votre PDF ici",
+    uploadNote: "Cette fonction sera liée à l'éditeur navigateur.",
+    accept: ".pdf,application/pdf",
+    processor: {id: "fill_pdf", inputTypes: ["pdf"], outputType: "pdf"},
+    related: ["Ajouter du texte", "Signer PDF", "Protéger PDF", "Déverrouiller PDF"]
   }),
   "signer-pdf": defineTool({
     slug: "signer-pdf",
@@ -301,5 +452,53 @@ export const tools: Record<string, ToolConfig> = {
     accept: ".pdf,application/pdf",
     processor: {id: "unlock_pdf", inputTypes: ["pdf"], outputType: "pdf"},
     related: ["Protéger PDF", "Compresser PDF", "Réorganiser PDF", "Fusionner PDF"]
+  }),
+  "image-en-texte": defineTool({
+    slug: "image-en-texte",
+    labelKey: "imageToText",
+    category: "ocr",
+    archetype: "ai",
+    title: "Image en texte",
+    description: "Extrayez le texte d'une image ou d'un scan.",
+    uploadTitle: "Déposez votre image ici",
+    uploadNote: "OCR prévu après les moteurs V1 de conversion.",
+    accept: ".jpg,.jpeg,.png,.heic,.heif,image/jpeg,image/png,image/heic,image/heif",
+    processor: {id: "image_to_text", inputTypes: ["jpg", "png", "heic"], outputType: "txt"}
+  }),
+  "ocr-pdf": defineTool({
+    slug: "ocr-pdf",
+    labelKey: "ocrPdf",
+    category: "ocr",
+    archetype: "ai",
+    title: "OCR PDF",
+    description: "Rendez un PDF scanné recherchable et exploitable.",
+    uploadTitle: "Déposez votre PDF ici",
+    uploadNote: "Moteur OCR prévu après les outils V1 principaux.",
+    accept: ".pdf,application/pdf",
+    processor: {id: "ocr_pdf", inputTypes: ["pdf"], outputType: "pdf"}
+  }),
+  "resumer-document": defineTool({
+    slug: "resumer-document",
+    labelKey: "summarizeDocument",
+    category: "ocr",
+    archetype: "ai",
+    title: "Résumer un document",
+    description: "Obtenez un résumé clair d'un PDF ou document long.",
+    uploadTitle: "Déposez votre document ici",
+    uploadNote: "Fonction IA prévue dans la phase avancée.",
+    accept: ".pdf,.doc,.docx,.txt,.md,application/pdf,text/plain,text/markdown",
+    processor: {id: "document_summarizer", inputTypes: ["pdf", "docx", "txt", "md"], outputType: "txt"}
+  }),
+  "traduire-pdf": defineTool({
+    slug: "traduire-pdf",
+    labelKey: "translatePdf",
+    category: "ocr",
+    archetype: "ai",
+    title: "Traduire un PDF",
+    description: "Traduisez le contenu d'un PDF vers une autre langue.",
+    uploadTitle: "Déposez votre PDF ici",
+    uploadNote: "Fonction IA prévue dans la phase avancée.",
+    accept: ".pdf,application/pdf",
+    processor: {id: "pdf_translator", inputTypes: ["pdf"], outputType: "pdf"}
   })
 };

@@ -210,4 +210,94 @@ describe("upload → job → download API flow", () => {
     const body = await res.json();
     expect(body.code).toBe(ErrorCode.invalidRequest);
   });
+
+  it("converts images to PDF end to end over the HTTP handlers", async () => {
+    const fileIds: string[] = [];
+
+    for (const name of ["image.jpg", "image.png"]) {
+      const bytes = fixtureBytes(name);
+      const mimeType = name.endsWith(".png") ? "image/png" : "image/jpeg";
+
+      const initRes = await initUpload(
+        jsonRequest({tool: "image_to_pdf", fileName: name, fileSize: bytes.length, mimeType})
+      );
+      expect(initRes.status).toBe(200);
+      const init = await initRes.json();
+
+      const putRes = await putUpload(
+        new Request(`http://localhost${init.uploadUrl}`, {method: "PUT", body: new Uint8Array(bytes)}),
+        {params: Promise.resolve({fileId: init.fileId})}
+      );
+      expect(putRes.status).toBe(200);
+      fileIds.push(init.fileId);
+    }
+
+    const jobRes = await createJobRoute(jsonRequest({tool: "image_to_pdf", fileIds}));
+    expect(jobRes.status).toBe(200);
+    const created = await jobRes.json();
+
+    const finished = await pollJob(created.id);
+    expect(finished.status).toBe("completed");
+
+    const downloadRes = await downloadRoute(
+      new Request(`http://localhost/api/jobs/${created.id}/download`),
+      {params: Promise.resolve({jobId: created.id})}
+    );
+    expect(downloadRes.status).toBe(200);
+    expect(downloadRes.headers.get("content-type")).toBe("application/pdf");
+
+    const bytes = new Uint8Array(await downloadRes.arrayBuffer());
+    const doc = await PDFDocument.load(Buffer.from(bytes));
+    expect(doc.getPageCount()).toBe(2);
+  });
+
+  it("converts a PDF to images end to end over the HTTP handlers", async () => {
+    const bytes = fixtureBytes("light.pdf");
+
+    const initRes = await initUpload(
+      jsonRequest({tool: "pdf_to_image", fileName: "light.pdf", fileSize: bytes.length, mimeType: "application/pdf"})
+    );
+    expect(initRes.status).toBe(200);
+    const init = await initRes.json();
+
+    const putRes = await putUpload(
+      new Request(`http://localhost${init.uploadUrl}`, {method: "PUT", body: new Uint8Array(bytes)}),
+      {params: Promise.resolve({fileId: init.fileId})}
+    );
+    expect(putRes.status).toBe(200);
+
+    const jobRes = await createJobRoute(
+      jsonRequest({tool: "pdf_to_image", fileIds: [init.fileId], options: {pdfToImageFormat: "jpg"}})
+    );
+    expect(jobRes.status).toBe(200);
+    const created = await jobRes.json();
+
+    const finished = await pollJob(created.id);
+    expect(finished.status).toBe("completed");
+
+    const downloadRes = await downloadRoute(
+      new Request(`http://localhost/api/jobs/${created.id}/download`),
+      {params: Promise.resolve({jobId: created.id})}
+    );
+    expect(downloadRes.status).toBe(200);
+    expect(downloadRes.headers.get("content-type")).toBe("application/zip");
+
+    const zip = await JSZip.loadAsync(await downloadRes.arrayBuffer());
+    expect(zip.file("page-001.jpg")).toBeTruthy();
+  });
+
+  it("rejects a pdf_to_image job with an unsupported format", async () => {
+    const initRes = await initUpload(
+      jsonRequest({tool: "pdf_to_image", fileName: "light.pdf", fileSize: 1000, mimeType: "application/pdf"})
+    );
+    const init = await initRes.json();
+
+    const res = await createJobRoute(
+      jsonRequest({tool: "pdf_to_image", fileIds: [init.fileId], options: {pdfToImageFormat: "gif"}})
+    );
+    expect(res.status).toBe(400);
+
+    const body = await res.json();
+    expect(body.code).toBe(ErrorCode.invalidRequest);
+  });
 });

@@ -1,7 +1,9 @@
 import {compressPdf} from "./compression/pdf";
 import {compressImage} from "./compression/image";
+import {imageToPdf} from "./image/to-pdf";
 import {mergePdfs} from "./pdf/merge";
 import {splitPdf} from "./pdf/split";
+import {pdfToImage} from "./pdf/to-image";
 import type {JobOptions} from "@/lib/jobs";
 
 export type ProcessorResult = {
@@ -41,6 +43,19 @@ export const processors: Record<string, Processor> = {
       mode: context.options.splitMode,
       interval: context.options.splitInterval,
       pageRange: context.options.pageRange
+    }),
+    extension: ".zip",
+    mimeType: "application/zip"
+  }),
+  image_to_pdf: async (inputPaths, outputPath) => ({
+    path: await imageToPdf(inputPaths, outputPath),
+    extension: ".pdf",
+    mimeType: "application/pdf"
+  }),
+  pdf_to_image: async (inputPaths, outputPath, context) => ({
+    path: await pdfToImage(inputPaths[0], outputPath, {
+      format: context.options.pdfToImageFormat,
+      dpi: context.options.pdfToImageDpi
     }),
     extension: ".zip",
     mimeType: "application/zip"

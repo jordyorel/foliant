@@ -3,30 +3,25 @@
 import {useEffect, useMemo, useState} from "react";
 import type {ToolAction} from "@/content/tools/actions";
 import {messageFromCode, messageFromResponse, type ErrorLabels} from "./clientError";
-import {formatSize, uploadFileWithProgress as uploadFile} from "./upload";
+import {formatSize, uploadFileWithProgress, type JobResponse} from "./upload";
 
-type SplitMode = "every_page" | "interval" | "range";
+type PdfFormat = "jpg" | "png";
 
-export type SplitFlowLabels = {
+export type PdfToImageFlowLabels = {
   close: string;
-  title: string;
   uploading: string;
-  splitting: string;
+  readyTitle: string;
+  selectFormat: string;
+  jpg: string;
+  jpgText: string;
+  png: string;
+  pngText: string;
+  convert: string;
+  converting: string;
   done: string;
   successSubtitle: string;
   fileName: string;
   currentSize: string;
-  selectMethod: string;
-  everyPage: string;
-  everyPageText: string;
-  interval: string;
-  intervalText: string;
-  range: string;
-  rangeText: string;
-  intervalLabel: string;
-  rangeLabel: string;
-  rangePlaceholder: string;
-  split: string;
   download: string;
   emailTitle: string;
   emailPlaceholder: string;
@@ -41,38 +36,27 @@ export type SplitFlowLabels = {
   errorInvalidFile: string;
 };
 
-type SplitFlowModalProps = {
+type PdfToImageFlowModalProps = {
   file: File;
   tool: ToolAction;
-  labels: SplitFlowLabels;
+  defaultFormat?: PdfFormat;
+  labels: PdfToImageFlowLabels;
   onClose: () => void;
 };
 
-type FlowState = "uploading" | "ready" | "splitting" | "completed" | "failed";
+type FlowState = "uploading" | "ready" | "converting" | "completed" | "failed";
 
 type UploadState = {
   fileId: string;
   uploadUrl: string;
 };
 
-type JobResponse = {
-  id: string;
-  status: "queued" | "processing" | "completed" | "failed";
-  progress: number;
-  step: string;
-  resultUrl?: string;
-  error?: string;
-  errorCode?: string;
-};
-
-export function SplitFlowModal({file, tool, labels, onClose}: SplitFlowModalProps) {
+export function PdfToImageFlowModal({file, tool, defaultFormat = "jpg", labels, onClose}: PdfToImageFlowModalProps) {
   const [flowState, setFlowState] = useState<FlowState>("uploading");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [jobProgress, setJobProgress] = useState(0);
   const [upload, setUpload] = useState<UploadState | null>(null);
-  const [mode, setMode] = useState<SplitMode>("every_page");
-  const [interval, setInterval] = useState(1);
-  const [pageRange, setPageRange] = useState("");
+  const [format, setFormat] = useState<PdfFormat>(defaultFormat);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState("");
 
@@ -82,33 +66,14 @@ export function SplitFlowModal({file, tool, labels, onClose}: SplitFlowModalProp
     errorUnsupportedType: labels.errorUnsupportedType,
     errorInvalidFile: labels.errorInvalidFile
   };
-  const canSplit = Boolean(upload) && (mode !== "range" || pageRange.trim().length > 0);
+
+  const canConvert = Boolean(upload);
   const progress = flowState === "uploading" ? uploadProgress : jobProgress;
 
-  const splitOptions = useMemo(() => [
-    {
-      id: "every_page" as const,
-      title: labels.everyPage,
-      text: labels.everyPageText
-    },
-    {
-      id: "interval" as const,
-      title: labels.interval,
-      text: labels.intervalText
-    },
-    {
-      id: "range" as const,
-      title: labels.range,
-      text: labels.rangeText
-    }
-  ], [
-    labels.everyPage,
-    labels.everyPageText,
-    labels.interval,
-    labels.intervalText,
-    labels.range,
-    labels.rangeText
-  ]);
+  const formatOptions = useMemo(() => [
+    {id: "jpg" as const, title: labels.jpg, text: labels.jpgText},
+    {id: "png" as const, title: labels.png, text: labels.pngText}
+  ], [labels.jpg, labels.jpgText, labels.png, labels.pngText]);
 
   useEffect(() => {
     let cancelled = false;
@@ -135,7 +100,7 @@ export function SplitFlowModal({file, tool, labels, onClose}: SplitFlowModalProp
         if (cancelled) return;
 
         setUpload(nextUpload);
-        await uploadFile(nextUpload.uploadUrl, file, errorLabels, (nextProgress) => {
+        await uploadFileWithProgress(nextUpload.uploadUrl, file, errorLabels, (nextProgress) => {
           if (!cancelled) setUploadProgress(nextProgress);
         });
 
@@ -185,12 +150,12 @@ export function SplitFlowModal({file, tool, labels, onClose}: SplitFlowModalProp
     }, 700);
   }
 
-  async function startSplit() {
-    if (!upload || !canSplit) return;
+  async function startConvert() {
+    if (!upload || !canConvert) return;
 
     try {
       setError("");
-      setFlowState("splitting");
+      setFlowState("converting");
       setJobProgress(8);
 
       const jobResponse = await fetch("/api/jobs", {
@@ -199,11 +164,7 @@ export function SplitFlowModal({file, tool, labels, onClose}: SplitFlowModalProp
         body: JSON.stringify({
           tool,
           fileIds: [upload.fileId],
-          options: {
-            splitMode: mode,
-            splitInterval: interval,
-            pageRange
-          }
+          options: {pdfToImageFormat: format}
         })
       });
 
@@ -212,14 +173,14 @@ export function SplitFlowModal({file, tool, labels, onClose}: SplitFlowModalProp
       const createdJob = await jobResponse.json() as JobResponse;
       setJobProgress(createdJob.progress);
       await pollJob(createdJob.id);
-    } catch (splitError) {
-      setError(splitError instanceof Error ? splitError.message : labels.error);
+    } catch (convertError) {
+      setError(convertError instanceof Error ? convertError.message : labels.error);
       setFlowState("failed");
     }
   }
 
   return (
-    <div className="processing-overlay" role="dialog" aria-modal="true" aria-labelledby="split-flow-title">
+    <div className="processing-overlay" role="dialog" aria-modal="true" aria-labelledby="pdf-image-flow-title">
       <div className="processing-modal">
         <button className="modal-close" type="button" onClick={onClose} aria-label={labels.close}>
           <i className="ti ti-x" aria-hidden="true" />
@@ -227,7 +188,7 @@ export function SplitFlowModal({file, tool, labels, onClose}: SplitFlowModalProp
 
         {flowState === "uploading" ? (
           <div className="flow-panel compact">
-            <h2 id="split-flow-title">{labels.uploading}</h2>
+            <h2 id="pdf-image-flow-title">{labels.uploading}</h2>
             <div className="file-summary">
               <span><strong>{labels.fileName}</strong> {file.name}</span>
               <span><strong>{labels.currentSize}</strong> {formatSize(file.size)}</span>
@@ -241,20 +202,20 @@ export function SplitFlowModal({file, tool, labels, onClose}: SplitFlowModalProp
 
         {flowState === "ready" ? (
           <div className="flow-panel">
-            <h2 id="split-flow-title">{labels.title}</h2>
+            <h2 id="pdf-image-flow-title">{labels.readyTitle}</h2>
             <div className="file-summary">
               <span><strong>{labels.fileName}</strong> {file.name}</span>
               <span><strong>{labels.currentSize}</strong> {formatSize(file.size)}</span>
             </div>
-            <p className="choice-label">{labels.selectMethod}</p>
-            <div className="split-choices">
-              {splitOptions.map((option) => (
+            <p className="choice-label">{labels.selectFormat}</p>
+            <div className="compression-choices">
+              {formatOptions.map((option) => (
                 <button
-                  className={`compression-choice split-choice${mode === option.id ? " is-selected" : ""}`}
+                  className={`compression-choice${format === option.id ? " is-selected" : ""}`}
                   key={option.id}
                   type="button"
-                  aria-pressed={mode === option.id}
-                  onClick={() => setMode(option.id)}
+                  aria-pressed={format === option.id}
+                  onClick={() => setFormat(option.id)}
                 >
                   <span className="radio-dot" aria-hidden="true" />
                   <span>
@@ -264,42 +225,16 @@ export function SplitFlowModal({file, tool, labels, onClose}: SplitFlowModalProp
                 </button>
               ))}
             </div>
-            {mode === "interval" ? (
-              <label className="split-field">
-                <span>{labels.intervalLabel}</span>
-                <input
-                  className="split-input"
-                  type="number"
-                  min={1}
-                  max={500}
-                  step={1}
-                  value={interval}
-                  onChange={(event) => setInterval(Math.max(1, Math.floor(Number(event.target.value) || 1)))}
-                />
-              </label>
-            ) : null}
-            {mode === "range" ? (
-              <label className="split-field">
-                <span>{labels.rangeLabel}</span>
-                <input
-                  className="split-input"
-                  type="text"
-                  value={pageRange}
-                  placeholder={labels.rangePlaceholder}
-                  onChange={(event) => setPageRange(event.target.value)}
-                />
-              </label>
-            ) : null}
-            <button className="modal-primary" type="button" onClick={startSplit} disabled={!canSplit}>
-              {labels.split}
+            <button className="modal-primary" type="button" onClick={startConvert} disabled={!canConvert}>
+              {labels.convert}
             </button>
           </div>
         ) : null}
 
-        {flowState === "splitting" ? (
+        {flowState === "converting" ? (
           <div className="flow-panel compact">
-            <h2 id="split-flow-title">{labels.splitting}</h2>
-            <div className="large-progress" aria-label={labels.splitting}>
+            <h2 id="pdf-image-flow-title">{labels.converting}</h2>
+            <div className="large-progress" aria-label={labels.converting}>
               <span style={{width: `${progress}%`}} />
             </div>
             <p className="progress-percent">{progress}%</p>
@@ -309,11 +244,11 @@ export function SplitFlowModal({file, tool, labels, onClose}: SplitFlowModalProp
         {flowState === "completed" ? (
           <div className="flow-panel">
             <div className="success-icon"><i className="ti ti-check" aria-hidden="true" /></div>
-            <h2 id="split-flow-title">{labels.done}</h2>
+            <h2 id="pdf-image-flow-title">{labels.done}</h2>
             <p className="modal-subtitle">{labels.successSubtitle}</p>
             <div className="email-capture">
-              <label htmlFor="split-result-email">{labels.emailTitle}</label>
-              <input id="split-result-email" type="email" placeholder={labels.emailPlaceholder} />
+              <label htmlFor="pdf-image-result-email">{labels.emailTitle}</label>
+              <input id="pdf-image-result-email" type="email" placeholder={labels.emailPlaceholder} />
               <label className="terms-row">
                 <input type="checkbox" />
                 <span>{labels.terms}</span>
@@ -330,7 +265,7 @@ export function SplitFlowModal({file, tool, labels, onClose}: SplitFlowModalProp
 
         {flowState === "failed" ? (
           <div className="flow-panel compact">
-            <h2 id="split-flow-title">{labels.error}</h2>
+            <h2 id="pdf-image-flow-title">{labels.error}</h2>
             <p className="upload-error">{error || labels.error}</p>
             <button className="modal-primary" type="button" onClick={onClose}>{labels.another}</button>
           </div>

@@ -25,7 +25,7 @@ describe("compression job pipeline", () => {
     await cleanupExpiredFiles(Date.now() + 1_000_000_000);
   });
 
-  async function uploadPdf(name: string, tool: "compress_pdf" | "merge_pdf" | "split_pdf" = "compress_pdf") {
+  async function uploadPdf(name: string, tool: "compress_pdf" | "merge_pdf" | "split_pdf" | "pdf_to_image" = "compress_pdf") {
     const bytes = fixtureBytes(name);
     const file = createTemporaryFile({
       fileName: name,
@@ -122,5 +122,60 @@ describe("compression job pipeline", () => {
 
     const zip = await JSZip.loadAsync(result!.bytes);
     expect(zip.file("page-001.pdf")).toBeTruthy();
+  });
+
+  it("runs image_to_pdf end to end and produces a two-page PDF", async () => {
+    const jpgBytes = fixtureBytes("image.jpg");
+    const pngBytes = fixtureBytes("image.png");
+
+    const jpg = createTemporaryFile({
+      fileName: "image.jpg",
+      fileSize: jpgBytes.length,
+      mimeType: "image/jpeg",
+      tool: "image_to_pdf",
+      maxSize: 15 * MB
+    });
+    await saveTemporaryFile(jpg.id, toArrayBuffer(jpgBytes));
+
+    const png = createTemporaryFile({
+      fileName: "image.png",
+      fileSize: pngBytes.length,
+      mimeType: "image/png",
+      tool: "image_to_pdf",
+      maxSize: 15 * MB
+    });
+    await saveTemporaryFile(png.id, toArrayBuffer(pngBytes));
+
+    const job = createJob({tool: "image_to_pdf", fileIds: [jpg.id, png.id]});
+    const finished = await pollJob(job.id);
+
+    expect(finished.status).toBe("completed");
+    expect(finished.result).toBeUndefined();
+
+    const result = await readResultFile(job.id);
+    expect(result?.result.mimeType).toBe("application/pdf");
+
+    const doc = await PDFDocument.load(result!.bytes);
+    expect(doc.getPageCount()).toBe(2);
+  });
+
+  it("runs pdf_to_image end to end and produces a ZIP of JPGs", async () => {
+    const file = await uploadPdf("light.pdf", "pdf_to_image");
+
+    const job = createJob({
+      tool: "pdf_to_image",
+      fileIds: [file.id],
+      options: {pdfToImageFormat: "jpg"}
+    });
+    const finished = await pollJob(job.id);
+
+    expect(finished.status).toBe("completed");
+    expect(finished.result).toBeUndefined();
+
+    const result = await readResultFile(job.id);
+    expect(result?.result.mimeType).toBe("application/zip");
+
+    const zip = await JSZip.loadAsync(result!.bytes);
+    expect(zip.file("page-001.jpg")).toBeTruthy();
   });
 });

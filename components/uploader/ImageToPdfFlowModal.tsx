@@ -2,19 +2,24 @@
 
 import {useEffect, useState} from "react";
 import type {ToolAction} from "@/content/tools/actions";
-import {messageFromResponse, type ErrorLabels} from "./clientError";
+import {messageFromCode, messageFromResponse, type ErrorLabels} from "./clientError";
 import {formatSize, uploadFileWithProgress as uploadFile} from "./upload";
 
-export type MergeFlowLabels = {
+export type ImageToPdfFlowLabels = {
   close: string;
   uploadingTitle: string;
   readyTitle: string;
-  mergingTitle: string;
+  creatingTitle: string;
   successTitle: string;
   successSubtitle: string;
   filesCount: string;
   totalSize: string;
   onePdf: string;
+  create: string;
+  moveUp: string;
+  moveDown: string;
+  remove: string;
+  empty: string;
   download: string;
   emailTitle: string;
   emailPlaceholder: string;
@@ -23,25 +28,20 @@ export type MergeFlowLabels = {
   loginText: string;
   login: string;
   another: string;
-  merge: string;
-  moveUp: string;
-  moveDown: string;
-  remove: string;
-  empty: string;
   error: string;
   errorTooLarge: string;
   errorUnsupportedType: string;
   errorInvalidFile: string;
 };
 
-type MergeFlowModalProps = {
+type ImageToPdfFlowModalProps = {
   files: File[];
   tool: ToolAction;
-  labels: MergeFlowLabels;
+  labels: ImageToPdfFlowLabels;
   onClose: () => void;
 };
 
-type FlowState = "uploading" | "ready" | "merging" | "completed" | "failed";
+type FlowState = "uploading" | "ready" | "creating" | "completed" | "failed";
 
 type Entry = {
   name: string;
@@ -59,7 +59,7 @@ type JobResponse = {
   errorCode?: string;
 };
 
-export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalProps) {
+export function ImageToPdfFlowModal({files, tool, labels, onClose}: ImageToPdfFlowModalProps) {
   const [flowState, setFlowState] = useState<FlowState>("uploading");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [jobProgress, setJobProgress] = useState(0);
@@ -73,7 +73,6 @@ export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalPro
     errorUnsupportedType: labels.errorUnsupportedType,
     errorInvalidFile: labels.errorInvalidFile
   };
-
   const totalBytes = files.reduce((sum, file) => sum + file.size, 0);
 
   useEffect(() => {
@@ -93,7 +92,7 @@ export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalPro
               tool,
               fileName: file.name,
               fileSize: file.size,
-              mimeType: file.type || "application/pdf"
+              mimeType: file.type || "image/jpeg"
             })
           });
 
@@ -117,9 +116,9 @@ export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalPro
         setEntries(nextEntries);
         setUploadProgress(100);
         setFlowState("ready");
-      } catch (err) {
+      } catch (uploadError) {
         if (cancelled) return;
-        setError(err instanceof Error && err.message ? err.message : labels.error);
+        setError(uploadError instanceof Error && uploadError.message ? uploadError.message : labels.error);
         setFlowState("failed");
       }
     }
@@ -145,7 +144,7 @@ export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalPro
     }
 
     if (nextJob.status === "failed") {
-      setError(nextJob.error || labels.error);
+      setError((messageFromCode(nextJob.errorCode, errorLabels) ?? nextJob.error) || labels.error);
       setFlowState("failed");
       return;
     }
@@ -158,26 +157,30 @@ export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalPro
     }, 700);
   }
 
-  async function startMerge() {
-    if (entries.length < 2) return;
+  async function startCreate() {
+    if (entries.length === 0) return;
 
     try {
       setError("");
-      setFlowState("merging");
+      setFlowState("creating");
       setJobProgress(8);
 
       const jobResponse = await fetch("/api/jobs", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({tool, fileIds: entries.map((entry) => entry.fileId), options: {}})
+        body: JSON.stringify({
+          tool,
+          fileIds: entries.map((entry) => entry.fileId),
+          options: {}
+        })
       });
 
       if (!jobResponse.ok) throw new Error(await messageFromResponse(jobResponse, errorLabels));
       const created = await jobResponse.json() as JobResponse;
       setJobProgress(created.progress);
       await poll(created.id);
-    } catch (err) {
-      setError(err instanceof Error && err.message ? err.message : labels.error);
+    } catch (createError) {
+      setError(createError instanceof Error && createError.message ? createError.message : labels.error);
       setFlowState("failed");
     }
   }
@@ -197,7 +200,7 @@ export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalPro
   }
 
   return (
-    <div className="processing-overlay" role="dialog" aria-modal="true" aria-labelledby="merge-flow-title">
+    <div className="processing-overlay" role="dialog" aria-modal="true" aria-labelledby="image-pdf-flow-title">
       <div className="processing-modal">
         <button className="modal-close" type="button" onClick={onClose} aria-label={labels.close}>
           <i className="ti ti-x" aria-hidden="true" />
@@ -205,7 +208,7 @@ export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalPro
 
         {flowState === "uploading" ? (
           <div className="flow-panel compact">
-            <h2 id="merge-flow-title">{labels.uploadingTitle}</h2>
+            <h2 id="image-pdf-flow-title">{labels.uploadingTitle}</h2>
             <div className="file-summary">
               <span><strong>{labels.filesCount}</strong> {files.length}</span>
               <span><strong>{labels.totalSize}</strong> {formatSize(totalBytes)}</span>
@@ -219,7 +222,7 @@ export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalPro
 
         {flowState === "ready" ? (
           <div className="flow-panel">
-            <h2 id="merge-flow-title">{labels.readyTitle}</h2>
+            <h2 id="image-pdf-flow-title">{labels.readyTitle}</h2>
             <div className="merge-list">
               {entries.map((entry, index) => (
                 <div className="mini-card merge-row" key={entry.fileId}>
@@ -254,22 +257,22 @@ export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalPro
                 </div>
               ))}
             </div>
-            {entries.length < 2 ? <p className="drop-note">{labels.empty}</p> : null}
+            {entries.length === 0 ? <p className="drop-note">{labels.empty}</p> : null}
             <button
               className="modal-primary"
               type="button"
-              onClick={startMerge}
-              disabled={entries.length < 2}
+              onClick={startCreate}
+              disabled={entries.length === 0}
             >
-              {labels.merge}
+              {labels.create}
             </button>
           </div>
         ) : null}
 
-        {flowState === "merging" ? (
+        {flowState === "creating" ? (
           <div className="flow-panel compact">
-            <h2 id="merge-flow-title">{labels.mergingTitle}</h2>
-            <div className="large-progress" aria-label={labels.mergingTitle}>
+            <h2 id="image-pdf-flow-title">{labels.creatingTitle}</h2>
+            <div className="large-progress" aria-label={labels.creatingTitle}>
               <span style={{width: `${jobProgress}%`}} />
             </div>
             <p className="progress-percent">{jobProgress}%</p>
@@ -279,15 +282,15 @@ export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalPro
         {flowState === "completed" ? (
           <div className="flow-panel">
             <div className="success-icon"><i className="ti ti-check" aria-hidden="true" /></div>
-            <h2 id="merge-flow-title">{labels.successTitle}</h2>
+            <h2 id="image-pdf-flow-title">{labels.successTitle}</h2>
             <p className="modal-subtitle">{labels.successSubtitle}</p>
             <div className="file-summary">
-              <span><strong>{labels.filesCount}</strong> {files.length}</span>
+              <span><strong>{labels.filesCount}</strong> {entries.length}</span>
               <span><strong>{labels.onePdf}</strong></span>
             </div>
             <div className="email-capture">
-              <label htmlFor="merge-result-email">{labels.emailTitle}</label>
-              <input id="merge-result-email" type="email" placeholder={labels.emailPlaceholder} />
+              <label htmlFor="image-pdf-result-email">{labels.emailTitle}</label>
+              <input id="image-pdf-result-email" type="email" placeholder={labels.emailPlaceholder} />
               <label className="terms-row">
                 <input type="checkbox" />
                 <span>{labels.terms}</span>
@@ -304,7 +307,7 @@ export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalPro
 
         {flowState === "failed" ? (
           <div className="flow-panel compact">
-            <h2 id="merge-flow-title">{labels.error}</h2>
+            <h2 id="image-pdf-flow-title">{labels.error}</h2>
             <p className="upload-error">{error || labels.error}</p>
             <button className="modal-primary" type="button" onClick={onClose}>{labels.another}</button>
           </div>

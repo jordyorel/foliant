@@ -5,6 +5,7 @@ import {getProcessor} from "@/processors/registry";
 import type {PdfCompressionLevel} from "@/processors/compression/pdf";
 import type {ImageCompressionLevel} from "@/processors/compression/image";
 import type {SplitMode} from "@/processors/pdf/split";
+import type {PdfToImageFormat} from "@/processors/pdf/to-image";
 import {AppError, ErrorCode, isAppError} from "@/lib/validation/errors";
 
 export type JobStatus = "queued" | "processing" | "completed" | "failed";
@@ -40,6 +41,8 @@ export type JobOptions = {
   splitMode?: SplitMode;
   splitInterval?: number;
   pageRange?: string;
+  pdfToImageFormat?: PdfToImageFormat;
+  pdfToImageDpi?: number;
 };
 
 function resolvePdfCompressionLevel(level?: JobOptions["compressionLevel"]): PdfCompressionLevel {
@@ -60,7 +63,7 @@ function fileBaseName(fileName: string) {
 
 function outputExtensionFor(tool: ToolAction) {
   if (tool === "compress_image") return ".jpg";
-  if (tool === "split_pdf") return ".zip";
+  if (tool === "split_pdf" || tool === "pdf_to_image") return ".zip";
   return ".pdf";
 }
 
@@ -86,12 +89,36 @@ function stepFor(tool: ToolAction) {
       return "Compression de l'image";
     case "compress_pdf":
       return "Compression du PDF";
+    case "image_to_pdf":
+      return "Création du PDF";
     case "merge_pdf":
       return "Fusion des PDF";
+    case "pdf_to_image":
+      return "Conversion en images";
     case "split_pdf":
       return "Division du PDF";
     default:
       return "Traitement du document";
+  }
+}
+
+function outputFileNameFor(job: JobRecord, firstFile: StoredFile, extension: string, alreadyOptimized: boolean) {
+  const baseName = fileBaseName(firstFile.fileName);
+
+  switch (job.tool) {
+    case "compress_image":
+    case "compress_pdf":
+      return `${baseName}-${alreadyOptimized ? "optimized" : "compressed"}${extension}`;
+    case "image_to_pdf":
+      return `${job.fileIds.length > 1 ? "images" : baseName}-converted${extension}`;
+    case "merge_pdf":
+      return `${baseName}-merged${extension}`;
+    case "pdf_to_image":
+      return `${baseName}-images${extension}`;
+    case "split_pdf":
+      return `${baseName}-split${extension}`;
+    default:
+      return `${baseName}-processed${extension}`;
   }
 }
 
@@ -136,11 +163,7 @@ async function runJob(jobId: string) {
       await copyFile(firstFile.path, result.path);
     }
 
-    const outputFileName = isCompression
-      ? `${fileBaseName(firstFile.fileName)}-${alreadyOptimized ? "optimized" : "compressed"}${result.extension}`
-      : job.tool === "split_pdf"
-        ? `${fileBaseName(firstFile.fileName)}-split${result.extension}`
-      : `${fileBaseName(firstFile.fileName)}-merged${result.extension}`;
+    const outputFileName = outputFileNameFor(job, firstFile, result.extension, alreadyOptimized);
 
     const resultFile = await registerResultFile({
       jobId,

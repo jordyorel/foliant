@@ -67,12 +67,12 @@ V2 premium/advanced:
 ### Engine D — Image and Markdown
 
 V1 without browser editor:
-- [ ] JPG to PDF
-- [ ] PNG to PDF
+- [x] JPG to PDF
+- [x] PNG to PDF
 - [ ] HEIC to JPG
 - [ ] HEIC to PNG
-- [ ] PDF to JPG
-- [ ] PDF to PNG
+- [x] PDF to JPG
+- [x] PDF to PNG
 - [ ] Markdown to PDF
 
 V2 premium/advanced:
@@ -170,17 +170,17 @@ Notes:
 Purpose: handle lightweight non-Office conversions.
 
 Features:
-- [ ] JPG to PDF
-- [ ] PNG to PDF
+- [x] JPG to PDF
+- [x] PNG to PDF
 - [ ] HEIC to JPG
 - [ ] HEIC to PNG
-- [ ] PDF to JPG
-- [ ] PDF to PNG
+- [x] PDF to JPG
+- [x] PDF to PNG
 - [ ] Markdown to PDF
 
 Technologies:
-- [ ] Sharp for image processing
-- [ ] PDF renderer for PDF to image
+- [x] Sharp for image processing
+- [x] PDF renderer for PDF to image
 - [ ] Markdown to HTML to PDF pipeline
 
 Notes:
@@ -217,6 +217,7 @@ Completed:
 - [x] Shared landing page behavior is in place.
 - [x] Tool URLs reuse the landing page hero and uploader.
 - [x] Tool catalogue is data-driven.
+- [x] Full bottom catalogue appears consistently on the home page and every tool page.
 - [x] Project folders are organized around app, components, content, lib, processors, and docs.
 - [x] Upload/job/status/download pipeline exists.
 - [x] Processor registry is connected to job execution.
@@ -312,21 +313,21 @@ Tools:
 - [x] Compress PDF
 - [x] Merge PDF
 - [x] Split PDF
-- [ ] JPG to PDF
-- [ ] PDF to JPG
+- [x] JPG to PDF
+- [x] PDF to JPG
 
 Engine coverage:
 - [x] Compression: Compress PDF
 - [x] PDF Core: Merge PDF
 - [x] PDF Core: Split PDF
-- [ ] Image and Markdown: JPG to PDF
-- [ ] Image and Markdown: PDF to JPG
+- [x] Image and Markdown: JPG to PDF
+- [x] Image and Markdown: PDF to JPG
 
 Definition of done:
-- [ ] all 5 tools use the same page archetype
-- [ ] all 5 tools use the same job pipeline
-- [ ] no duplicated page layouts
-- [ ] each tool has clear errors and result download
+- [x] all 5 tools use the same page archetype
+- [x] all 5 tools use the same job pipeline
+- [x] no duplicated page layouts
+- [x] each tool has clear errors and result download
 
 ---
 
@@ -340,10 +341,10 @@ Tools:
 - [x] Compress PDF, first version
 - [ ] Compress PDF, production version
 - [x] Compress Image, first version
-- [ ] JPG to PDF
-- [ ] PNG to PDF
-- [ ] PDF to JPG
-- [ ] PDF to PNG
+- [x] JPG to PDF
+- [x] PNG to PDF
+- [x] PDF to JPG
+- [x] PDF to PNG
 - [ ] Rotate PDF
 - [ ] Delete PDF Pages
 - [ ] Reorder PDF Pages
@@ -477,4 +478,6 @@ Definition of done:
 - [x] Start the next tool from Phase 3 (Fusionner PDF).
 - [x] Finish Merge PDF first version.
 - [x] Finish Split PDF first rule-based version.
-- [ ] Start JPG to PDF from Engine D.
+- [x] Finish Image to PDF first version.
+- [x] Finish PDF to image first version.
+- [x] Expose all planned catalogue items consistently at the bottom of every page.

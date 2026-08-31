@@ -104,4 +104,26 @@ describe("validateUploadInit", () => {
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.maxSize).toBe(25 * MB);
   });
+
+  it("accepts image_to_pdf with a 15 MB limit", () => {
+    const result = validateUploadInit({
+      tool: "image_to_pdf",
+      fileName: "a.png",
+      fileSize: MB,
+      mimeType: "image/png"
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.maxSize).toBe(15 * MB);
+  });
+
+  it("accepts pdf_to_image with a 25 MB limit", () => {
+    const result = validateUploadInit({
+      tool: "pdf_to_image",
+      fileName: "a.pdf",
+      fileSize: MB,
+      mimeType: "application/pdf"
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.maxSize).toBe(25 * MB);
+  });
 });

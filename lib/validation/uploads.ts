@@ -9,7 +9,9 @@ const maxSizeByTool: Partial<Record<ToolAction, number>> = {
   auto: defaultMaxSize,
   compress_pdf: defaultMaxSize,
   compress_image: 15 * 1024 * 1024,
+  image_to_pdf: 15 * 1024 * 1024,
   merge_pdf: 50 * 1024 * 1024,
+  pdf_to_image: defaultMaxSize,
   split_pdf: defaultMaxSize
 };
 
@@ -20,8 +22,36 @@ const supportedImageMimeTypes = new Set([
   "image/heif"
 ]);
 
-const pdfTools: ToolAction[] = ["compress_pdf", "merge_pdf", "split_pdf"];
-const imageTools: ToolAction[] = ["compress_image", "image_to_pdf"];
+const pdfTools: ToolAction[] = [
+  "compress_pdf",
+  "merge_pdf",
+  "split_pdf",
+  "pdf_to_word",
+  "pdf_to_excel",
+  "pdf_to_powerpoint",
+  "pdf_to_image",
+  "reorder_pdf",
+  "delete_pdf_pages",
+  "extract_pdf_pages",
+  "rotate_pdf",
+  "insert_pdf_pages",
+  "watermark_pdf",
+  "number_pdf_pages",
+  "add_text_pdf",
+  "fill_pdf",
+  "sign_pdf",
+  "protect_pdf",
+  "unlock_pdf",
+  "ocr_pdf",
+  "pdf_translator"
+];
+const imageTools: ToolAction[] = [
+  "compress_image",
+  "image_to_pdf",
+  "heic_to_jpg",
+  "heic_to_png",
+  "image_to_text"
+];
 
 function hasExtension(fileName: string, extensions: string[]) {
   const normalizedName = fileName.toLowerCase();

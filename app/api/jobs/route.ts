@@ -37,6 +37,21 @@ export async function POST(request: Request) {
 
   const options: JobOptions = typeof body.options === "object" && body.options !== null ? body.options : {};
 
+  if (body.tool === "image_to_pdf" && body.fileIds.length > 20) {
+    return jsonError("Image to PDF is limited to 20 images in this version", 400);
+  }
+
+  if (body.tool === "pdf_to_image") {
+    if (body.fileIds.length !== 1) {
+      return jsonError("PDF to image requires exactly one PDF", 400);
+    }
+
+    const format = options.pdfToImageFormat ?? "jpg";
+    if (format !== "jpg" && format !== "png") {
+      return jsonError("Unsupported image format", 400);
+    }
+  }
+
   if (body.tool === "split_pdf") {
     if (body.fileIds.length !== 1) {
       return jsonError("Split requires exactly one PDF", 400);

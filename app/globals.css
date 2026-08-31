@@ -987,8 +987,8 @@ h2 {
 
 .catalog {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 36px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 34px;
 }
 
 .catalog h3 {

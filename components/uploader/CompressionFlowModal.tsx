@@ -3,6 +3,7 @@
 import {useEffect, useMemo, useState} from "react";
 import type {ToolAction} from "@/content/tools/actions";
 import {messageFromCode, messageFromResponse, type ErrorLabels} from "./clientError";
+import {formatSize, uploadFileWithProgress as uploadFile} from "./upload";
 
 type CompressionLevel = "best_size" | "best_quality";
 
@@ -68,47 +69,6 @@ type JobResponse = {
   error?: string;
   errorCode?: string;
 };
-
-function formatSize(bytes: number) {
-  if (!bytes) return "0 MB";
-  const mb = bytes / 1024 / 1024;
-  return `${mb < 1 ? mb.toFixed(2) : mb.toFixed(1)} MB`;
-}
-
-function uploadFile(uploadUrl: string, file: File, labels: ErrorLabels, onProgress: (progress: number) => void) {
-  return new Promise<void>((resolve, reject) => {
-    const request = new XMLHttpRequest();
-
-    request.upload.onprogress = (event) => {
-      if (!event.lengthComputable) return;
-      onProgress(Math.max(1, Math.round((event.loaded / event.total) * 100)));
-    };
-
-    request.onload = () => {
-      if (request.status >= 200 && request.status < 300) {
-        onProgress(100);
-        resolve();
-        return;
-      }
-
-      let code = "";
-      let serverMessage = "";
-      try {
-        const body = JSON.parse(request.responseText);
-        code = typeof body.code === "string" ? body.code : "";
-        serverMessage = typeof body.error === "string" ? body.error : "";
-      } catch {
-        // Ignore non-JSON error bodies.
-      }
-
-      reject(new Error((messageFromCode(code, labels) ?? serverMessage) || labels.error));
-    };
-
-    request.onerror = () => reject(new Error(labels.error));
-    request.open("PUT", uploadUrl);
-    request.send(file);
-  });
-}
 
 export function CompressionFlowModal({file, tool, labels, onClose}: CompressionFlowModalProps) {
   const [flowState, setFlowState] = useState<FlowState>("uploading");
