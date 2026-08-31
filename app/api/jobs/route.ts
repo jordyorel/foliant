@@ -5,6 +5,7 @@ import type {ToolAction} from "@/content/tools/actions";
 import {ErrorCode} from "@/lib/validation/errors";
 
 const splitModes = new Set(["every_page", "interval", "range"]);
+const rotateDegrees = new Set([90, 180, 270]);
 
 function jsonError(error: string, status: number) {
   return NextResponse.json(
@@ -49,6 +50,32 @@ export async function POST(request: Request) {
     const format = options.pdfToImageFormat ?? "jpg";
     if (format !== "jpg" && format !== "png") {
       return jsonError("Unsupported image format", 400);
+    }
+  }
+
+  if (body.tool === "rotate_pdf") {
+    if (body.fileIds.length !== 1) {
+      return jsonError("Rotate PDF requires exactly one PDF", 400);
+    }
+
+    if (
+      typeof options.rotateDegrees !== "number" ||
+      !rotateDegrees.has(options.rotateDegrees)
+    ) {
+      return jsonError("Unsupported rotation angle", 400);
+    }
+  }
+
+  if (body.tool === "extract_pdf_pages" || body.tool === "delete_pdf_pages") {
+    if (body.fileIds.length !== 1) {
+      return jsonError("This tool requires exactly one PDF", 400);
+    }
+
+    if (
+      typeof options.pageRange !== "string" ||
+      options.pageRange.trim().length === 0
+    ) {
+      return jsonError("Invalid page range", 400);
     }
   }
 

@@ -6,6 +6,7 @@ import type {PdfCompressionLevel} from "@/processors/compression/pdf";
 import type {ImageCompressionLevel} from "@/processors/compression/image";
 import type {SplitMode} from "@/processors/pdf/split";
 import type {PdfToImageFormat} from "@/processors/pdf/to-image";
+import type {RotateDegrees} from "@/processors/pdf/rotate";
 import {AppError, ErrorCode, isAppError} from "@/lib/validation/errors";
 
 export type JobStatus = "queued" | "processing" | "completed" | "failed";
@@ -43,6 +44,7 @@ export type JobOptions = {
   pageRange?: string;
   pdfToImageFormat?: PdfToImageFormat;
   pdfToImageDpi?: number;
+  rotateDegrees?: RotateDegrees;
 };
 
 function resolvePdfCompressionLevel(level?: JobOptions["compressionLevel"]): PdfCompressionLevel {
@@ -89,12 +91,18 @@ function stepFor(tool: ToolAction) {
       return "Compression de l'image";
     case "compress_pdf":
       return "Compression du PDF";
+    case "delete_pdf_pages":
+      return "Suppression des pages";
+    case "extract_pdf_pages":
+      return "Extraction des pages";
     case "image_to_pdf":
       return "Création du PDF";
     case "merge_pdf":
       return "Fusion des PDF";
     case "pdf_to_image":
       return "Conversion en images";
+    case "rotate_pdf":
+      return "Rotation du PDF";
     case "split_pdf":
       return "Division du PDF";
     default:
@@ -109,12 +117,18 @@ function outputFileNameFor(job: JobRecord, firstFile: StoredFile, extension: str
     case "compress_image":
     case "compress_pdf":
       return `${baseName}-${alreadyOptimized ? "optimized" : "compressed"}${extension}`;
+    case "delete_pdf_pages":
+      return `${baseName}-pages-removed${extension}`;
+    case "extract_pdf_pages":
+      return `${baseName}-extracted${extension}`;
     case "image_to_pdf":
       return `${job.fileIds.length > 1 ? "images" : baseName}-converted${extension}`;
     case "merge_pdf":
       return `${baseName}-merged${extension}`;
     case "pdf_to_image":
       return `${baseName}-images${extension}`;
+    case "rotate_pdf":
+      return `${baseName}-rotated${extension}`;
     case "split_pdf":
       return `${baseName}-split${extension}`;
     default:

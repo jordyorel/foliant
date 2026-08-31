@@ -1,5 +1,5 @@
 import {describe, it, expect, beforeAll, afterAll} from "vitest";
-import {mkdtemp, readFile, rm, stat} from "node:fs/promises";
+import {mkdtemp, readFile, rm, stat, writeFile} from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import {compressPdf} from "@/processors/compression/pdf";
@@ -8,7 +8,10 @@ import {mergePdfs} from "@/processors/pdf/merge";
 import {parsePageRange, splitPdf} from "@/processors/pdf/split";
 import {imageToPdf} from "@/processors/image/to-pdf";
 import {pdfToImage} from "@/processors/pdf/to-image";
-import {PDFDocument} from "pdf-lib";
+import {rotatePdf} from "@/processors/pdf/rotate";
+import {extractPdfPages} from "@/processors/pdf/extract";
+import {deletePdfPages} from "@/processors/pdf/delete";
+import {PDFDocument, degrees} from "pdf-lib";
 import JSZip from "jszip";
 import {isAppError} from "@/lib/validation/errors";
 import {fixturePath} from "./helpers";
@@ -202,6 +205,114 @@ describe("pdfToImage", () => {
   it("rejects an invalid PDF input", async () => {
     await expect(
       pdfToImage(fixturePath("invalid.pdf"), out("invalid-images.zip"))
+    ).rejects.toSatisfy((e) => isAppError(e));
+  });
+});
+
+describe("rotatePdf", () => {
+  it("rotates every page by the requested angle", async () => {
+    const source = out("rotate-source.pdf");
+    await mergePdfs([fixturePath("light.pdf"), fixturePath("light.pdf")], source);
+
+    const output = out("rotated-90.pdf");
+    await rotatePdf(source, output, 90);
+
+    const doc = await PDFDocument.load(await readFile(output));
+    expect(doc.getPageCount()).toBe(2);
+
+    for (const page of doc.getPages()) {
+      expect(page.getRotation().angle).toBe(90);
+    }
+  });
+
+  it("applies 180 and 270 rotations", async () => {
+    const source = out("rotate-angles-source.pdf");
+    await mergePdfs([fixturePath("light.pdf")], source);
+
+    const half = out("rotated-180.pdf");
+    await rotatePdf(source, half, 180);
+    const halfDoc = await PDFDocument.load(await readFile(half));
+    expect(halfDoc.getPage(0).getRotation().angle).toBe(180);
+
+    const left = out("rotated-270.pdf");
+    await rotatePdf(source, left, 270);
+    const leftDoc = await PDFDocument.load(await readFile(left));
+    expect(leftDoc.getPage(0).getRotation().angle).toBe(270);
+  });
+
+  it("adds the rotation on top of an existing page rotation", async () => {
+    const source = out("rotate-existing.pdf");
+    await mergePdfs([fixturePath("light.pdf")], source);
+
+    const pre = await PDFDocument.load(await readFile(source));
+    pre.getPage(0).setRotation(degrees(90));
+    await writeFile(source, await pre.save());
+
+    const output = out("rotated-existing.pdf");
+    await rotatePdf(source, output, 180);
+
+    const doc = await PDFDocument.load(await readFile(output));
+    expect(doc.getPage(0).getRotation().angle).toBe(270);
+  });
+
+  it("rejects an invalid PDF input", async () => {
+    await expect(
+      rotatePdf(fixturePath("invalid.pdf"), out("rotated-invalid.pdf"), 90)
+    ).rejects.toSatisfy((e) => isAppError(e));
+  });
+});
+
+describe("extractPdfPages", () => {
+  it("extracts the requested pages into a new PDF", async () => {
+    const source = out("extract-source.pdf");
+    await mergePdfs([fixturePath("light.pdf"), fixturePath("heavy.pdf")], source);
+
+    const output = out("extracted.pdf");
+    await extractPdfPages(source, output, "2");
+
+    const doc = await PDFDocument.load(await readFile(output));
+    expect(doc.getPageCount()).toBe(1);
+  });
+
+  it("preserves the typed page order when extracting", async () => {
+    const source = out("extract-order-source.pdf");
+    await mergePdfs([fixturePath("light.pdf"), fixturePath("heavy.pdf")], source);
+
+    const output = out("extracted-order.pdf");
+    await extractPdfPages(source, output, "2,1");
+
+    const doc = await PDFDocument.load(await readFile(output));
+    expect(doc.getPageCount()).toBe(2);
+  });
+
+  it("rejects a page range outside the document", async () => {
+    const source = out("extract-invalid-range.pdf");
+    await mergePdfs([fixturePath("light.pdf")], source);
+
+    await expect(
+      extractPdfPages(source, out("extracted-oob.pdf"), "2")
+    ).rejects.toSatisfy((e) => isAppError(e));
+  });
+});
+
+describe("deletePdfPages", () => {
+  it("removes the requested pages and keeps the rest", async () => {
+    const source = out("delete-source.pdf");
+    await mergePdfs([fixturePath("light.pdf"), fixturePath("heavy.pdf")], source);
+
+    const output = out("deleted.pdf");
+    await deletePdfPages(source, output, "1");
+
+    const doc = await PDFDocument.load(await readFile(output));
+    expect(doc.getPageCount()).toBe(1);
+  });
+
+  it("rejects deleting every page", async () => {
+    const source = out("delete-all-source.pdf");
+    await mergePdfs([fixturePath("light.pdf"), fixturePath("heavy.pdf")], source);
+
+    await expect(
+      deletePdfPages(source, out("deleted-all.pdf"), "1-2")
     ).rejects.toSatisfy((e) => isAppError(e));
   });
 });

@@ -7,6 +7,8 @@ import {MergeUploader} from "@/components/uploader/MergeUploader";
 import {SplitUploader} from "@/components/uploader/SplitUploader";
 import {ImageToPdfUploader} from "@/components/uploader/ImageToPdfUploader";
 import {PdfToImageUploader} from "@/components/uploader/PdfToImageUploader";
+import {RotateUploader} from "@/components/uploader/RotateUploader";
+import {PageRangeUploader} from "@/components/uploader/PageRangeUploader";
 import {tools} from "@/content/tools";
 import {getToolAction} from "@/content/tools/actions";
 
@@ -249,6 +251,109 @@ export function LandingPage({locale, activeTool}: LandingPageProps) {
                 loginText: t("upload.compression.loginText"),
                 login: t("upload.compression.login"),
                 another: t("upload.pdfToImage.another"),
+                error: t("upload.error"),
+                errorTooLarge: t("upload.errorTooLarge"),
+                errorUnsupportedType: t("upload.errorUnsupportedType"),
+                errorInvalidFile: t("upload.errorInvalidFile")
+              }}
+            />
+          ) : toolAction === "rotate_pdf" ? (
+            <RotateUploader
+              tool={toolAction}
+              accept={accept}
+              note={uploadNote}
+              labels={{
+                add: t("upload.rotate.add"),
+                close: t("upload.close"),
+                title: t("upload.rotate.title"),
+                uploading: t("upload.rotate.uploading"),
+                rotating: t("upload.rotate.rotating"),
+                done: t("upload.rotate.done"),
+                successSubtitle: t("upload.rotate.successSubtitle"),
+                fileName: t("upload.compression.fileName"),
+                currentSize: t("upload.compression.currentSize"),
+                selectAngle: t("upload.rotate.selectAngle"),
+                right: t("upload.rotate.right"),
+                rightText: t("upload.rotate.rightText"),
+                half: t("upload.rotate.half"),
+                halfText: t("upload.rotate.halfText"),
+                left: t("upload.rotate.left"),
+                leftText: t("upload.rotate.leftText"),
+                rotate: t("upload.rotate.rotate"),
+                download: t("upload.download"),
+                emailTitle: t("upload.compression.emailTitle"),
+                emailPlaceholder: t("upload.compression.emailPlaceholder"),
+                terms: t("upload.compression.terms"),
+                continue: t("upload.compression.continue"),
+                loginText: t("upload.compression.loginText"),
+                login: t("upload.compression.login"),
+                another: t("upload.rotate.another"),
+                error: t("upload.error"),
+                errorTooLarge: t("upload.errorTooLarge"),
+                errorUnsupportedType: t("upload.errorUnsupportedType"),
+                errorInvalidFile: t("upload.errorInvalidFile")
+              }}
+            />
+          ) : toolAction === "extract_pdf_pages" ? (
+            <PageRangeUploader
+              tool={toolAction}
+              accept={accept}
+              note={uploadNote}
+              labels={{
+                add: t("upload.extract.add"),
+                close: t("upload.close"),
+                title: t("upload.extract.title"),
+                uploading: t("upload.extract.uploading"),
+                processing: t("upload.extract.processing"),
+                done: t("upload.extract.done"),
+                successSubtitle: t("upload.extract.successSubtitle"),
+                fileName: t("upload.compression.fileName"),
+                currentSize: t("upload.compression.currentSize"),
+                selectLabel: t("upload.extract.selectLabel"),
+                rangeLabel: t("upload.extract.rangeLabel"),
+                rangePlaceholder: t("upload.extract.rangePlaceholder"),
+                submit: t("upload.extract.submit"),
+                download: t("upload.download"),
+                emailTitle: t("upload.compression.emailTitle"),
+                emailPlaceholder: t("upload.compression.emailPlaceholder"),
+                terms: t("upload.compression.terms"),
+                continue: t("upload.compression.continue"),
+                loginText: t("upload.compression.loginText"),
+                login: t("upload.compression.login"),
+                another: t("upload.extract.another"),
+                error: t("upload.error"),
+                errorTooLarge: t("upload.errorTooLarge"),
+                errorUnsupportedType: t("upload.errorUnsupportedType"),
+                errorInvalidFile: t("upload.errorInvalidFile")
+              }}
+            />
+          ) : toolAction === "delete_pdf_pages" ? (
+            <PageRangeUploader
+              tool={toolAction}
+              accept={accept}
+              note={uploadNote}
+              labels={{
+                add: t("upload.delete.add"),
+                close: t("upload.close"),
+                title: t("upload.delete.title"),
+                uploading: t("upload.delete.uploading"),
+                processing: t("upload.delete.processing"),
+                done: t("upload.delete.done"),
+                successSubtitle: t("upload.delete.successSubtitle"),
+                fileName: t("upload.compression.fileName"),
+                currentSize: t("upload.compression.currentSize"),
+                selectLabel: t("upload.delete.selectLabel"),
+                rangeLabel: t("upload.delete.rangeLabel"),
+                rangePlaceholder: t("upload.delete.rangePlaceholder"),
+                submit: t("upload.delete.submit"),
+                download: t("upload.download"),
+                emailTitle: t("upload.compression.emailTitle"),
+                emailPlaceholder: t("upload.compression.emailPlaceholder"),
+                terms: t("upload.compression.terms"),
+                continue: t("upload.compression.continue"),
+                loginText: t("upload.compression.loginText"),
+                login: t("upload.compression.login"),
+                another: t("upload.delete.another"),
                 error: t("upload.error"),
                 errorTooLarge: t("upload.errorTooLarge"),
                 errorUnsupportedType: t("upload.errorUnsupportedType"),

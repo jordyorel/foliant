@@ -25,7 +25,10 @@ describe("compression job pipeline", () => {
     await cleanupExpiredFiles(Date.now() + 1_000_000_000);
   });
 
-  async function uploadPdf(name: string, tool: "compress_pdf" | "merge_pdf" | "split_pdf" | "pdf_to_image" = "compress_pdf") {
+  async function uploadPdf(
+    name: string,
+    tool: "compress_pdf" | "merge_pdf" | "split_pdf" | "pdf_to_image" | "rotate_pdf" | "extract_pdf_pages" | "delete_pdf_pages" = "compress_pdf"
+  ) {
     const bytes = fixtureBytes(name);
     const file = createTemporaryFile({
       fileName: name,
@@ -35,6 +38,24 @@ describe("compression job pipeline", () => {
       maxSize: tool === "merge_pdf" ? 50 * MB : 25 * MB
     });
     await saveTemporaryFile(file.id, toArrayBuffer(bytes));
+    return file;
+  }
+
+  async function uploadTwoPagePdf() {
+    const source = await PDFDocument.load(fixtureBytes("light.pdf"));
+    const output = await PDFDocument.create();
+    const pages = await output.copyPages(source, [0, 0]);
+    pages.forEach((page) => output.addPage(page));
+    const bytes = await output.save();
+
+    const file = createTemporaryFile({
+      fileName: "two.pdf",
+      fileSize: bytes.length,
+      mimeType: "application/pdf",
+      tool: "delete_pdf_pages",
+      maxSize: 25 * MB
+    });
+    await saveTemporaryFile(file.id, toArrayBuffer(Buffer.from(bytes)));
     return file;
   }
 
@@ -177,5 +198,65 @@ describe("compression job pipeline", () => {
 
     const zip = await JSZip.loadAsync(result!.bytes);
     expect(zip.file("page-001.jpg")).toBeTruthy();
+  });
+
+  it("runs rotate_pdf end to end and produces a rotated PDF", async () => {
+    const file = await uploadPdf("light.pdf", "rotate_pdf");
+
+    const job = createJob({
+      tool: "rotate_pdf",
+      fileIds: [file.id],
+      options: {rotateDegrees: 90}
+    });
+    const finished = await pollJob(job.id);
+
+    expect(finished.status).toBe("completed");
+    expect(finished.result).toBeUndefined();
+
+    const result = await readResultFile(job.id);
+    expect(result?.result.mimeType).toBe("application/pdf");
+
+    const doc = await PDFDocument.load(result!.bytes);
+    expect(doc.getPage(0).getRotation().angle).toBe(90);
+  });
+
+  it("runs extract_pdf_pages end to end and produces a PDF", async () => {
+    const file = await uploadPdf("light.pdf", "extract_pdf_pages");
+
+    const job = createJob({
+      tool: "extract_pdf_pages",
+      fileIds: [file.id],
+      options: {pageRange: "1"}
+    });
+    const finished = await pollJob(job.id);
+
+    expect(finished.status).toBe("completed");
+    expect(finished.result).toBeUndefined();
+
+    const result = await readResultFile(job.id);
+    expect(result?.result.mimeType).toBe("application/pdf");
+
+    const doc = await PDFDocument.load(result!.bytes);
+    expect(doc.getPageCount()).toBe(1);
+  });
+
+  it("runs delete_pdf_pages end to end and produces a PDF", async () => {
+    const file = await uploadTwoPagePdf();
+
+    const job = createJob({
+      tool: "delete_pdf_pages",
+      fileIds: [file.id],
+      options: {pageRange: "1"}
+    });
+    const finished = await pollJob(job.id);
+
+    expect(finished.status).toBe("completed");
+    expect(finished.result).toBeUndefined();
+
+    const result = await readResultFile(job.id);
+    expect(result?.result.mimeType).toBe("application/pdf");
+
+    const doc = await PDFDocument.load(result!.bytes);
+    expect(doc.getPageCount()).toBe(1);
   });
 });

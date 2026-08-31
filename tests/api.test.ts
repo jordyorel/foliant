@@ -20,6 +20,14 @@ function jsonRequest(body: unknown) {
   });
 }
 
+async function twoPagePdf() {
+  const source = await PDFDocument.load(fixtureBytes("light.pdf"));
+  const output = await PDFDocument.create();
+  const pages = await output.copyPages(source, [0, 0]);
+  pages.forEach((page) => output.addPage(page));
+  return new Uint8Array(await output.save());
+}
+
 describe("upload → job → download API flow", () => {
   afterAll(async () => {
     await cleanupExpiredFiles(Date.now() + 1_000_000_000);
@@ -294,6 +302,142 @@ describe("upload → job → download API flow", () => {
 
     const res = await createJobRoute(
       jsonRequest({tool: "pdf_to_image", fileIds: [init.fileId], options: {pdfToImageFormat: "gif"}})
+    );
+    expect(res.status).toBe(400);
+
+    const body = await res.json();
+    expect(body.code).toBe(ErrorCode.invalidRequest);
+  });
+
+  it("rotates a PDF end to end over the HTTP handlers", async () => {
+    const bytes = fixtureBytes("light.pdf");
+
+    const initRes = await initUpload(
+      jsonRequest({tool: "rotate_pdf", fileName: "light.pdf", fileSize: bytes.length, mimeType: "application/pdf"})
+    );
+    expect(initRes.status).toBe(200);
+    const init = await initRes.json();
+
+    const putRes = await putUpload(
+      new Request(`http://localhost${init.uploadUrl}`, {method: "PUT", body: new Uint8Array(bytes)}),
+      {params: Promise.resolve({fileId: init.fileId})}
+    );
+    expect(putRes.status).toBe(200);
+
+    const jobRes = await createJobRoute(
+      jsonRequest({tool: "rotate_pdf", fileIds: [init.fileId], options: {rotateDegrees: 90}})
+    );
+    expect(jobRes.status).toBe(200);
+    const created = await jobRes.json();
+
+    const finished = await pollJob(created.id);
+    expect(finished.status).toBe("completed");
+
+    const downloadRes = await downloadRoute(
+      new Request(`http://localhost/api/jobs/${created.id}/download`),
+      {params: Promise.resolve({jobId: created.id})}
+    );
+    expect(downloadRes.status).toBe(200);
+    expect(downloadRes.headers.get("content-type")).toBe("application/pdf");
+
+    const resultBytes = new Uint8Array(await downloadRes.arrayBuffer());
+    const doc = await PDFDocument.load(Buffer.from(resultBytes));
+    expect(doc.getPage(0).getRotation().angle).toBe(90);
+  });
+
+  it("rejects a rotate job with an invalid angle", async () => {
+    const initRes = await initUpload(
+      jsonRequest({tool: "rotate_pdf", fileName: "light.pdf", fileSize: 1000, mimeType: "application/pdf"})
+    );
+    const init = await initRes.json();
+
+    const res = await createJobRoute(
+      jsonRequest({tool: "rotate_pdf", fileIds: [init.fileId], options: {rotateDegrees: 45}})
+    );
+    expect(res.status).toBe(400);
+
+    const body = await res.json();
+    expect(body.code).toBe(ErrorCode.invalidRequest);
+  });
+
+  it("extracts pages end to end over the HTTP handlers", async () => {
+    const bytes = await twoPagePdf();
+
+    const initRes = await initUpload(
+      jsonRequest({tool: "extract_pdf_pages", fileName: "two.pdf", fileSize: bytes.length, mimeType: "application/pdf"})
+    );
+    expect(initRes.status).toBe(200);
+    const init = await initRes.json();
+
+    const putRes = await putUpload(
+      new Request(`http://localhost${init.uploadUrl}`, {method: "PUT", body: bytes}),
+      {params: Promise.resolve({fileId: init.fileId})}
+    );
+    expect(putRes.status).toBe(200);
+
+    const jobRes = await createJobRoute(
+      jsonRequest({tool: "extract_pdf_pages", fileIds: [init.fileId], options: {pageRange: "2"}})
+    );
+    expect(jobRes.status).toBe(200);
+    const created = await jobRes.json();
+
+    const finished = await pollJob(created.id);
+    expect(finished.status).toBe("completed");
+
+    const downloadRes = await downloadRoute(
+      new Request(`http://localhost/api/jobs/${created.id}/download`),
+      {params: Promise.resolve({jobId: created.id})}
+    );
+    expect(downloadRes.status).toBe(200);
+    expect(downloadRes.headers.get("content-type")).toBe("application/pdf");
+
+    const doc = await PDFDocument.load(Buffer.from(new Uint8Array(await downloadRes.arrayBuffer())));
+    expect(doc.getPageCount()).toBe(1);
+  });
+
+  it("deletes pages end to end over the HTTP handlers", async () => {
+    const bytes = await twoPagePdf();
+
+    const initRes = await initUpload(
+      jsonRequest({tool: "delete_pdf_pages", fileName: "two.pdf", fileSize: bytes.length, mimeType: "application/pdf"})
+    );
+    expect(initRes.status).toBe(200);
+    const init = await initRes.json();
+
+    const putRes = await putUpload(
+      new Request(`http://localhost${init.uploadUrl}`, {method: "PUT", body: bytes}),
+      {params: Promise.resolve({fileId: init.fileId})}
+    );
+    expect(putRes.status).toBe(200);
+
+    const jobRes = await createJobRoute(
+      jsonRequest({tool: "delete_pdf_pages", fileIds: [init.fileId], options: {pageRange: "1"}})
+    );
+    expect(jobRes.status).toBe(200);
+    const created = await jobRes.json();
+
+    const finished = await pollJob(created.id);
+    expect(finished.status).toBe("completed");
+
+    const downloadRes = await downloadRoute(
+      new Request(`http://localhost/api/jobs/${created.id}/download`),
+      {params: Promise.resolve({jobId: created.id})}
+    );
+    expect(downloadRes.status).toBe(200);
+    expect(downloadRes.headers.get("content-type")).toBe("application/pdf");
+
+    const doc = await PDFDocument.load(Buffer.from(new Uint8Array(await downloadRes.arrayBuffer())));
+    expect(doc.getPageCount()).toBe(1);
+  });
+
+  it("rejects an extract job with an empty page range", async () => {
+    const initRes = await initUpload(
+      jsonRequest({tool: "extract_pdf_pages", fileName: "light.pdf", fileSize: 1000, mimeType: "application/pdf"})
+    );
+    const init = await initRes.json();
+
+    const res = await createJobRoute(
+      jsonRequest({tool: "extract_pdf_pages", fileIds: [init.fileId], options: {pageRange: "  "}})
     );
     expect(res.status).toBe(400);
 

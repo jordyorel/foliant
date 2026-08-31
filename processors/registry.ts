@@ -1,9 +1,12 @@
 import {compressPdf} from "./compression/pdf";
 import {compressImage} from "./compression/image";
 import {imageToPdf} from "./image/to-pdf";
+import {deletePdfPages} from "./pdf/delete";
+import {extractPdfPages} from "./pdf/extract";
 import {mergePdfs} from "./pdf/merge";
 import {splitPdf} from "./pdf/split";
 import {pdfToImage} from "./pdf/to-image";
+import {rotatePdf} from "./pdf/rotate";
 import type {JobOptions} from "@/lib/jobs";
 
 export type ProcessorResult = {
@@ -59,6 +62,21 @@ export const processors: Record<string, Processor> = {
     }),
     extension: ".zip",
     mimeType: "application/zip"
+  }),
+  rotate_pdf: async (inputPaths, outputPath, context) => ({
+    path: await rotatePdf(inputPaths[0], outputPath, context.options.rotateDegrees),
+    extension: ".pdf",
+    mimeType: "application/pdf"
+  }),
+  extract_pdf_pages: async (inputPaths, outputPath, context) => ({
+    path: await extractPdfPages(inputPaths[0], outputPath, context.options.pageRange ?? ""),
+    extension: ".pdf",
+    mimeType: "application/pdf"
+  }),
+  delete_pdf_pages: async (inputPaths, outputPath, context) => ({
+    path: await deletePdfPages(inputPaths[0], outputPath, context.options.pageRange ?? ""),
+    extension: ".pdf",
+    mimeType: "application/pdf"
   })
 };
 

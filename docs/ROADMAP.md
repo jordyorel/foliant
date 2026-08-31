@@ -18,9 +18,9 @@ Core principle:
 V1 without browser editor:
 - [x] merge PDF with file order list
 - [x] split PDF by rule: every page, every N pages, or typed range
-- [ ] extract PDF pages by typed range
-- [ ] delete PDF pages by typed range
-- [ ] rotate the whole PDF
+- [x] extract PDF pages by typed range
+- [x] delete PDF pages by typed range
+- [x] rotate the whole PDF
 - [ ] add page numbers with preset positions
 - [ ] add text watermark with preset positions
 - [ ] protect PDF with password
@@ -106,9 +106,9 @@ Purpose: manipulate PDF structure and lightweight PDF edits.
 Features:
 - [x] merge PDF
 - [x] split PDF, first rule-based version
-- [ ] rotate PDF
-- [ ] delete PDF pages
-- [ ] extract PDF pages
+- [x] rotate PDF
+- [x] delete PDF pages
+- [x] extract PDF pages
 - [ ] reorder PDF pages
 - [ ] insert PDF pages
 - [ ] add page numbers
@@ -345,8 +345,8 @@ Tools:
 - [x] PNG to PDF
 - [x] PDF to JPG
 - [x] PDF to PNG
-- [ ] Rotate PDF
-- [ ] Delete PDF Pages
+- [x] Rotate PDF
+- [x] Delete PDF Pages
 - [ ] Reorder PDF Pages
 - [ ] Watermark PDF
 - [ ] Protect PDF
