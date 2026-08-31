@@ -1,0 +1,206 @@
+{
+  "nav": {
+    "label": "Navigation principale",
+    "tools": "Outils",
+    "flow": "Parcours",
+    "faq": "FAQ",
+    "language": "Choix de langue",
+    "start": "Commencer"
+  },
+  "home": {
+    "eyebrow": "Traitement de documents 100% en ligne",
+    "title": "Traitez vos documents en ligne",
+    "subtitle": "Convertir, compresser, fusionner ou signer.",
+    "toolSubtitle": "Déposez votre fichier et récupérez le résultat directement en ligne.",
+    "uploadTitle": "Déposez votre document ici",
+    "toolUploadTitle": "Déposez votre fichier ici",
+    "uploadButton": "Choisir un fichier",
+    "uploadNote": "PDF, Word, Excel, PowerPoint, images et Markdown. Gratuit jusqu'à 3 fichiers par jour.",
+    "toolUploadNote": "Traitement sécurisé. Les fichiers sont supprimés automatiquement.",
+    "upload": {
+      "selected": "Fichier sélectionné",
+      "start": "Lancer le traitement",
+      "uploading": "Upload du fichier",
+      "queued": "En file d'attente",
+      "processing": "Traitement en cours",
+      "completed": "Document prêt",
+      "download": "Télécharger le résultat",
+      "error": "Impossible de traiter ce fichier pour le moment.",
+      "errorTooLarge": "Ce fichier est trop volumineux.",
+      "errorUnsupportedType": "Ce type de fichier n'est pas pris en charge.",
+      "errorInvalidFile": "Ce fichier est invalide ou corrompu.",
+      "original": "Original",
+      "final": "Final",
+      "saved": "Gain",
+      "alreadyOptimizedBadge": "Déjà optimisé",
+      "close": "Fermer",
+      "merge": {
+        "add": "Ajouter des PDF",
+        "order": "Ordre des fichiers",
+        "remove": "Retirer",
+        "moveUp": "Monter",
+        "moveDown": "Descendre",
+        "empty": "Ajoutez au moins deux PDF pour fusionner.",
+        "merge": "Fusionner",
+        "uploading": "Envoi des fichiers…",
+        "merging": "Fusion de vos documents…",
+        "done": "Votre PDF fusionné est prêt",
+        "successSubtitle": "Téléchargez le document maintenant ou ajoutez votre email pour garder une trace.",
+        "filesCount": "Fichiers :",
+        "totalSize": "Taille totale :",
+        "onePdf": "1 document PDF",
+        "another": "Fusionner d'autres PDF"
+      },
+      "split": {
+        "title": "Diviser votre PDF",
+        "uploading": "Upload de votre PDF…",
+        "splitting": "Division de votre PDF…",
+        "done": "Votre ZIP est prêt",
+        "successSubtitle": "Téléchargez les fichiers PDF séparés maintenant ou ajoutez votre email pour garder une trace.",
+        "selectMethod": "Choisissez comment diviser le document :",
+        "everyPage": "Chaque page",
+        "everyPageText": "Créer un PDF séparé pour chaque page.",
+        "interval": "Toutes les X pages",
+        "intervalText": "Créer un nouveau PDF après un nombre fixe de pages.",
+        "range": "Extraire une plage",
+        "rangeText": "Créer un PDF avec une plage comme 1-3 ou 2,4,6.",
+        "intervalLabel": "Nombre de pages par fichier",
+        "rangeLabel": "Pages à extraire",
+        "rangePlaceholder": "Ex. 1-3,5",
+        "split": "Diviser",
+        "another": "Diviser un autre PDF"
+      },
+      "compression": {
+        "uploadingTitle": "Upload de votre fichier",
+        "preparing": "Compresser votre fichier",
+        "fileName": "Nom du fichier :",
+        "currentSize": "Taille actuelle :",
+        "selectLevel": "Choisissez le niveau de compression :",
+        "bestSize": "Taille minimale",
+        "bestSizeText": "Idéal pour partager, qualité réduite",
+        "bestQuality": "Meilleure qualité",
+        "bestQualityText": "Idéal pour imprimer, qualité élevée",
+        "compress": "Compresser",
+        "compressingTitle": "Compression de votre document...",
+        "completedTitle": "Votre fichier est prêt",
+        "completedText": "Téléchargez le fichier maintenant ou ajoutez votre email pour garder une trace.",
+        "alreadyOptimizedText": "Ce fichier est déjà optimisé. Nous avons gardé la meilleure version disponible.",
+        "emailTitle": "Recevoir aussi le fichier par email",
+        "emailPlaceholder": "Adresse email",
+        "terms": "J'accepte les conditions et la politique de confidentialité.",
+        "continue": "Continuer",
+        "loginText": "Vous avez un compte ?",
+        "login": "Connexion",
+        "another": "Compresser un autre fichier"
+      }
+    },
+    "statsLabel": "Indicateurs produit",
+    "statFast": "pour les tâches simples",
+    "statInstall": "à installer",
+    "statDelete": "avant suppression auto",
+    "workspaceTitle": "Un espace clair pour chaque document",
+    "workspaceText": "La page guide l'utilisateur vers une seule action principale, puis propose les outils liés quand le fichier est prêt.",
+    "stepsTitle": "Commencer en 3 étapes simples",
+    "stepsText": "Le parcours reste court : fichier, action, résultat. Les détails techniques restent en arrière-plan.",
+    "steps": {
+      "upload": {
+        "title": "Uploader le fichier",
+        "text": "Sélectionnez un PDF, un document Office, une image ou un fichier Markdown.",
+        "file": "devis-client.pdf"
+      },
+      "choose": {
+        "title": "Choisir l'action",
+        "text": "Compresser, convertir, fusionner, signer ou réorganiser les pages.",
+        "file": "Compresser PDF"
+      },
+      "download": {
+        "title": "Télécharger le résultat",
+        "text": "Récupérez le fichier final, relancez une action ou supprimez les fichiers temporaires.",
+        "file": "devis-client-light.pdf"
+      }
+    },
+    "faqTitle": "Questions fréquentes",
+    "faq": {
+      "free": {
+        "q": "Est-ce gratuit ?",
+        "a": "Oui, une limite gratuite permet de traiter quelques fichiers par jour. Les gros volumes et les fonctions avancées peuvent passer en abonnement."
+      },
+      "install": {
+        "q": "Dois-je installer un logiciel ?",
+        "a": "Non. Les outils fonctionnent directement dans le navigateur, sur ordinateur comme sur téléphone."
+      },
+      "privacy": {
+        "q": "Mes fichiers sont-ils conservés ?",
+        "a": "Les fichiers sont stockés temporairement pour le traitement, puis supprimés automatiquement après quelques heures."
+      },
+      "signature": {
+        "q": "La signature PDF a-t-elle une valeur légale ?",
+        "a": "La première version vise une signature visuelle simple. Elle ne remplace pas une signature électronique certifiée."
+      }
+    },
+    "toolsTitle": "Essayez la boîte à outils complète",
+    "toolsText": "Les fonctions les plus fréquentes restent visibles. Le reste du catalogue reste accessible sans noyer la première page.",
+    "popularTools": "Outils les plus utilisés"
+  },
+  "accordion": {
+    "convert": {
+      "title": "Convertir et éditer des PDF",
+      "description": "Convertissez vers Word, Excel, PowerPoint ou image, puis réorganisez les pages, ajoutez du texte, un filigrane ou des numéros de page.",
+      "action": "Conversion",
+      "detail": "Format préservé"
+    },
+    "compress": {
+      "title": "Compresser les fichiers lourds",
+      "description": "Réduisez la taille des PDF et des images pour les envoyer plus vite par email, WhatsApp ou formulaire administratif.",
+      "action": "Compression",
+      "detail": "Fichier allégé"
+    },
+    "merge": {
+      "title": "Fusionner plusieurs documents",
+      "description": "Assemblez plusieurs fichiers PDF dans le bon ordre, puis téléchargez un document unique prêt à partager.",
+      "action": "Fusion",
+      "detail": "Documents assemblés"
+    },
+    "sign": {
+      "title": "Signer visuellement un PDF",
+      "description": "Dessinez ou importez une signature, placez-la sur le document, puis récupérez un PDF signé visuellement.",
+      "action": "Signature",
+      "detail": "Placée page 4"
+    },
+    "preview": {
+      "compress": "Compression",
+      "pages": "Pages",
+      "pagesDetail": "2 pages réorganisées"
+    }
+  },
+  "catalog": {
+    "groups": {
+      "fromPdf": "Convertir depuis PDF",
+      "toPdf": "Convertir en PDF",
+      "compress": "Compresser",
+      "edit": "Organiser et éditer",
+      "secure": "Sécuriser et signer"
+    },
+    "tools": {
+      "pdfToWord": "PDF vers Word",
+      "pdfToExcel": "PDF vers Excel",
+      "pdfToPowerpoint": "PDF vers PowerPoint",
+      "pdfToImage": "PDF vers image",
+      "wordToPdf": "Word vers PDF",
+      "excelToPdf": "Excel vers PDF",
+      "powerpointToPdf": "PowerPoint vers PDF",
+      "imageToPdf": "Image vers PDF",
+      "compressPdf": "Compresser PDF",
+      "compressImage": "Compresser image",
+      "mergePdf": "Fusionner PDF",
+      "splitPdf": "Diviser PDF",
+      "reorderPdf": "Réorganiser PDF",
+      "deletePages": "Supprimer des pages",
+      "watermark": "Ajouter un filigrane",
+      "pageNumbers": "Numéroter les pages",
+      "protectPdf": "Protéger PDF",
+      "unlockPdf": "Déverrouiller PDF",
+      "signPdf": "Signer PDF"
+    }
+  }
+}

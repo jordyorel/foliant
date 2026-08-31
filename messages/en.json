@@ -1,0 +1,182 @@
+{
+  "nav": {
+    "label": "Main navigation",
+    "tools": "Tools",
+    "flow": "Flow",
+    "faq": "FAQ",
+    "language": "Language selection",
+    "start": "Start"
+  },
+  "home": {
+    "eyebrow": "100% online document processing",
+    "title": "Process your documents online",
+    "subtitle": "Convert, compress, merge, or sign.",
+    "toolSubtitle": "Drop your file and get the result directly online.",
+    "uploadTitle": "Drop your document here",
+    "toolUploadTitle": "Drop your file here",
+    "uploadButton": "Choose a file",
+    "uploadNote": "PDF, Word, Excel, PowerPoint, images, and Markdown. Free up to 3 files per day.",
+    "toolUploadNote": "Secure processing. Files are automatically deleted.",
+    "upload": {
+      "selected": "Selected file",
+      "start": "Start processing",
+      "uploading": "Uploading file",
+      "queued": "Queued",
+      "processing": "Processing",
+      "completed": "Document ready",
+      "download": "Download result",
+      "error": "This file cannot be processed right now.",
+      "errorTooLarge": "This file is too large.",
+      "errorUnsupportedType": "This file type is not supported.",
+      "errorInvalidFile": "This file is invalid or corrupted.",
+      "original": "Original",
+      "final": "Final",
+      "saved": "Saved",
+      "alreadyOptimizedBadge": "Already optimized",
+      "close": "Close",
+      "merge": {
+        "add": "Add PDFs",
+        "order": "File order",
+        "remove": "Remove",
+        "moveUp": "Move up",
+        "moveDown": "Move down",
+        "empty": "Add at least two PDFs to merge.",
+        "merge": "Merge",
+        "uploading": "Uploading files…",
+        "merging": "Merging your documents…",
+        "done": "Your merged PDF is ready",
+        "successSubtitle": "Download the document now or add your email to keep a trace.",
+        "filesCount": "Files:",
+        "totalSize": "Total size:",
+        "onePdf": "1 PDF document",
+        "another": "Merge other PDFs"
+      },
+      "split": {
+        "title": "Split your PDF",
+        "uploading": "Uploading your PDF...",
+        "splitting": "Splitting your PDF...",
+        "done": "Your ZIP is ready",
+        "successSubtitle": "Download the separated PDF files now or add your email to keep a trace.",
+        "selectMethod": "Choose how to split the document:",
+        "everyPage": "Every page",
+        "everyPageText": "Create one separate PDF for each page.",
+        "interval": "Every X pages",
+        "intervalText": "Create a new PDF after a fixed number of pages.",
+        "range": "Extract a range",
+        "rangeText": "Create a PDF with a range like 1-3 or 2,4,6.",
+        "intervalLabel": "Pages per file",
+        "rangeLabel": "Pages to extract",
+        "rangePlaceholder": "E.g. 1-3,5",
+        "split": "Split",
+        "another": "Split another PDF"
+      },
+      "compression": {
+        "uploadingTitle": "Uploading your file",
+        "preparing": "Compress your file",
+        "fileName": "File name:",
+        "currentSize": "Current size:",
+        "selectLevel": "Select compression level:",
+        "bestSize": "Best size",
+        "bestSizeText": "Great for sharing, lower quality",
+        "bestQuality": "Best quality",
+        "bestQualityText": "Ideal for printing, higher quality",
+        "compress": "Compress",
+        "compressingTitle": "Compressing your document...",
+        "completedTitle": "Your file is ready",
+        "completedText": "Download the file now or add your email to keep a trace.",
+        "alreadyOptimizedText": "This file is already optimized. We kept the best available version.",
+        "emailTitle": "Also receive the file by email",
+        "emailPlaceholder": "Email address",
+        "terms": "I agree to the terms and privacy policy.",
+        "continue": "Continue",
+        "loginText": "Have an account?",
+        "login": "Login",
+        "another": "Compress another file"
+      }
+    },
+    "statsLabel": "Product indicators",
+    "statFast": "for simple tasks",
+    "statInstall": "to install",
+    "statDelete": "before auto deletion",
+    "workspaceTitle": "One clear space for every document",
+    "workspaceText": "The page guides users to one main action, then suggests related tools when the file is ready.",
+    "stepsTitle": "Start in 3 simple steps",
+    "stepsText": "The flow stays short: file, action, result. Technical details stay in the background.",
+    "steps": {
+      "upload": {"title": "Upload the file", "text": "Select a PDF, Office document, image, or Markdown file.", "file": "client-quote.pdf"},
+      "choose": {"title": "Choose the action", "text": "Compress, convert, merge, sign, or reorder pages.", "file": "Compress PDF"},
+      "download": {"title": "Download the result", "text": "Get the final file, run another action, or delete temporary files.", "file": "client-quote-light.pdf"}
+    },
+    "faqTitle": "Frequently Asked Questions",
+    "faq": {
+      "free": {"q": "Is it free?", "a": "Yes, the free limit lets users process a few files per day. Higher volumes and advanced features can move to a paid plan."},
+      "install": {"q": "Do I need to install software?", "a": "No. The tools run directly in the browser on desktop and mobile."},
+      "privacy": {"q": "Are my files stored?", "a": "Files are stored temporarily for processing, then automatically deleted after a few hours."},
+      "signature": {"q": "Is PDF signing legally certified?", "a": "The first version focuses on simple visual signing. It does not replace certified electronic signatures."}
+    },
+    "toolsTitle": "Try the complete toolkit",
+    "toolsText": "The most common tools stay visible. The rest of the catalog stays accessible without overloading the page.",
+    "popularTools": "Most used tools"
+  },
+  "accordion": {
+    "convert": {
+      "title": "Convert and edit PDFs",
+      "description": "Convert to Word, Excel, PowerPoint, or image, then reorder pages, add text, a watermark, or page numbers.",
+      "action": "Conversion",
+      "detail": "Format preserved"
+    },
+    "compress": {
+      "title": "Compress large files",
+      "description": "Reduce PDF and image size so they are faster to send by email, WhatsApp, or online forms.",
+      "action": "Compression",
+      "detail": "File reduced"
+    },
+    "merge": {
+      "title": "Merge multiple documents",
+      "description": "Combine several PDF files in the right order, then download one clean document.",
+      "action": "Merge",
+      "detail": "Documents combined"
+    },
+    "sign": {
+      "title": "Visually sign a PDF",
+      "description": "Draw or import a signature, place it on the document, then download a visually signed PDF.",
+      "action": "Signature",
+      "detail": "Placed on page 4"
+    },
+    "preview": {
+      "compress": "Compression",
+      "pages": "Pages",
+      "pagesDetail": "2 pages reordered"
+    }
+  },
+  "catalog": {
+    "groups": {
+      "fromPdf": "Convert from PDF",
+      "toPdf": "Convert to PDF",
+      "compress": "Compress",
+      "edit": "Organize and edit",
+      "secure": "Secure and sign"
+    },
+    "tools": {
+      "pdfToWord": "PDF to Word",
+      "pdfToExcel": "PDF to Excel",
+      "pdfToPowerpoint": "PDF to PowerPoint",
+      "pdfToImage": "PDF to image",
+      "wordToPdf": "Word to PDF",
+      "excelToPdf": "Excel to PDF",
+      "powerpointToPdf": "PowerPoint to PDF",
+      "imageToPdf": "Image to PDF",
+      "compressPdf": "Compress PDF",
+      "compressImage": "Compress image",
+      "mergePdf": "Merge PDF",
+      "splitPdf": "Split PDF",
+      "reorderPdf": "Reorder PDF",
+      "deletePages": "Delete pages",
+      "watermark": "Add watermark",
+      "pageNumbers": "Add page numbers",
+      "protectPdf": "Protect PDF",
+      "unlockPdf": "Unlock PDF",
+      "signPdf": "Sign PDF"
+    }
+  }
+}
