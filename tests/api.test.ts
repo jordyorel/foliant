@@ -8,7 +8,7 @@ import {cleanupExpiredFiles} from "@/lib/storage/local";
 import {ErrorCode} from "@/lib/validation/errors";
 import {PDFDocument} from "pdf-lib";
 import JSZip from "jszip";
-import {fixtureBytes, pollJob} from "./helpers";
+import {fixtureBytes, isQpdfAvailable, pollJob} from "./helpers";
 
 const MB = 1024 * 1024;
 
@@ -443,5 +443,244 @@ describe("upload → job → download API flow", () => {
 
     const body = await res.json();
     expect(body.code).toBe(ErrorCode.invalidRequest);
+  });
+
+  it("numbers pages end to end over the HTTP handlers", async () => {
+    const bytes = await twoPagePdf();
+
+    const initRes = await initUpload(
+      jsonRequest({tool: "number_pdf_pages", fileName: "two.pdf", fileSize: bytes.length, mimeType: "application/pdf"})
+    );
+    expect(initRes.status).toBe(200);
+    const init = await initRes.json();
+
+    const putRes = await putUpload(
+      new Request(`http://localhost${init.uploadUrl}`, {method: "PUT", body: bytes}),
+      {params: Promise.resolve({fileId: init.fileId})}
+    );
+    expect(putRes.status).toBe(200);
+
+    const jobRes = await createJobRoute(
+      jsonRequest({tool: "number_pdf_pages", fileIds: [init.fileId], options: {pageNumberPosition: "bottom_center"}})
+    );
+    expect(jobRes.status).toBe(200);
+    const created = await jobRes.json();
+
+    const finished = await pollJob(created.id);
+    expect(finished.status).toBe("completed");
+
+    const downloadRes = await downloadRoute(
+      new Request(`http://localhost/api/jobs/${created.id}/download`),
+      {params: Promise.resolve({jobId: created.id})}
+    );
+    expect(downloadRes.status).toBe(200);
+    expect(downloadRes.headers.get("content-type")).toBe("application/pdf");
+
+    const doc = await PDFDocument.load(Buffer.from(new Uint8Array(await downloadRes.arrayBuffer())));
+    expect(doc.getPageCount()).toBe(2);
+  });
+
+  it("rejects a number_pdf_pages job with an unsupported position", async () => {
+    const initRes = await initUpload(
+      jsonRequest({tool: "number_pdf_pages", fileName: "light.pdf", fileSize: 1000, mimeType: "application/pdf"})
+    );
+    const init = await initRes.json();
+
+    const res = await createJobRoute(
+      jsonRequest({tool: "number_pdf_pages", fileIds: [init.fileId], options: {pageNumberPosition: "side"}})
+    );
+    expect(res.status).toBe(400);
+
+    const body = await res.json();
+    expect(body.code).toBe(ErrorCode.invalidRequest);
+  });
+
+  it("watermarks a PDF end to end over the HTTP handlers", async () => {
+    const bytes = fixtureBytes("light.pdf");
+
+    const initRes = await initUpload(
+      jsonRequest({tool: "watermark_pdf", fileName: "light.pdf", fileSize: bytes.length, mimeType: "application/pdf"})
+    );
+    expect(initRes.status).toBe(200);
+    const init = await initRes.json();
+
+    const putRes = await putUpload(
+      new Request(`http://localhost${init.uploadUrl}`, {method: "PUT", body: new Uint8Array(bytes)}),
+      {params: Promise.resolve({fileId: init.fileId})}
+    );
+    expect(putRes.status).toBe(200);
+
+    const jobRes = await createJobRoute(
+      jsonRequest({tool: "watermark_pdf", fileIds: [init.fileId], options: {watermarkText: "DRAFT", watermarkPosition: "repeated"}})
+    );
+    expect(jobRes.status).toBe(200);
+    const created = await jobRes.json();
+
+    const finished = await pollJob(created.id);
+    expect(finished.status).toBe("completed");
+
+    const downloadRes = await downloadRoute(
+      new Request(`http://localhost/api/jobs/${created.id}/download`),
+      {params: Promise.resolve({jobId: created.id})}
+    );
+    expect(downloadRes.status).toBe(200);
+    expect(downloadRes.headers.get("content-type")).toBe("application/pdf");
+
+    const doc = await PDFDocument.load(Buffer.from(new Uint8Array(await downloadRes.arrayBuffer())));
+    expect(doc.getPageCount()).toBe(1);
+  });
+
+  it("rejects a watermark job without text", async () => {
+    const initRes = await initUpload(
+      jsonRequest({tool: "watermark_pdf", fileName: "light.pdf", fileSize: 1000, mimeType: "application/pdf"})
+    );
+    const init = await initRes.json();
+
+    const res = await createJobRoute(
+      jsonRequest({tool: "watermark_pdf", fileIds: [init.fileId], options: {watermarkPosition: "center"}})
+    );
+    expect(res.status).toBe(400);
+
+    const body = await res.json();
+    expect(body.code).toBe(ErrorCode.invalidRequest);
+  });
+
+  it("rejects a watermark job with an unsupported position", async () => {
+    const initRes = await initUpload(
+      jsonRequest({tool: "watermark_pdf", fileName: "light.pdf", fileSize: 1000, mimeType: "application/pdf"})
+    );
+    const init = await initRes.json();
+
+    const res = await createJobRoute(
+      jsonRequest({tool: "watermark_pdf", fileIds: [init.fileId], options: {watermarkText: "DRAFT", watermarkPosition: "corner"}})
+    );
+    expect(res.status).toBe(400);
+
+    const body = await res.json();
+    expect(body.code).toBe(ErrorCode.invalidRequest);
+  });
+
+  it("rejects a protect job without a password", async () => {
+    const initRes = await initUpload(
+      jsonRequest({tool: "protect_pdf", fileName: "light.pdf", fileSize: 1000, mimeType: "application/pdf"})
+    );
+    const init = await initRes.json();
+
+    const res = await createJobRoute(
+      jsonRequest({tool: "protect_pdf", fileIds: [init.fileId]})
+    );
+    expect(res.status).toBe(400);
+
+    const body = await res.json();
+    expect(body.code).toBe(ErrorCode.invalidRequest);
+  });
+
+  it("rejects an unlock job without a password", async () => {
+    const initRes = await initUpload(
+      jsonRequest({tool: "unlock_pdf", fileName: "light.pdf", fileSize: 1000, mimeType: "application/pdf"})
+    );
+    const init = await initRes.json();
+
+    const res = await createJobRoute(
+      jsonRequest({tool: "unlock_pdf", fileIds: [init.fileId]})
+    );
+    expect(res.status).toBe(400);
+
+    const body = await res.json();
+    expect(body.code).toBe(ErrorCode.invalidRequest);
+  });
+
+  it.skipIf(!isQpdfAvailable())("protects a PDF end to end over the HTTP handlers", async () => {
+    const bytes = fixtureBytes("light.pdf");
+
+    const initRes = await initUpload(
+      jsonRequest({tool: "protect_pdf", fileName: "light.pdf", fileSize: bytes.length, mimeType: "application/pdf"})
+    );
+    expect(initRes.status).toBe(200);
+    const init = await initRes.json();
+
+    const putRes = await putUpload(
+      new Request(`http://localhost${init.uploadUrl}`, {method: "PUT", body: new Uint8Array(bytes)}),
+      {params: Promise.resolve({fileId: init.fileId})}
+    );
+    expect(putRes.status).toBe(200);
+
+    const jobRes = await createJobRoute(
+      jsonRequest({tool: "protect_pdf", fileIds: [init.fileId], options: {pdfPassword: "secret"}})
+    );
+    expect(jobRes.status).toBe(200);
+    const created = await jobRes.json();
+
+    const finished = await pollJob(created.id);
+    expect(finished.status).toBe("completed");
+
+    const downloadRes = await downloadRoute(
+      new Request(`http://localhost/api/jobs/${created.id}/download`),
+      {params: Promise.resolve({jobId: created.id})}
+    );
+    expect(downloadRes.status).toBe(200);
+    expect(downloadRes.headers.get("content-type")).toBe("application/pdf");
+
+    const resultBytes = Buffer.from(new Uint8Array(await downloadRes.arrayBuffer()));
+    await expect(PDFDocument.load(resultBytes)).rejects.toThrow();
+  });
+
+  it.skipIf(!isQpdfAvailable())("unlocks a protected PDF end to end over the HTTP handlers", async () => {
+    const sourceBytes = fixtureBytes("light.pdf");
+
+    const protectInitRes = await initUpload(
+      jsonRequest({tool: "protect_pdf", fileName: "light.pdf", fileSize: sourceBytes.length, mimeType: "application/pdf"})
+    );
+    expect(protectInitRes.status).toBe(200);
+    const protectInit = await protectInitRes.json();
+
+    const protectPutRes = await putUpload(
+      new Request(`http://localhost${protectInit.uploadUrl}`, {method: "PUT", body: new Uint8Array(sourceBytes)}),
+      {params: Promise.resolve({fileId: protectInit.fileId})}
+    );
+    expect(protectPutRes.status).toBe(200);
+
+    const protectJobRes = await createJobRoute(
+      jsonRequest({tool: "protect_pdf", fileIds: [protectInit.fileId], options: {pdfPassword: "secret"}})
+    );
+    expect(protectJobRes.status).toBe(200);
+    const protectJob = await protectJobRes.json();
+    expect((await pollJob(protectJob.id)).status).toBe("completed");
+
+    const protectedDownloadRes = await downloadRoute(
+      new Request(`http://localhost/api/jobs/${protectJob.id}/download`),
+      {params: Promise.resolve({jobId: protectJob.id})}
+    );
+    expect(protectedDownloadRes.status).toBe(200);
+    const protectedBytes = Buffer.from(new Uint8Array(await protectedDownloadRes.arrayBuffer()));
+
+    const unlockInitRes = await initUpload(
+      jsonRequest({tool: "unlock_pdf", fileName: "protected.pdf", fileSize: protectedBytes.length, mimeType: "application/pdf"})
+    );
+    expect(unlockInitRes.status).toBe(200);
+    const unlockInit = await unlockInitRes.json();
+
+    const unlockPutRes = await putUpload(
+      new Request(`http://localhost${unlockInit.uploadUrl}`, {method: "PUT", body: new Uint8Array(protectedBytes)}),
+      {params: Promise.resolve({fileId: unlockInit.fileId})}
+    );
+    expect(unlockPutRes.status).toBe(200);
+
+    const unlockJobRes = await createJobRoute(
+      jsonRequest({tool: "unlock_pdf", fileIds: [unlockInit.fileId], options: {pdfPassword: "secret"}})
+    );
+    expect(unlockJobRes.status).toBe(200);
+    const unlockJob = await unlockJobRes.json();
+    expect((await pollJob(unlockJob.id)).status).toBe("completed");
+
+    const unlockedDownloadRes = await downloadRoute(
+      new Request(`http://localhost/api/jobs/${unlockJob.id}/download`),
+      {params: Promise.resolve({jobId: unlockJob.id})}
+    );
+    expect(unlockedDownloadRes.status).toBe(200);
+    expect(unlockedDownloadRes.headers.get("content-type")).toBe("application/pdf");
+
+    const doc = await PDFDocument.load(Buffer.from(new Uint8Array(await unlockedDownloadRes.arrayBuffer())));
+    expect(doc.getPageCount()).toBe(1);
   });
 });

@@ -21,10 +21,10 @@ V1 without browser editor:
 - [x] extract PDF pages by typed range
 - [x] delete PDF pages by typed range
 - [x] rotate the whole PDF
-- [ ] add page numbers with preset positions
-- [ ] add text watermark with preset positions
-- [ ] protect PDF with password
-- [ ] unlock PDF with provided password
+- [x] add page numbers with preset positions
+- [x] add text watermark with center, diagonal, and repeated presets
+- [x] protect PDF with password
+- [x] unlock PDF with provided password
 
 V2 with preview/editor, usually premium:
 - [ ] reorder PDF with page thumbnails and drag-and-drop
@@ -111,13 +111,13 @@ Features:
 - [x] extract PDF pages
 - [ ] reorder PDF pages
 - [ ] insert PDF pages
-- [ ] add page numbers
-- [ ] watermark PDF
+- [x] add page numbers
+- [x] watermark PDF
 - [ ] add text to PDF
 - [ ] fill PDF
 - [ ] sign PDF visually
-- [ ] protect PDF
-- [ ] unlock PDF with provided password
+- [x] protect PDF
+- [x] unlock PDF with provided password
 
 Notes:
 - [ ] Avoid rasterizing full PDFs unless required.
@@ -226,6 +226,7 @@ Completed:
 - [x] Result download endpoint exists.
 - [x] Basic error states exist in the upload UI.
 - [x] Ghostscript is installed locally.
+- [x] qpdf is installed locally for PDF protection and unlock.
 - [x] First `compress_pdf` processor is connected.
 - [x] Build passes.
 - [x] Typecheck passes.
@@ -348,12 +349,12 @@ Tools:
 - [x] Rotate PDF
 - [x] Delete PDF Pages
 - [ ] Reorder PDF Pages
-- [ ] Watermark PDF
-- [ ] Protect PDF
-- [ ] Unlock PDF
+- [x] Watermark PDF
+- [x] Protect PDF
+- [x] Unlock PDF
 
 Optional if still lightweight:
-- [ ] Add Page Numbers
+- [x] Add Page Numbers
 - [ ] Sign PDF visually
 
 Definition of done:

@@ -3,6 +3,7 @@ export type ErrorLabels = {
   errorTooLarge: string;
   errorUnsupportedType: string;
   errorInvalidFile: string;
+  errorQpdfMissing?: string;
 };
 
 export function messageFromCode(code: string | undefined | null, labels: ErrorLabels): string | null {
@@ -13,6 +14,8 @@ export function messageFromCode(code: string | undefined | null, labels: ErrorLa
       return labels.errorUnsupportedType;
     case "invalid_file":
       return labels.errorInvalidFile;
+    case "qpdf_missing":
+      return labels.errorQpdfMissing ?? null;
     default:
       return null;
   }

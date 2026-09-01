@@ -1,3 +1,4 @@
+import {execFileSync} from "node:child_process";
 import {readFileSync} from "node:fs";
 import path from "node:path";
 import {getJob} from "@/lib/jobs";
@@ -17,6 +18,24 @@ export function toArrayBuffer(buffer: Buffer): ArrayBuffer {
     buffer.byteOffset,
     buffer.byteOffset + buffer.byteLength
   ) as ArrayBuffer;
+}
+
+export function isQpdfAvailable() {
+  try {
+    execFileSync("qpdf", ["--version"], {stdio: "ignore"});
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function isPdfEncrypted(filePath: string) {
+  try {
+    execFileSync("qpdf", ["--is-encrypted", filePath], {stdio: "ignore"});
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export async function pollJob(jobId: string, timeoutMs = 30_000) {

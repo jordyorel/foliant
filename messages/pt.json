@@ -3,9 +3,162 @@
     "label": "Navegação principal",
     "tools": "Ferramentas",
     "flow": "Fluxo",
+    "pricing": "Preços",
     "faq": "FAQ",
     "language": "Seleção de idioma",
     "start": "Começar"
+  },
+  "footer": {
+    "copyright": "© 2026 Foliant",
+    "legalLabel": "Links legais",
+    "privacy": "Privacidade",
+    "terms": "Termos",
+    "help": "Ajuda",
+    "pricing": "Preços"
+  },
+  "homepage": {
+    "eyebrow": "Processamento de documentos 100% online",
+    "title": "Foliant, todos os seus documentos prontos online",
+    "subtitle": "Converta, compacte, organize e proteja arquivos em uma interface clara, rápida e multilíngue.",
+    "primaryCta": "Ver ferramentas",
+    "secondaryCta": "Comparar planos",
+    "visual": {
+      "ready": "Pronto",
+      "secure": "Seguro",
+      "convert": "PDF para Word",
+      "compress": "-58% tamanho",
+      "deleted": "Exclusão automática"
+    },
+    "launcher": {
+      "kicker": "Caixa de ferramentas",
+      "title": "O que você quer fazer agora?",
+      "text": "As ações mais usadas ficam acessíveis na página inicial sem sobrecarregar o usuário com todo o catálogo."
+    },
+    "popular": {
+      "compressPdf": "Reduza um PDF pesado em segundos.",
+      "mergePdf": "Junte vários PDFs na ordem correta.",
+      "pdfToWord": "Transforme um PDF em um documento Word editável.",
+      "imageToPdf": "Crie um PDF limpo a partir das suas imagens.",
+      "protectPdf": "Adicione uma senha ao documento.",
+      "watermark": "Marque um PDF com texto visível."
+    },
+    "categories": {
+      "kicker": "Categorias de motor",
+      "title": "Uma lógica clara para cada documento",
+      "text": "Foliant separa motores simples e rápidos dos usos avançados que precisam de mais controle.",
+      "items": {
+        "fromPdf": "Exporte PDFs para formatos editáveis ou imagens.",
+        "toPdf": "Transforme Word, imagens ou Markdown em PDF.",
+        "compress": "Reduza arquivos pesados antes de enviar.",
+        "edit": "Junte, divida, gire, numere ou marque PDFs.",
+        "secure": "Proteja, desbloqueie ou assine visualmente documentos.",
+        "ai": "Prepare OCR, tradução e resumos para usos premium."
+      }
+    },
+    "flow": {
+      "kicker": "Fluxo",
+      "title": "Um fluxo curto: arquivo, ação, resultado",
+      "text": "As páginas de ferramentas mantêm o upload no topo. A homepage explica o produto, ajuda a escolher uma ferramenta e mostra os planos.",
+      "steps": {
+        "upload": {
+          "title": "Envie o arquivo",
+          "text": "PDF, imagem ou documento Office conforme a ferramenta escolhida."
+        },
+        "process": {
+          "title": "Escolha a ação",
+          "text": "Compactação, conversão, organização, proteção ou assinatura visual."
+        },
+        "download": {
+          "title": "Receba o resultado",
+          "text": "Download direto e limpeza automática dos arquivos temporários."
+        }
+      }
+    },
+    "pricing": {
+      "kicker": "Preços de lançamento",
+      "title": "Limites gratuitos claros e opções premium",
+      "text": "Os preços devem aparecer desde o início para separar uso gratuito, urgências e uso regular.",
+      "plans": {
+        "free": {
+          "name": "Grátis",
+          "price": "$0",
+          "period": "",
+          "description": "Para testar e processar documentos simples.",
+          "f1": "3 arquivos por dia",
+          "f2": "Até 25 MB",
+          "f3": "Ferramentas simples",
+          "f4": "Exclusão automática",
+          "cta": "Começar"
+        },
+        "pass": {
+          "name": "Passe 24h",
+          "price": "$1.99",
+          "period": "/24h",
+          "description": "Para uma necessidade pontual sem assinatura.",
+          "f1": "Mais processamentos por 24h",
+          "f2": "Arquivos maiores",
+          "f3": "Opções avançadas do dia",
+          "f4": "Sem compromisso",
+          "cta": "Ver ferramentas"
+        },
+        "pro": {
+          "name": "Pro",
+          "price": "$6",
+          "period": "/mês",
+          "description": "Para usuários frequentes.",
+          "f1": "Limites diários maiores",
+          "f2": "Compactação avançada",
+          "f3": "Processamento em lote",
+          "f4": "Histórico recente",
+          "cta": "Comparar"
+        },
+        "team": {
+          "name": "Team",
+          "price": "$5",
+          "period": "/usuário/mês",
+          "description": "Para equipes pequenas.",
+          "f1": "Membros e funções",
+          "f2": "Cobrança centralizada",
+          "f3": "Limites de equipe",
+          "f4": "Suporte prioritário",
+          "cta": "Comparar"
+        }
+      },
+      "note": "Pagamentos, contas e cotas serão ativados no bloco de monetização. Os preços ainda podem mudar antes do lançamento público."
+    },
+    "trust": {
+      "kicker": "Confiança",
+      "title": "Feito para ir rápido sem confundir",
+      "text": "A promessa continua simples: site claro, internacional, arquivos temporários e ferramentas agrupadas por uso.",
+      "items": {
+        "online": {
+          "title": "100% online",
+          "text": "O processamento começa no navegador e mantém o mesmo fluxo em todas as páginas de ferramentas."
+        },
+        "privacy": {
+          "title": "Exclusão automática",
+          "text": "Os arquivos são temporários e a retenção permanece limitada."
+        },
+        "multilingual": {
+          "title": "Multilíngue",
+          "text": "A mesma homepage existe em francês, inglês, espanhol e português."
+        },
+        "simplePremium": {
+          "title": "Simples, depois premium",
+          "text": "As ferramentas gratuitas continuam diretas; recursos avançados adicionam mais controle."
+        }
+      }
+    },
+    "advanced": {
+      "kicker": "Premium futuro",
+      "title": "O navegador será o espaço de edição avançada",
+      "text": "Pré-visualizações PDF, seleção visual de páginas, assinaturas posicionadas à mão, OCR, tradução e histórico virão depois dos motores simples.",
+      "cta": "Ver planos"
+    },
+    "allTools": {
+      "title": "Todas as ferramentas Foliant",
+      "text": "O catálogo completo permanece visível no rodapé para manter a navegação coerente em todas as páginas."
+    }
   },
   "home": {
     "eyebrow": "Processamento de documentos 100% online",
@@ -29,6 +182,7 @@
       "errorTooLarge": "Este arquivo é muito grande.",
       "errorUnsupportedType": "Este tipo de arquivo não é compatível.",
       "errorInvalidFile": "Este arquivo é inválido ou corrompido.",
+      "errorQpdfMissing": "qpdf não está instalado. Instale-o para ativar a proteção de PDF.",
       "original": "Original",
       "final": "Final",
       "saved": "Economia",
@@ -144,6 +298,72 @@
         "rangePlaceholder": "Ex. 1-3,5",
         "submit": "Excluir",
         "another": "Excluir outras páginas"
+      },
+      "pageNumbers": {
+        "add": "Escolha um PDF",
+        "title": "Numerar seu PDF",
+        "uploading": "Enviando seu PDF...",
+        "processing": "Numerando páginas...",
+        "done": "Seu PDF está pronto",
+        "successSubtitle": "Baixe o PDF numerado agora ou adicione seu email para manter um registro.",
+        "selectPosition": "Escolha a posição do número:",
+        "bottomLeft": "Inferior esquerda",
+        "bottomCenter": "Inferior centro",
+        "bottomRight": "Inferior direita",
+        "topLeft": "Superior esquerda",
+        "topCenter": "Superior centro",
+        "topRight": "Superior direita",
+        "startPageLabel": "Primeira página a numerar",
+        "startNumberLabel": "Número inicial",
+        "submit": "Numerar",
+        "another": "Numerar outro PDF"
+      },
+      "watermark": {
+        "add": "Escolha um PDF",
+        "title": "Adicionar marca d'água",
+        "uploading": "Enviando seu PDF...",
+        "processing": "Adicionando marca d'água...",
+        "done": "Seu PDF está pronto",
+        "successSubtitle": "Baixe o PDF com marca d'água agora ou adicione seu email para manter um registro.",
+        "textLabel": "Texto da marca d'água",
+        "textPlaceholder": "Ex. CONFIDENCIAL",
+        "selectPosition": "Escolha a posição:",
+        "center": "Centro",
+        "centerText": "No meio da página.",
+        "diagonal": "Diagonal",
+        "diagonalText": "Atravessando a página.",
+        "repeated": "Repetida",
+        "repeatedText": "Marcas pequenas espalhadas por toda a página.",
+        "opacityLabel": "Opacidade (0.05 a 1)",
+        "submit": "Aplicar",
+        "another": "Marcar outro PDF"
+      },
+      "protect": {
+        "add": "Escolha um PDF",
+        "title": "Proteger seu PDF",
+        "uploading": "Enviando seu PDF...",
+        "processing": "Protegendo seu PDF...",
+        "done": "Seu PDF está protegido",
+        "successSubtitle": "Baixe o PDF protegido agora ou adicione seu email para manter um registro.",
+        "passwordLabel": "Senha",
+        "passwordPlaceholder": "Escolha uma senha",
+        "confirmLabel": "Confirmar senha",
+        "confirmPlaceholder": "Repita a senha",
+        "mismatch": "As senhas não coincidem.",
+        "submit": "Proteger",
+        "another": "Proteger outro PDF"
+      },
+      "unlock": {
+        "add": "Escolha um PDF",
+        "title": "Desbloquear seu PDF",
+        "uploading": "Enviando seu PDF...",
+        "processing": "Desbloqueando seu PDF...",
+        "done": "Seu PDF está desbloqueado",
+        "successSubtitle": "Baixe o PDF desbloqueado agora ou adicione seu email para manter um registro.",
+        "passwordLabel": "Senha do PDF",
+        "passwordPlaceholder": "Digite a senha",
+        "submit": "Desbloquear",
+        "another": "Desbloquear outro PDF"
       },
       "compression": {
         "uploadingTitle": "Enviando seu arquivo",

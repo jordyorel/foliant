@@ -7,6 +7,8 @@ import type {ImageCompressionLevel} from "@/processors/compression/image";
 import type {SplitMode} from "@/processors/pdf/split";
 import type {PdfToImageFormat} from "@/processors/pdf/to-image";
 import type {RotateDegrees} from "@/processors/pdf/rotate";
+import type {PageNumberPosition} from "@/processors/pdf/number";
+import type {WatermarkPosition} from "@/processors/pdf/watermark";
 import {AppError, ErrorCode, isAppError} from "@/lib/validation/errors";
 
 export type JobStatus = "queued" | "processing" | "completed" | "failed";
@@ -45,6 +47,13 @@ export type JobOptions = {
   pdfToImageFormat?: PdfToImageFormat;
   pdfToImageDpi?: number;
   rotateDegrees?: RotateDegrees;
+  pageNumberPosition?: PageNumberPosition;
+  pageNumberStartPage?: number;
+  pageNumberStartNumber?: number;
+  watermarkText?: string;
+  watermarkPosition?: WatermarkPosition;
+  watermarkOpacity?: number;
+  pdfPassword?: string;
 };
 
 function resolvePdfCompressionLevel(level?: JobOptions["compressionLevel"]): PdfCompressionLevel {
@@ -99,12 +108,20 @@ function stepFor(tool: ToolAction) {
       return "Création du PDF";
     case "merge_pdf":
       return "Fusion des PDF";
+    case "number_pdf_pages":
+      return "Numérotation des pages";
     case "pdf_to_image":
       return "Conversion en images";
+    case "protect_pdf":
+      return "Protection du PDF";
     case "rotate_pdf":
       return "Rotation du PDF";
     case "split_pdf":
       return "Division du PDF";
+    case "unlock_pdf":
+      return "Déverrouillage du PDF";
+    case "watermark_pdf":
+      return "Ajout du filigrane";
     default:
       return "Traitement du document";
   }
@@ -125,12 +142,20 @@ function outputFileNameFor(job: JobRecord, firstFile: StoredFile, extension: str
       return `${job.fileIds.length > 1 ? "images" : baseName}-converted${extension}`;
     case "merge_pdf":
       return `${baseName}-merged${extension}`;
+    case "number_pdf_pages":
+      return `${baseName}-numbered${extension}`;
     case "pdf_to_image":
       return `${baseName}-images${extension}`;
+    case "protect_pdf":
+      return `${baseName}-protected${extension}`;
     case "rotate_pdf":
       return `${baseName}-rotated${extension}`;
     case "split_pdf":
       return `${baseName}-split${extension}`;
+    case "unlock_pdf":
+      return `${baseName}-unlocked${extension}`;
+    case "watermark_pdf":
+      return `${baseName}-watermarked${extension}`;
     default:
       return `${baseName}-processed${extension}`;
   }

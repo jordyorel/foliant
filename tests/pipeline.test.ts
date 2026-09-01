@@ -1,4 +1,7 @@
-import {describe, it, expect, afterAll} from "vitest";
+import {describe, it, expect, beforeAll, afterAll} from "vitest";
+import {mkdtemp, readFile, rm} from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import {
   cleanupExpiredFiles,
   createTemporaryFile,
@@ -6,11 +9,13 @@ import {
   saveTemporaryFile
 } from "@/lib/storage/local";
 import {createJob, shouldKeepOriginal} from "@/lib/jobs";
+import {protectPdf} from "@/processors/pdf/security";
 import {PDFDocument} from "pdf-lib";
 import JSZip from "jszip";
-import {fixtureBytes, pollJob, toArrayBuffer} from "./helpers";
+import {fixtureBytes, fixturePath, isQpdfAvailable, pollJob, toArrayBuffer} from "./helpers";
 
 const MB = 1024 * 1024;
+let tmp: string;
 
 describe("shouldKeepOriginal", () => {
   it("keeps the compressed output only when it is actually smaller", () => {
@@ -21,13 +26,18 @@ describe("shouldKeepOriginal", () => {
 });
 
 describe("compression job pipeline", () => {
+  beforeAll(async () => {
+    tmp = await mkdtemp(path.join(os.tmpdir(), "foliant-pipeline-"));
+  });
+
   afterAll(async () => {
     await cleanupExpiredFiles(Date.now() + 1_000_000_000);
+    await rm(tmp, {recursive: true, force: true});
   });
 
   async function uploadPdf(
     name: string,
-    tool: "compress_pdf" | "merge_pdf" | "split_pdf" | "pdf_to_image" | "rotate_pdf" | "extract_pdf_pages" | "delete_pdf_pages" = "compress_pdf"
+    tool: "compress_pdf" | "merge_pdf" | "split_pdf" | "pdf_to_image" | "rotate_pdf" | "extract_pdf_pages" | "delete_pdf_pages" | "number_pdf_pages" | "watermark_pdf" | "protect_pdf" | "unlock_pdf" = "compress_pdf"
   ) {
     const bytes = fixtureBytes(name);
     const file = createTemporaryFile({
@@ -247,6 +257,96 @@ describe("compression job pipeline", () => {
       tool: "delete_pdf_pages",
       fileIds: [file.id],
       options: {pageRange: "1"}
+    });
+    const finished = await pollJob(job.id);
+
+    expect(finished.status).toBe("completed");
+    expect(finished.result).toBeUndefined();
+
+    const result = await readResultFile(job.id);
+    expect(result?.result.mimeType).toBe("application/pdf");
+
+    const doc = await PDFDocument.load(result!.bytes);
+    expect(doc.getPageCount()).toBe(1);
+  });
+
+  it("runs number_pdf_pages end to end and produces a numbered PDF", async () => {
+    const file = await uploadPdf("light.pdf", "number_pdf_pages");
+
+    const job = createJob({
+      tool: "number_pdf_pages",
+      fileIds: [file.id],
+      options: {pageNumberPosition: "bottom_center"}
+    });
+    const finished = await pollJob(job.id);
+
+    expect(finished.status).toBe("completed");
+    expect(finished.result).toBeUndefined();
+
+    const result = await readResultFile(job.id);
+    expect(result?.result.mimeType).toBe("application/pdf");
+
+    const doc = await PDFDocument.load(result!.bytes);
+    expect(doc.getPageCount()).toBe(1);
+  });
+
+  it("runs watermark_pdf end to end and produces a watermarked PDF", async () => {
+    const file = await uploadPdf("light.pdf", "watermark_pdf");
+
+    const job = createJob({
+      tool: "watermark_pdf",
+      fileIds: [file.id],
+      options: {watermarkText: "DRAFT", watermarkPosition: "center"}
+    });
+    const finished = await pollJob(job.id);
+
+    expect(finished.status).toBe("completed");
+    expect(finished.result).toBeUndefined();
+
+    const result = await readResultFile(job.id);
+    expect(result?.result.mimeType).toBe("application/pdf");
+
+    const doc = await PDFDocument.load(result!.bytes);
+    expect(doc.getPageCount()).toBe(1);
+  });
+
+  it.skipIf(!isQpdfAvailable())("runs protect_pdf end to end and produces a protected PDF", async () => {
+    const file = await uploadPdf("light.pdf", "protect_pdf");
+
+    const job = createJob({
+      tool: "protect_pdf",
+      fileIds: [file.id],
+      options: {pdfPassword: "secret"}
+    });
+    const finished = await pollJob(job.id);
+
+    expect(finished.status).toBe("completed");
+    expect(finished.result).toBeUndefined();
+
+    const result = await readResultFile(job.id);
+    expect(result?.result.mimeType).toBe("application/pdf");
+    expect(result?.bytes.subarray(0, 5).toString()).toBe("%PDF-");
+    await expect(PDFDocument.load(result!.bytes)).rejects.toThrow();
+  });
+
+  it.skipIf(!isQpdfAvailable())("runs unlock_pdf end to end and produces a readable PDF", async () => {
+    const protectedPath = path.join(tmp, "pipeline-protected.pdf");
+    await protectPdf(fixturePath("light.pdf"), protectedPath, {password: "secret"});
+
+    const bytes = await readFile(protectedPath);
+    const file = createTemporaryFile({
+      fileName: "protected.pdf",
+      fileSize: bytes.length,
+      mimeType: "application/pdf",
+      tool: "unlock_pdf",
+      maxSize: 25 * MB
+    });
+    await saveTemporaryFile(file.id, toArrayBuffer(Buffer.from(bytes)));
+
+    const job = createJob({
+      tool: "unlock_pdf",
+      fileIds: [file.id],
+      options: {pdfPassword: "secret"}
     });
     const finished = await pollJob(job.id);
 

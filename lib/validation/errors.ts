@@ -10,6 +10,7 @@ export const ErrorCode = {
   resultNotFound: "result_not_found",
   processorMissing: "processor_missing",
   ghostscriptMissing: "ghostscript_missing",
+  qpdfMissing: "qpdf_missing",
   processingFailed: "processing_failed"
 } as const;
 

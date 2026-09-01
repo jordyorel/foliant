@@ -1,4 +1,4 @@
-import {LandingPage} from "@/components/tool/LandingPage";
+import {HomePage as MarketingHomePage} from "@/components/home/HomePage";
 
 type Props = {
   params: Promise<{locale: string}>;
@@ -6,5 +6,5 @@ type Props = {
 
 export default async function HomePage({params}: Props) {
   const {locale} = await params;
-  return <LandingPage locale={locale} />;
+  return <MarketingHomePage locale={locale} />;
 }

@@ -371,7 +371,7 @@ export const tools: Record<string, ToolConfig> = {
     uploadNote: "Texte, position et opacité seront configurables.",
     accept: ".pdf,application/pdf",
     processor: {id: "watermark_pdf", inputTypes: ["pdf"], outputType: "pdf"},
-    options: ["Texte", "Centre", "Diagonal"],
+    options: ["Texte", "Centre", "Diagonal", "Répété"],
     related: ["Numéroter les pages", "Protéger PDF", "Signer PDF", "Compresser PDF"]
   }),
   "numeroter-pages-pdf": defineTool({
@@ -438,6 +438,7 @@ export const tools: Record<string, ToolConfig> = {
     uploadNote: "Le mot de passe sera demandé avant l'export.",
     accept: ".pdf,application/pdf",
     processor: {id: "protect_pdf", inputTypes: ["pdf"], outputType: "pdf"},
+    options: ["Mot de passe", "Chiffrement 256-bit"],
     related: ["Déverrouiller PDF", "Signer PDF", "Compresser PDF", "Filigrane PDF"]
   }),
   "deverrouiller-pdf": defineTool({
@@ -451,6 +452,7 @@ export const tools: Record<string, ToolConfig> = {
     uploadNote: "Aucun contournement sans mot de passe ne sera proposé.",
     accept: ".pdf,application/pdf",
     processor: {id: "unlock_pdf", inputTypes: ["pdf"], outputType: "pdf"},
+    options: ["Mot de passe connu", "Déchiffrement"],
     related: ["Protéger PDF", "Compresser PDF", "Réorganiser PDF", "Fusionner PDF"]
   }),
   "image-en-texte": defineTool({

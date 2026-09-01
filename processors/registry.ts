@@ -4,9 +4,12 @@ import {imageToPdf} from "./image/to-pdf";
 import {deletePdfPages} from "./pdf/delete";
 import {extractPdfPages} from "./pdf/extract";
 import {mergePdfs} from "./pdf/merge";
+import {numberPdfPages} from "./pdf/number";
 import {splitPdf} from "./pdf/split";
 import {pdfToImage} from "./pdf/to-image";
 import {rotatePdf} from "./pdf/rotate";
+import {protectPdf, unlockPdf} from "./pdf/security";
+import {watermarkPdf} from "./pdf/watermark";
 import type {JobOptions} from "@/lib/jobs";
 
 export type ProcessorResult = {
@@ -75,6 +78,38 @@ export const processors: Record<string, Processor> = {
   }),
   delete_pdf_pages: async (inputPaths, outputPath, context) => ({
     path: await deletePdfPages(inputPaths[0], outputPath, context.options.pageRange ?? ""),
+    extension: ".pdf",
+    mimeType: "application/pdf"
+  }),
+  number_pdf_pages: async (inputPaths, outputPath, context) => ({
+    path: await numberPdfPages(inputPaths[0], outputPath, {
+      position: context.options.pageNumberPosition,
+      startPage: context.options.pageNumberStartPage,
+      startNumber: context.options.pageNumberStartNumber
+    }),
+    extension: ".pdf",
+    mimeType: "application/pdf"
+  }),
+  watermark_pdf: async (inputPaths, outputPath, context) => ({
+    path: await watermarkPdf(inputPaths[0], outputPath, {
+      text: context.options.watermarkText,
+      position: context.options.watermarkPosition,
+      opacity: context.options.watermarkOpacity
+    }),
+    extension: ".pdf",
+    mimeType: "application/pdf"
+  }),
+  protect_pdf: async (inputPaths, outputPath, context) => ({
+    path: await protectPdf(inputPaths[0], outputPath, {
+      password: context.options.pdfPassword
+    }),
+    extension: ".pdf",
+    mimeType: "application/pdf"
+  }),
+  unlock_pdf: async (inputPaths, outputPath, context) => ({
+    path: await unlockPdf(inputPaths[0], outputPath, {
+      password: context.options.pdfPassword
+    }),
     extension: ".pdf",
     mimeType: "application/pdf"
   })

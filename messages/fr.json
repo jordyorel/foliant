@@ -3,9 +3,162 @@
     "label": "Navigation principale",
     "tools": "Outils",
     "flow": "Parcours",
+    "pricing": "Tarifs",
     "faq": "FAQ",
     "language": "Choix de langue",
     "start": "Commencer"
+  },
+  "footer": {
+    "copyright": "© 2026 Foliant",
+    "legalLabel": "Liens légaux",
+    "privacy": "Confidentialité",
+    "terms": "Conditions",
+    "help": "Aide",
+    "pricing": "Tarifs"
+  },
+  "homepage": {
+    "eyebrow": "Traitement de documents 100% en ligne",
+    "title": "Foliant, tous vos documents prêts en ligne",
+    "subtitle": "Convertissez, compressez, organisez et protégez vos fichiers depuis une interface claire, rapide et multilingue.",
+    "primaryCta": "Voir les outils",
+    "secondaryCta": "Comparer les offres",
+    "visual": {
+      "ready": "Prêt",
+      "secure": "Sécurisé",
+      "convert": "PDF vers Word",
+      "compress": "-58% taille",
+      "deleted": "Suppression auto"
+    },
+    "launcher": {
+      "kicker": "Boîte à outils",
+      "title": "Que voulez-vous faire maintenant ?",
+      "text": "Les actions les plus utilisées restent accessibles dès l'accueil, sans noyer l'utilisateur dans tout le catalogue."
+    },
+    "popular": {
+      "compressPdf": "Réduire un PDF lourd en quelques secondes.",
+      "mergePdf": "Assembler plusieurs PDF dans le bon ordre.",
+      "pdfToWord": "Transformer un PDF en document Word éditable.",
+      "imageToPdf": "Créer un PDF propre depuis vos images.",
+      "protectPdf": "Ajouter un mot de passe au document.",
+      "watermark": "Marquer un PDF avec un texte visible."
+    },
+    "categories": {
+      "kicker": "Catégories moteur",
+      "title": "Une logique claire pour chaque type de document",
+      "text": "Foliant sépare les moteurs simples, rapides et gratuits des usages avancés qui demanderont plus de contrôle.",
+      "items": {
+        "fromPdf": "Exportez vos PDF vers des formats modifiables ou des images.",
+        "toPdf": "Transformez vos fichiers Word, images ou Markdown en PDF.",
+        "compress": "Allégez les fichiers lourds avant de les envoyer.",
+        "edit": "Fusionnez, divisez, pivotez, numérotez ou marquez vos PDF.",
+        "secure": "Protégez, déverrouillez ou signez visuellement vos documents.",
+        "ai": "Préparez l'OCR, la traduction et le résumé pour les usages premium."
+      }
+    },
+    "flow": {
+      "kicker": "Parcours",
+      "title": "Un flow court : fichier, action, résultat",
+      "text": "Les pages outils gardent l'upload en haut. La homepage sert à comprendre le produit, choisir le bon outil et comparer les offres.",
+      "steps": {
+        "upload": {
+          "title": "Importez le fichier",
+          "text": "PDF, image ou document Office selon l'outil choisi."
+        },
+        "process": {
+          "title": "Choisissez l'action",
+          "text": "Compression, conversion, organisation, protection ou signature visuelle."
+        },
+        "download": {
+          "title": "Récupérez le résultat",
+          "text": "Téléchargement direct, puis suppression automatique des fichiers temporaires."
+        }
+      }
+    },
+    "pricing": {
+      "kicker": "Tarifs de lancement",
+      "title": "Des limites gratuites claires, puis des options premium",
+      "text": "Le pricing doit être visible dès le départ pour éviter la confusion entre usage gratuit, besoin urgent et usage régulier.",
+      "plans": {
+        "free": {
+          "name": "Gratuit",
+          "price": "$0",
+          "period": "",
+          "description": "Pour tester et traiter quelques documents simples.",
+          "f1": "3 fichiers par jour",
+          "f2": "Jusqu'à 25 MB",
+          "f3": "Outils simples",
+          "f4": "Suppression automatique",
+          "cta": "Commencer"
+        },
+        "pass": {
+          "name": "Pass 24h",
+          "price": "$1.99",
+          "period": "/24h",
+          "description": "Pour un besoin ponctuel sans abonnement.",
+          "f1": "Plus de traitements sur 24h",
+          "f2": "Fichiers plus lourds",
+          "f3": "Accès aux options avancées du jour",
+          "f4": "Pas d'engagement",
+          "cta": "Voir les outils"
+        },
+        "pro": {
+          "name": "Pro",
+          "price": "$6",
+          "period": "/mois",
+          "description": "Pour les utilisateurs réguliers.",
+          "f1": "Limites quotidiennes élevées",
+          "f2": "Compression avancée",
+          "f3": "Traitement par lots",
+          "f4": "Historique récent",
+          "cta": "Comparer"
+        },
+        "team": {
+          "name": "Team",
+          "price": "$5",
+          "period": "/utilisateur/mois",
+          "description": "Pour les petites équipes.",
+          "f1": "Membres et rôles",
+          "f2": "Facturation centralisée",
+          "f3": "Limites d'équipe",
+          "f4": "Support prioritaire",
+          "cta": "Comparer"
+        }
+      },
+      "note": "Les paiements, comptes et quotas seront activés dans la brique monétisation. Les prix restent modifiables avant lancement public."
+    },
+    "trust": {
+      "kicker": "Confiance",
+      "title": "Conçu pour aller vite sans brouiller l'expérience",
+      "text": "La promesse reste simple : un site clair, international, avec des fichiers temporaires et des outils classés par usage.",
+      "items": {
+        "online": {
+          "title": "100% en ligne",
+          "text": "Les traitements se lancent depuis le navigateur et gardent le même flow sur toutes les pages outils."
+        },
+        "privacy": {
+          "title": "Suppression automatique",
+          "text": "Les fichiers sont temporaires et la conservation reste limitée."
+        },
+        "multilingual": {
+          "title": "Multilingue",
+          "text": "La même homepage existe en français, anglais, espagnol et portugais."
+        },
+        "simplePremium": {
+          "title": "Simple puis premium",
+          "text": "Les outils gratuits restent directs, les fonctions avancées ajoutent plus de contrôle."
+        }
+      }
+    },
+    "advanced": {
+      "kicker": "Premium futur",
+      "title": "Le navigateur deviendra l'espace d'édition avancée",
+      "text": "Aperçus PDF, sélection visuelle de pages, signatures placées à la main, OCR, traduction et historique arriveront après les moteurs simples.",
+      "cta": "Voir les offres"
+    },
+    "allTools": {
+      "title": "Tous les outils Foliant",
+      "text": "Le catalogue complet reste visible en bas de page pour garder une navigation cohérente partout."
+    }
   },
   "home": {
     "eyebrow": "Traitement de documents 100% en ligne",
@@ -29,6 +182,7 @@
       "errorTooLarge": "Ce fichier est trop volumineux.",
       "errorUnsupportedType": "Ce type de fichier n'est pas pris en charge.",
       "errorInvalidFile": "Ce fichier est invalide ou corrompu.",
+      "errorQpdfMissing": "qpdf n'est pas installé. Installez-le pour activer la protection des PDF.",
       "original": "Original",
       "final": "Final",
       "saved": "Gain",
@@ -144,6 +298,72 @@
         "rangePlaceholder": "Ex. 1-3,5",
         "submit": "Supprimer",
         "another": "Supprimer d'autres pages"
+      },
+      "pageNumbers": {
+        "add": "Choisir un PDF",
+        "title": "Numéroter votre PDF",
+        "uploading": "Upload de votre PDF…",
+        "processing": "Numérotation des pages…",
+        "done": "Votre PDF est prêt",
+        "successSubtitle": "Téléchargez le PDF numéroté maintenant ou ajoutez votre email pour garder une trace.",
+        "selectPosition": "Choisissez la position du numéro :",
+        "bottomLeft": "Bas gauche",
+        "bottomCenter": "Bas centre",
+        "bottomRight": "Bas droite",
+        "topLeft": "Haut gauche",
+        "topCenter": "Haut centre",
+        "topRight": "Haut droite",
+        "startPageLabel": "Première page à numéroter",
+        "startNumberLabel": "Numéro de départ",
+        "submit": "Numéroter",
+        "another": "Numéroter un autre PDF"
+      },
+      "watermark": {
+        "add": "Choisir un PDF",
+        "title": "Ajouter un filigrane",
+        "uploading": "Upload de votre PDF…",
+        "processing": "Ajout du filigrane…",
+        "done": "Votre PDF est prêt",
+        "successSubtitle": "Téléchargez le PDF avec filigrane maintenant ou ajoutez votre email pour garder une trace.",
+        "textLabel": "Texte du filigrane",
+        "textPlaceholder": "Ex. CONFIDENTIEL",
+        "selectPosition": "Choisissez la position :",
+        "center": "Centre",
+        "centerText": "Au milieu de la page.",
+        "diagonal": "Diagonale",
+        "diagonalText": "En travers de la page.",
+        "repeated": "Répété",
+        "repeatedText": "Petits filigranes répartis sur toute la page.",
+        "opacityLabel": "Opacité (0.05 à 1)",
+        "submit": "Appliquer",
+        "another": "Filigraner un autre PDF"
+      },
+      "protect": {
+        "add": "Choisir un PDF",
+        "title": "Protéger votre PDF",
+        "uploading": "Upload de votre PDF…",
+        "processing": "Protection du PDF…",
+        "done": "Votre PDF est protégé",
+        "successSubtitle": "Téléchargez le PDF protégé maintenant ou ajoutez votre email pour garder une trace.",
+        "passwordLabel": "Mot de passe",
+        "passwordPlaceholder": "Choisissez un mot de passe",
+        "confirmLabel": "Confirmer le mot de passe",
+        "confirmPlaceholder": "Répétez le mot de passe",
+        "mismatch": "Les mots de passe ne correspondent pas.",
+        "submit": "Protéger",
+        "another": "Protéger un autre PDF"
+      },
+      "unlock": {
+        "add": "Choisir un PDF",
+        "title": "Déverrouiller votre PDF",
+        "uploading": "Upload de votre PDF…",
+        "processing": "Déverrouillage du PDF…",
+        "done": "Votre PDF est déverrouillé",
+        "successSubtitle": "Téléchargez le PDF déverrouillé maintenant ou ajoutez votre email pour garder une trace.",
+        "passwordLabel": "Mot de passe du PDF",
+        "passwordPlaceholder": "Saisissez le mot de passe",
+        "submit": "Déverrouiller",
+        "another": "Déverrouiller un autre PDF"
       },
       "compression": {
         "uploadingTitle": "Upload de votre fichier",

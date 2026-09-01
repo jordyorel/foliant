@@ -30,6 +30,7 @@ export function Header({locale}: HeaderProps) {
       <nav className="nav" aria-label={t("label")}>
         <Link href={`/${locale}#outils`}>{t("tools")}</Link>
         <Link href={`/${locale}#parcours`}>{t("flow")}</Link>
+        <Link href={`/${locale}#pricing`}>{t("pricing")}</Link>
         <Link href={`/${locale}#faq`}>{t("faq")}</Link>
         <details className="language-menu">
           <summary aria-label={t("language")}>

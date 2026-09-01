@@ -3,9 +3,162 @@
     "label": "Main navigation",
     "tools": "Tools",
     "flow": "Flow",
+    "pricing": "Pricing",
     "faq": "FAQ",
     "language": "Language selection",
     "start": "Start"
+  },
+  "footer": {
+    "copyright": "© 2026 Foliant",
+    "legalLabel": "Legal links",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "help": "Help",
+    "pricing": "Pricing"
+  },
+  "homepage": {
+    "eyebrow": "100% online document processing",
+    "title": "Foliant, all your documents ready online",
+    "subtitle": "Convert, compress, organize, and protect files from one clear, fast, multilingual interface.",
+    "primaryCta": "View tools",
+    "secondaryCta": "Compare plans",
+    "visual": {
+      "ready": "Ready",
+      "secure": "Secure",
+      "convert": "PDF to Word",
+      "compress": "-58% size",
+      "deleted": "Auto deletion"
+    },
+    "launcher": {
+      "kicker": "Toolkit",
+      "title": "What do you need to do now?",
+      "text": "The most used actions stay accessible from the homepage without overwhelming users with the full catalog."
+    },
+    "popular": {
+      "compressPdf": "Reduce a heavy PDF in seconds.",
+      "mergePdf": "Combine multiple PDFs in the right order.",
+      "pdfToWord": "Turn a PDF into an editable Word document.",
+      "imageToPdf": "Create a clean PDF from your images.",
+      "protectPdf": "Add a password to the document.",
+      "watermark": "Mark a PDF with visible text."
+    },
+    "categories": {
+      "kicker": "Engine categories",
+      "title": "A clear logic for every document task",
+      "text": "Foliant separates fast simple engines from advanced use cases that need more control.",
+      "items": {
+        "fromPdf": "Export PDFs to editable formats or images.",
+        "toPdf": "Turn Word files, images, or Markdown into PDFs.",
+        "compress": "Make heavy files easier to send.",
+        "edit": "Merge, split, rotate, number, or watermark PDFs.",
+        "secure": "Protect, unlock, or visually sign documents.",
+        "ai": "Prepare OCR, translation, and summaries for premium use."
+      }
+    },
+    "flow": {
+      "kicker": "Flow",
+      "title": "A short flow: file, action, result",
+      "text": "Tool pages keep upload at the top. The homepage explains the product, helps users choose a tool, and shows the plans.",
+      "steps": {
+        "upload": {
+          "title": "Upload the file",
+          "text": "PDF, image, or Office document depending on the selected tool."
+        },
+        "process": {
+          "title": "Choose the action",
+          "text": "Compression, conversion, organization, protection, or visual signing."
+        },
+        "download": {
+          "title": "Get the result",
+          "text": "Direct download, then automatic cleanup of temporary files."
+        }
+      }
+    },
+    "pricing": {
+      "kicker": "Launch pricing",
+      "title": "Clear free limits, then premium options",
+      "text": "Pricing should be visible from the start so users understand free use, urgent needs, and regular usage.",
+      "plans": {
+        "free": {
+          "name": "Free",
+          "price": "$0",
+          "period": "",
+          "description": "For testing and simple document tasks.",
+          "f1": "3 files per day",
+          "f2": "Up to 25 MB",
+          "f3": "Simple tools",
+          "f4": "Automatic deletion",
+          "cta": "Start"
+        },
+        "pass": {
+          "name": "24h Pass",
+          "price": "$1.99",
+          "period": "/24h",
+          "description": "For a one-time need without a subscription.",
+          "f1": "More processing for 24h",
+          "f2": "Larger files",
+          "f3": "Advanced options for the day",
+          "f4": "No commitment",
+          "cta": "View tools"
+        },
+        "pro": {
+          "name": "Pro",
+          "price": "$6",
+          "period": "/month",
+          "description": "For regular users.",
+          "f1": "Higher daily limits",
+          "f2": "Advanced compression",
+          "f3": "Batch processing",
+          "f4": "Recent history",
+          "cta": "Compare"
+        },
+        "team": {
+          "name": "Team",
+          "price": "$5",
+          "period": "/user/month",
+          "description": "For small teams.",
+          "f1": "Members and roles",
+          "f2": "Centralized billing",
+          "f3": "Team limits",
+          "f4": "Priority support",
+          "cta": "Compare"
+        }
+      },
+      "note": "Payments, accounts, and quotas will be activated in the monetization block. Prices can still change before public launch."
+    },
+    "trust": {
+      "kicker": "Trust",
+      "title": "Built for speed without making the product confusing",
+      "text": "The promise stays simple: a clear international site, temporary files, and tools grouped by usage.",
+      "items": {
+        "online": {
+          "title": "100% online",
+          "text": "Processing starts from the browser and keeps the same flow across all tool pages."
+        },
+        "privacy": {
+          "title": "Automatic deletion",
+          "text": "Files are temporary and retention stays limited."
+        },
+        "multilingual": {
+          "title": "Multilingual",
+          "text": "The same homepage exists in French, English, Spanish, and Portuguese."
+        },
+        "simplePremium": {
+          "title": "Simple, then premium",
+          "text": "Free tools stay direct while advanced features add more control."
+        }
+      }
+    },
+    "advanced": {
+      "kicker": "Future premium",
+      "title": "The browser will become the advanced editing workspace",
+      "text": "PDF previews, visual page selection, hand-placed signatures, OCR, translation, and history will follow the simple engines.",
+      "cta": "View plans"
+    },
+    "allTools": {
+      "title": "All Foliant tools",
+      "text": "The full catalog stays visible at the bottom so navigation remains consistent everywhere."
+    }
   },
   "home": {
     "eyebrow": "100% online document processing",
@@ -29,6 +182,7 @@
       "errorTooLarge": "This file is too large.",
       "errorUnsupportedType": "This file type is not supported.",
       "errorInvalidFile": "This file is invalid or corrupted.",
+      "errorQpdfMissing": "qpdf is not installed. Install it to enable PDF protection.",
       "original": "Original",
       "final": "Final",
       "saved": "Saved",
@@ -144,6 +298,72 @@
         "rangePlaceholder": "E.g. 1-3,5",
         "submit": "Delete",
         "another": "Delete other pages"
+      },
+      "pageNumbers": {
+        "add": "Choose a PDF",
+        "title": "Number your PDF",
+        "uploading": "Uploading your PDF...",
+        "processing": "Numbering pages...",
+        "done": "Your PDF is ready",
+        "successSubtitle": "Download the numbered PDF now or add your email to keep a trace.",
+        "selectPosition": "Choose the number position:",
+        "bottomLeft": "Bottom left",
+        "bottomCenter": "Bottom center",
+        "bottomRight": "Bottom right",
+        "topLeft": "Top left",
+        "topCenter": "Top center",
+        "topRight": "Top right",
+        "startPageLabel": "First page to number",
+        "startNumberLabel": "Starting number",
+        "submit": "Number pages",
+        "another": "Number another PDF"
+      },
+      "watermark": {
+        "add": "Choose a PDF",
+        "title": "Add a watermark",
+        "uploading": "Uploading your PDF...",
+        "processing": "Adding watermark...",
+        "done": "Your PDF is ready",
+        "successSubtitle": "Download the watermarked PDF now or add your email to keep a trace.",
+        "textLabel": "Watermark text",
+        "textPlaceholder": "E.g. CONFIDENTIAL",
+        "selectPosition": "Choose the position:",
+        "center": "Center",
+        "centerText": "In the middle of the page.",
+        "diagonal": "Diagonal",
+        "diagonalText": "Across the page.",
+        "repeated": "Repeated",
+        "repeatedText": "Small watermarks across the whole page.",
+        "opacityLabel": "Opacity (0.05 to 1)",
+        "submit": "Apply",
+        "another": "Watermark another PDF"
+      },
+      "protect": {
+        "add": "Choose a PDF",
+        "title": "Protect your PDF",
+        "uploading": "Uploading your PDF...",
+        "processing": "Protecting your PDF...",
+        "done": "Your PDF is protected",
+        "successSubtitle": "Download the protected PDF now or add your email to keep a trace.",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "Choose a password",
+        "confirmLabel": "Confirm password",
+        "confirmPlaceholder": "Repeat the password",
+        "mismatch": "Passwords do not match.",
+        "submit": "Protect",
+        "another": "Protect another PDF"
+      },
+      "unlock": {
+        "add": "Choose a PDF",
+        "title": "Unlock your PDF",
+        "uploading": "Uploading your PDF...",
+        "processing": "Unlocking your PDF...",
+        "done": "Your PDF is unlocked",
+        "successSubtitle": "Download the unlocked PDF now or add your email to keep a trace.",
+        "passwordLabel": "PDF password",
+        "passwordPlaceholder": "Enter the password",
+        "submit": "Unlock",
+        "another": "Unlock another PDF"
       },
       "compression": {
         "uploadingTitle": "Uploading your file",

@@ -6,6 +6,15 @@ import {ErrorCode} from "@/lib/validation/errors";
 
 const splitModes = new Set(["every_page", "interval", "range"]);
 const rotateDegrees = new Set([90, 180, 270]);
+const pageNumberPositions = new Set([
+  "bottom_left",
+  "bottom_center",
+  "bottom_right",
+  "top_left",
+  "top_center",
+  "top_right"
+]);
+const watermarkPositions = new Set(["center", "diagonal", "repeated"]);
 
 function jsonError(error: string, status: number) {
   return NextResponse.json(
@@ -76,6 +85,69 @@ export async function POST(request: Request) {
       options.pageRange.trim().length === 0
     ) {
       return jsonError("Invalid page range", 400);
+    }
+  }
+
+  if (body.tool === "number_pdf_pages") {
+    if (body.fileIds.length !== 1) {
+      return jsonError("Number pages requires exactly one PDF", 400);
+    }
+
+    const position = options.pageNumberPosition ?? "bottom_center";
+    if (!pageNumberPositions.has(position)) {
+      return jsonError("Unsupported page number position", 400);
+    }
+
+    if (
+      typeof options.pageNumberStartPage === "number" &&
+      (!Number.isInteger(options.pageNumberStartPage) || options.pageNumberStartPage < 1)
+    ) {
+      return jsonError("Invalid page number start page", 400);
+    }
+
+    if (
+      typeof options.pageNumberStartNumber === "number" &&
+      (!Number.isInteger(options.pageNumberStartNumber) || options.pageNumberStartNumber < 0)
+    ) {
+      return jsonError("Invalid page number start number", 400);
+    }
+  }
+
+  if (body.tool === "watermark_pdf") {
+    if (body.fileIds.length !== 1) {
+      return jsonError("Watermark requires exactly one PDF", 400);
+    }
+
+    if (
+      typeof options.watermarkText !== "string" ||
+      options.watermarkText.trim().length === 0
+    ) {
+      return jsonError("Watermark text is required", 400);
+    }
+
+    const position = options.watermarkPosition ?? "center";
+    if (!watermarkPositions.has(position)) {
+      return jsonError("Unsupported watermark position", 400);
+    }
+
+    if (
+      typeof options.watermarkOpacity === "number" &&
+      (!Number.isFinite(options.watermarkOpacity) || options.watermarkOpacity <= 0 || options.watermarkOpacity > 1)
+    ) {
+      return jsonError("Invalid watermark opacity", 400);
+    }
+  }
+
+  if (body.tool === "protect_pdf" || body.tool === "unlock_pdf") {
+    if (body.fileIds.length !== 1) {
+      return jsonError("This tool requires exactly one PDF", 400);
+    }
+
+    if (
+      typeof options.pdfPassword !== "string" ||
+      options.pdfPassword.trim().length === 0
+    ) {
+      return jsonError("PDF password is required", 400);
     }
   }
 

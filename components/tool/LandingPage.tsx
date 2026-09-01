@@ -9,6 +9,11 @@ import {ImageToPdfUploader} from "@/components/uploader/ImageToPdfUploader";
 import {PdfToImageUploader} from "@/components/uploader/PdfToImageUploader";
 import {RotateUploader} from "@/components/uploader/RotateUploader";
 import {PageRangeUploader} from "@/components/uploader/PageRangeUploader";
+import {NumberPagesUploader} from "@/components/uploader/NumberPagesUploader";
+import {WatermarkUploader} from "@/components/uploader/WatermarkUploader";
+import {PasswordPdfUploader} from "@/components/uploader/PasswordPdfUploader";
+import {FullToolCatalog} from "@/components/shared/FullToolCatalog";
+import {SiteFooter} from "@/components/shared/SiteFooter";
 import {tools} from "@/content/tools";
 import {getToolAction} from "@/content/tools/actions";
 
@@ -16,79 +21,6 @@ type LandingPageProps = {
   locale: string;
   activeTool?: string;
 };
-
-const catalogSections = [
-  {
-    group: "fromPdf",
-    links: [
-      ["pdf-en-word", "pdfToWord"],
-      ["pdf-en-excel", "pdfToExcel"],
-      ["pdf-en-powerpoint", "pdfToPowerpoint"],
-      ["pdf-en-image", "pdfToImage"],
-      ["pdf-en-jpg", "pdfToJpg"],
-      ["pdf-en-png", "pdfToPng"]
-    ]
-  },
-  {
-    group: "toPdf",
-    links: [
-      ["word-en-pdf", "wordToPdf"],
-      ["excel-en-pdf", "excelToPdf"],
-      ["powerpoint-en-pdf", "powerpointToPdf"],
-      ["image-en-pdf", "imageToPdf"],
-      ["jpg-en-pdf", "jpgToPdf"],
-      ["png-en-pdf", "pngToPdf"],
-      ["markdown-en-pdf", "markdownToPdf"]
-    ]
-  },
-  {
-    group: "compress",
-    links: [
-      ["compresser-pdf", "compressPdf"],
-      ["compresser-image", "compressImage"]
-    ]
-  },
-  {
-    group: "edit",
-    links: [
-      ["fusionner-pdf", "mergePdf"],
-      ["diviser-pdf", "splitPdf"],
-      ["reorganiser-pdf", "reorderPdf"],
-      ["pivoter-pdf", "rotatePdf"],
-      ["supprimer-pages-pdf", "deletePages"],
-      ["extraire-pages-pdf", "extractPages"],
-      ["inserer-pages-pdf", "insertPages"],
-      ["filigrane-pdf", "watermark"],
-      ["numeroter-pages-pdf", "pageNumbers"],
-      ["ajouter-texte-pdf", "addText"],
-      ["remplir-pdf", "fillPdf"]
-    ]
-  },
-  {
-    group: "secure",
-    links: [
-      ["proteger-pdf", "protectPdf"],
-      ["deverrouiller-pdf", "unlockPdf"],
-      ["signer-pdf", "signPdf"]
-    ]
-  },
-  {
-    group: "image",
-    links: [
-      ["heic-en-jpg", "heicToJpg"],
-      ["heic-en-png", "heicToPng"]
-    ]
-  },
-  {
-    group: "ai",
-    links: [
-      ["image-en-texte", "imageToText"],
-      ["ocr-pdf", "ocrPdf"],
-      ["resumer-document", "summarizeDocument"],
-      ["traduire-pdf", "translatePdf"]
-    ]
-  }
-] as const;
 
 export function LandingPage({locale, activeTool}: LandingPageProps) {
   const t = useTranslations("home");
@@ -360,6 +292,122 @@ export function LandingPage({locale, activeTool}: LandingPageProps) {
                 errorInvalidFile: t("upload.errorInvalidFile")
               }}
             />
+          ) : toolAction === "number_pdf_pages" ? (
+            <NumberPagesUploader
+              tool={toolAction}
+              accept={accept}
+              note={uploadNote}
+              labels={{
+                add: t("upload.pageNumbers.add"),
+                close: t("upload.close"),
+                title: t("upload.pageNumbers.title"),
+                uploading: t("upload.pageNumbers.uploading"),
+                processing: t("upload.pageNumbers.processing"),
+                done: t("upload.pageNumbers.done"),
+                successSubtitle: t("upload.pageNumbers.successSubtitle"),
+                fileName: t("upload.compression.fileName"),
+                currentSize: t("upload.compression.currentSize"),
+                selectPosition: t("upload.pageNumbers.selectPosition"),
+                bottomLeft: t("upload.pageNumbers.bottomLeft"),
+                bottomCenter: t("upload.pageNumbers.bottomCenter"),
+                bottomRight: t("upload.pageNumbers.bottomRight"),
+                topLeft: t("upload.pageNumbers.topLeft"),
+                topCenter: t("upload.pageNumbers.topCenter"),
+                topRight: t("upload.pageNumbers.topRight"),
+                startPageLabel: t("upload.pageNumbers.startPageLabel"),
+                startNumberLabel: t("upload.pageNumbers.startNumberLabel"),
+                submit: t("upload.pageNumbers.submit"),
+                download: t("upload.download"),
+                emailTitle: t("upload.compression.emailTitle"),
+                emailPlaceholder: t("upload.compression.emailPlaceholder"),
+                terms: t("upload.compression.terms"),
+                continue: t("upload.compression.continue"),
+                loginText: t("upload.compression.loginText"),
+                login: t("upload.compression.login"),
+                another: t("upload.pageNumbers.another"),
+                error: t("upload.error"),
+                errorTooLarge: t("upload.errorTooLarge"),
+                errorUnsupportedType: t("upload.errorUnsupportedType"),
+                errorInvalidFile: t("upload.errorInvalidFile")
+              }}
+            />
+          ) : toolAction === "watermark_pdf" ? (
+            <WatermarkUploader
+              tool={toolAction}
+              accept={accept}
+              note={uploadNote}
+              labels={{
+                add: t("upload.watermark.add"),
+                close: t("upload.close"),
+                title: t("upload.watermark.title"),
+                uploading: t("upload.watermark.uploading"),
+                processing: t("upload.watermark.processing"),
+                done: t("upload.watermark.done"),
+                successSubtitle: t("upload.watermark.successSubtitle"),
+                fileName: t("upload.compression.fileName"),
+                currentSize: t("upload.compression.currentSize"),
+                textLabel: t("upload.watermark.textLabel"),
+                textPlaceholder: t("upload.watermark.textPlaceholder"),
+                selectPosition: t("upload.watermark.selectPosition"),
+                center: t("upload.watermark.center"),
+                centerText: t("upload.watermark.centerText"),
+                diagonal: t("upload.watermark.diagonal"),
+                diagonalText: t("upload.watermark.diagonalText"),
+                repeated: t("upload.watermark.repeated"),
+                repeatedText: t("upload.watermark.repeatedText"),
+                opacityLabel: t("upload.watermark.opacityLabel"),
+                submit: t("upload.watermark.submit"),
+                download: t("upload.download"),
+                emailTitle: t("upload.compression.emailTitle"),
+                emailPlaceholder: t("upload.compression.emailPlaceholder"),
+                terms: t("upload.compression.terms"),
+                continue: t("upload.compression.continue"),
+                loginText: t("upload.compression.loginText"),
+                login: t("upload.compression.login"),
+                another: t("upload.watermark.another"),
+                error: t("upload.error"),
+                errorTooLarge: t("upload.errorTooLarge"),
+                errorUnsupportedType: t("upload.errorUnsupportedType"),
+                errorInvalidFile: t("upload.errorInvalidFile")
+              }}
+            />
+          ) : toolAction === "protect_pdf" || toolAction === "unlock_pdf" ? (
+            <PasswordPdfUploader
+              tool={toolAction}
+              mode={toolAction === "protect_pdf" ? "protect" : "unlock"}
+              accept={accept}
+              note={uploadNote}
+              labels={{
+                add: toolAction === "protect_pdf" ? t("upload.protect.add") : t("upload.unlock.add"),
+                close: t("upload.close"),
+                title: toolAction === "protect_pdf" ? t("upload.protect.title") : t("upload.unlock.title"),
+                uploading: toolAction === "protect_pdf" ? t("upload.protect.uploading") : t("upload.unlock.uploading"),
+                processing: toolAction === "protect_pdf" ? t("upload.protect.processing") : t("upload.unlock.processing"),
+                done: toolAction === "protect_pdf" ? t("upload.protect.done") : t("upload.unlock.done"),
+                successSubtitle: toolAction === "protect_pdf" ? t("upload.protect.successSubtitle") : t("upload.unlock.successSubtitle"),
+                fileName: t("upload.compression.fileName"),
+                currentSize: t("upload.compression.currentSize"),
+                passwordLabel: toolAction === "protect_pdf" ? t("upload.protect.passwordLabel") : t("upload.unlock.passwordLabel"),
+                passwordPlaceholder: toolAction === "protect_pdf" ? t("upload.protect.passwordPlaceholder") : t("upload.unlock.passwordPlaceholder"),
+                confirmLabel: t("upload.protect.confirmLabel"),
+                confirmPlaceholder: t("upload.protect.confirmPlaceholder"),
+                mismatch: t("upload.protect.mismatch"),
+                submit: toolAction === "protect_pdf" ? t("upload.protect.submit") : t("upload.unlock.submit"),
+                download: t("upload.download"),
+                emailTitle: t("upload.compression.emailTitle"),
+                emailPlaceholder: t("upload.compression.emailPlaceholder"),
+                terms: t("upload.compression.terms"),
+                continue: t("upload.compression.continue"),
+                loginText: t("upload.compression.loginText"),
+                login: t("upload.compression.login"),
+                another: toolAction === "protect_pdf" ? t("upload.protect.another") : t("upload.unlock.another"),
+                error: t("upload.error"),
+                errorTooLarge: t("upload.errorTooLarge"),
+                errorUnsupportedType: t("upload.errorUnsupportedType"),
+                errorInvalidFile: t("upload.errorInvalidFile"),
+                errorQpdfMissing: t("upload.errorQpdfMissing")
+              }}
+            />
           ) : (
             <UploadDropzone
               title={uploadTitle}
@@ -472,26 +520,10 @@ export function LandingPage({locale, activeTool}: LandingPageProps) {
             <Link className="tool-card" href={`/${locale}/fusionner-pdf`}><i className="ti ti-stack-2" aria-hidden="true" /><span>{catalog("tools.mergePdf")}</span></Link>
             <Link className="tool-card" href={`/${locale}/signer-pdf`}><i className="ti ti-signature" aria-hidden="true" /><span>{catalog("tools.signPdf")}</span></Link>
           </div>
-          <div className="catalog">
-            {catalogSections.map((section) => (
-              <div key={section.group}>
-                <h3>{catalog(`groups.${section.group}`)}</h3>
-                {section.links.map(([slug, label]) => (
-                  <Link key={slug} href={`/${locale}/${slug}`}>{catalog(`tools.${label}`)}</Link>
-                ))}
-              </div>
-            ))}
-          </div>
+          <FullToolCatalog locale={locale} />
         </section>
       </main>
-      <footer className="footer">
-        <span>© 2026 Foliant</span>
-        <nav aria-label="Liens légaux">
-          <Link href={`/${locale}/confidentialite`}>Confidentialité</Link>
-          <Link href={`/${locale}/conditions`}>Conditions</Link>
-          <Link href={`/${locale}/aide`}>Aide</Link>
-        </nav>
-      </footer>
+      <SiteFooter locale={locale} />
     </>
   );
 }

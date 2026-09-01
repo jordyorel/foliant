@@ -11,10 +11,13 @@ import {pdfToImage} from "@/processors/pdf/to-image";
 import {rotatePdf} from "@/processors/pdf/rotate";
 import {extractPdfPages} from "@/processors/pdf/extract";
 import {deletePdfPages} from "@/processors/pdf/delete";
+import {numberPdfDocument, numberPdfPages} from "@/processors/pdf/number";
+import {centeredRotatedOrigin, watermarkDocument, watermarkPdf} from "@/processors/pdf/watermark";
+import {protectPdf, unlockPdf} from "@/processors/pdf/security";
 import {PDFDocument, degrees} from "pdf-lib";
 import JSZip from "jszip";
-import {isAppError} from "@/lib/validation/errors";
-import {fixturePath} from "./helpers";
+import {ErrorCode, isAppError} from "@/lib/validation/errors";
+import {fixturePath, isPdfEncrypted, isQpdfAvailable} from "./helpers";
 
 let tmp: string;
 
@@ -28,6 +31,24 @@ afterAll(async () => {
 
 function out(name: string) {
   return path.join(tmp, name);
+}
+
+function pageContent(doc: PDFDocument, index: number): string {
+  const contents = (doc.getPage(index) as any).node.Contents();
+  const items = contents && typeof contents.asArray === "function" ? contents.asArray() : contents;
+  const streams = Array.isArray(items) ? items : [items];
+
+  return streams
+    .map((ref: any) => (doc as any).context.lookup(ref))
+    .filter(Boolean)
+    .map((stream: any) => Buffer.from(stream.getContentsString()).toString("latin1"))
+    .join("\n");
+}
+
+function pageDrawnText(doc: PDFDocument, index: number): string {
+  const content = pageContent(doc, index);
+  const matches = [...content.matchAll(/<([0-9A-Fa-f]+)>\s*Tj/g)];
+  return matches.map((match) => Buffer.from(match[1], "hex").toString("latin1")).join("");
 }
 
 describe("compressPdf", () => {
@@ -314,5 +335,156 @@ describe("deletePdfPages", () => {
     await expect(
       deletePdfPages(source, out("deleted-all.pdf"), "1-2")
     ).rejects.toSatisfy((e) => isAppError(e));
+  });
+});
+
+describe("numberPdfPages", () => {
+  async function blankDocument(pageCount: number) {
+    const doc = await PDFDocument.create();
+    for (let index = 0; index < pageCount; index += 1) doc.addPage();
+    return doc;
+  }
+
+  it("draws a page number on every page", async () => {
+    const doc = await blankDocument(2);
+    await numberPdfDocument(doc, {position: "bottom_center"});
+
+    expect(doc.getPageCount()).toBe(2);
+    expect(pageContent(doc, 0)).toContain("<31>");
+    expect(pageContent(doc, 1)).toContain("<32>");
+  });
+
+  it("skips pages before startPage and honours startNumber", async () => {
+    const doc = await blankDocument(3);
+    await numberPdfDocument(doc, {position: "top_right", startPage: 2, startNumber: 5});
+
+    expect(doc.getPageCount()).toBe(3);
+    expect(pageContent(doc, 0)).not.toContain("Tj");
+    expect(pageContent(doc, 1)).toContain("<35>");
+    expect(pageContent(doc, 2)).toContain("<36>");
+  });
+
+  it("produces a valid PDF from a file input", async () => {
+    const output = out("numbered.pdf");
+    await numberPdfPages(fixturePath("light.pdf"), output, {position: "bottom_center"});
+
+    const bytes = await readFile(output);
+    expect(bytes.subarray(0, 5).toString()).toBe("%PDF-");
+    expect((await PDFDocument.load(bytes)).getPageCount()).toBe(1);
+  });
+
+  it("rejects an invalid PDF input", async () => {
+    await expect(
+      numberPdfPages(fixturePath("invalid.pdf"), out("numbered-invalid.pdf"))
+    ).rejects.toSatisfy((e) => isAppError(e));
+  });
+});
+
+describe("watermarkPdf", () => {
+  async function blankDocument(pageCount: number) {
+    const doc = await PDFDocument.create();
+    for (let index = 0; index < pageCount; index += 1) doc.addPage();
+    return doc;
+  }
+
+  it("draws the watermark text on every page", async () => {
+    const doc = await blankDocument(2);
+    await watermarkDocument(doc, {text: "CONFIDENTIEL", position: "center"});
+
+    expect(doc.getPageCount()).toBe(2);
+    expect(pageDrawnText(doc, 0)).toBe("CONFIDENTIEL");
+    expect(pageDrawnText(doc, 1)).toBe("CONFIDENTIEL");
+  });
+
+  it("supports the diagonal position and opacity", async () => {
+    const doc = await blankDocument(1);
+    await watermarkDocument(doc, {text: "DRAFT", position: "diagonal", opacity: 0.35});
+
+    expect(pageDrawnText(doc, 0)).toBe("DRAFT");
+    expect(pageContent(doc, 0)).toContain("gs");
+  });
+
+  it("centers rotated text around the requested page point", () => {
+    const textWidth = 120;
+    const textHeight = 32;
+    const angle = 45;
+    const origin = centeredRotatedOrigin(300, 420, textWidth, textHeight, angle);
+    const radians = (angle * Math.PI) / 180;
+
+    const resolvedCenterX = origin.x + (textWidth / 2) * Math.cos(radians) - (textHeight / 2) * Math.sin(radians);
+    const resolvedCenterY = origin.y + (textWidth / 2) * Math.sin(radians) + (textHeight / 2) * Math.cos(radians);
+
+    expect(resolvedCenterX).toBeCloseTo(300);
+    expect(resolvedCenterY).toBeCloseTo(420);
+  });
+
+  it("supports repeated small watermarks across the page", async () => {
+    const doc = await blankDocument(1);
+    await watermarkDocument(doc, {text: "DRAFT", position: "repeated", opacity: 0.18});
+
+    const matches = pageDrawnText(doc, 0).match(/DRAFT/g) ?? [];
+    expect(matches.length).toBeGreaterThan(10);
+    expect(matches.length).toBeLessThan(60);
+  });
+
+  it("produces a valid PDF from a file input", async () => {
+    const output = out("watermarked.pdf");
+    await watermarkPdf(fixturePath("light.pdf"), output, {text: "DRAFT"});
+
+    const bytes = await readFile(output);
+    expect(bytes.subarray(0, 5).toString()).toBe("%PDF-");
+    expect((await PDFDocument.load(bytes)).getPageCount()).toBe(1);
+  });
+
+  it("rejects an invalid PDF input", async () => {
+    await expect(
+      watermarkPdf(fixturePath("invalid.pdf"), out("watermarked-invalid.pdf"), {text: "DRAFT"})
+    ).rejects.toSatisfy((e) => isAppError(e));
+  });
+});
+
+describe("protectPdf / unlockPdf", () => {
+  const qpdfAvailable = isQpdfAvailable();
+
+  it("rejects protect without a password", async () => {
+    await expect(
+      protectPdf(fixturePath("light.pdf"), out("protected-nopass.pdf"))
+    ).rejects.toSatisfy((e) => isAppError(e) && e.code === ErrorCode.invalidRequest);
+  });
+
+  it("rejects unlock without a password", async () => {
+    await expect(
+      unlockPdf(fixturePath("light.pdf"), out("unlocked-nopass.pdf"))
+    ).rejects.toSatisfy((e) => isAppError(e) && e.code === ErrorCode.invalidRequest);
+  });
+
+  it.skipIf(qpdfAvailable)("reports qpdf missing when qpdf is not installed", async () => {
+    await expect(
+      protectPdf(fixturePath("light.pdf"), out("protected.pdf"), {password: "secret"})
+    ).rejects.toSatisfy((e) => isAppError(e) && e.code === ErrorCode.qpdfMissing);
+  });
+
+  it.skipIf(!qpdfAvailable)("protects and unlocks a PDF round-trip", async () => {
+    const protectedPath = out("protected.pdf");
+    const unlockedPath = out("unlocked.pdf");
+
+    await protectPdf(fixturePath("light.pdf"), protectedPath, {password: "secret"});
+    expect(isPdfEncrypted(protectedPath)).toBe(true);
+
+    await unlockPdf(protectedPath, unlockedPath, {password: "secret"});
+    expect(isPdfEncrypted(unlockedPath)).toBe(false);
+
+    const bytes = await readFile(unlockedPath);
+    expect(bytes.subarray(0, 5).toString()).toBe("%PDF-");
+    expect((await PDFDocument.load(bytes)).getPageCount()).toBe(1);
+  });
+
+  it.skipIf(!qpdfAvailable)("rejects unlock with a wrong password", async () => {
+    const protectedPath = out("wrong-password-protected.pdf");
+    await protectPdf(fixturePath("light.pdf"), protectedPath, {password: "secret"});
+
+    await expect(
+      unlockPdf(protectedPath, out("wrong-password-unlocked.pdf"), {password: "wrong"})
+    ).rejects.toSatisfy((e) => isAppError(e) && e.code === ErrorCode.invalidRequest);
   });
 });
