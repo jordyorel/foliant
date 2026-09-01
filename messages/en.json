@@ -16,7 +16,13 @@
     "help": "Help",
     "pricing": "Pricing"
   },
+  "seo": {
+    "toolTitle": "{tool} online",
+    "toolDescription": "{tool} directly online with Foliant. Upload your file, start processing, and download the result."
+  },
   "homepage": {
+    "metaTitle": "Foliant - 100% online document processing",
+    "metaDescription": "Convert, compress, organize, and protect your documents online with Foliant.",
     "eyebrow": "100% online document processing",
     "title": "Foliant, all your documents ready online",
     "subtitle": "Convert, compress, organize, and protect files from one clear, fast, multilingual interface.",
@@ -155,6 +161,28 @@
       "text": "PDF previews, visual page selection, hand-placed signatures, OCR, translation, and history will follow the simple engines.",
       "cta": "View plans"
     },
+    "faq": {
+      "title": "Frequently asked questions",
+      "text": "The important answers should be visible from the homepage.",
+      "items": {
+        "free": {
+          "q": "What does the free plan include?",
+          "a": "It lets users process a few simple files per day with clear size and volume limits."
+        },
+        "pricing": {
+          "q": "Are the prices final?",
+          "a": "No. These are launch prices used to structure the offer. They can still change before public launch."
+        },
+        "privacy": {
+          "q": "What happens to uploaded files?",
+          "a": "Files are used for the requested processing, remain temporary, and are deleted automatically."
+        },
+        "advanced": {
+          "q": "Why will some features be premium?",
+          "a": "Features that need more processing, storage, history, batch workflows, or a visual editor will belong to paid plans."
+        }
+      }
+    },
     "allTools": {
       "title": "All Foliant tools",
       "text": "The full catalog stays visible at the bottom so navigation remains consistent everywhere."
@@ -183,6 +211,7 @@
       "errorUnsupportedType": "This file type is not supported.",
       "errorInvalidFile": "This file is invalid or corrupted.",
       "errorQpdfMissing": "qpdf is not installed. Install it to enable PDF protection.",
+      "errorHeicDecoderMissing": "No HEIC decoder is available. Install sips (macOS) or ImageMagick / libheif to enable HEIC conversion.",
       "original": "Original",
       "final": "Final",
       "saved": "Saved",
@@ -364,6 +393,16 @@
         "passwordPlaceholder": "Enter the password",
         "submit": "Unlock",
         "another": "Unlock another PDF"
+      },
+      "heic": {
+        "add": "Choose a HEIC image",
+        "title": "Convert your image",
+        "uploading": "Uploading your image...",
+        "processing": "Converting your image...",
+        "done": "Your image is ready",
+        "successSubtitle": "Download the converted image now or add your email to keep a trace.",
+        "convert": "Convert",
+        "another": "Convert another image"
       },
       "compression": {
         "uploadingTitle": "Uploading your file",

@@ -51,6 +51,16 @@ export async function POST(request: Request) {
     return jsonError("Image to PDF is limited to 20 images in this version", 400);
   }
 
+  if (body.tool === "heic_to_jpg" || body.tool === "heic_to_png") {
+    if (body.fileIds.length !== 1) {
+      return jsonError("This tool requires exactly one image", 400);
+    }
+  }
+
+  if (body.tool === "markdown_to_pdf" && body.fileIds.length !== 1) {
+    return jsonError("Markdown to PDF requires exactly one file", 400);
+  }
+
   if (body.tool === "pdf_to_image") {
     if (body.fileIds.length !== 1) {
       return jsonError("PDF to image requires exactly one PDF", 400);

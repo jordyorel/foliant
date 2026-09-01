@@ -74,6 +74,8 @@ function fileBaseName(fileName: string) {
 
 function outputExtensionFor(tool: ToolAction) {
   if (tool === "compress_image") return ".jpg";
+  if (tool === "heic_to_jpg") return ".jpg";
+  if (tool === "heic_to_png") return ".png";
   if (tool === "split_pdf" || tool === "pdf_to_image") return ".zip";
   return ".pdf";
 }
@@ -104,8 +106,14 @@ function stepFor(tool: ToolAction) {
       return "Suppression des pages";
     case "extract_pdf_pages":
       return "Extraction des pages";
+    case "heic_to_jpg":
+      return "Conversion HEIC en JPG";
+    case "heic_to_png":
+      return "Conversion HEIC en PNG";
     case "image_to_pdf":
       return "Création du PDF";
+    case "markdown_to_pdf":
+      return "Conversion Markdown en PDF";
     case "merge_pdf":
       return "Fusion des PDF";
     case "number_pdf_pages":
@@ -138,8 +146,13 @@ function outputFileNameFor(job: JobRecord, firstFile: StoredFile, extension: str
       return `${baseName}-pages-removed${extension}`;
     case "extract_pdf_pages":
       return `${baseName}-extracted${extension}`;
+    case "heic_to_jpg":
+    case "heic_to_png":
+      return `${baseName}-converted${extension}`;
     case "image_to_pdf":
       return `${job.fileIds.length > 1 ? "images" : baseName}-converted${extension}`;
+    case "markdown_to_pdf":
+      return `${baseName}-converted${extension}`;
     case "merge_pdf":
       return `${baseName}-merged${extension}`;
     case "number_pdf_pages":

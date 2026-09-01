@@ -3,6 +3,7 @@ import {NextIntlClientProvider} from "next-intl";
 import {getMessages} from "next-intl/server";
 import {notFound} from "next/navigation";
 import {routing, type Locale} from "@/lib/i18n/routing";
+import {absoluteUrl, siteName, siteOrigin} from "@/lib/seo";
 import "../globals.css";
 
 type Props = {
@@ -11,8 +12,24 @@ type Props = {
 };
 
 export const metadata: Metadata = {
-  title: "Foliant - Traitement de documents en ligne",
-  description: "Convertir, compresser, fusionner et signer vos documents directement dans le navigateur."
+  metadataBase: new URL(siteOrigin()),
+  title: {
+    default: "Foliant - Traitement de documents en ligne",
+    template: `%s | ${siteName}`
+  },
+  description: "Convertir, compresser, fusionner et signer vos documents directement dans le navigateur.",
+  applicationName: siteName,
+  creator: siteName,
+  publisher: siteName,
+  robots: {
+    index: true,
+    follow: true
+  },
+  openGraph: {
+    siteName,
+    type: "website",
+    url: absoluteUrl("/fr")
+  }
 };
 
 export function generateStaticParams() {

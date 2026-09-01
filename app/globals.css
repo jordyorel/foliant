@@ -201,9 +201,9 @@ h1 {
 
 .home-hero-copy h1 {
   margin: 0;
-  font-size: clamp(48px, 7vw, 84px);
+  font-size: clamp(44px, 6vw, 72px);
   font-weight: 600;
-  line-height: 1.04;
+  line-height: 1.08;
 }
 
 .home-hero-copy > p:not(.eyebrow) {

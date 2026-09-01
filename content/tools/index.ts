@@ -267,7 +267,7 @@ export const tools: Record<string, ToolConfig> = {
     title: "Convertir Markdown en PDF",
     description: "Transformez un fichier Markdown en PDF lisible et partageable.",
     uploadTitle: "Déposez votre fichier Markdown ici",
-    uploadNote: "Format MD accepté. Le moteur sera branché dans une prochaine brique.",
+    uploadNote: "Format MD accepté. Conversion simple en PDF lisible.",
     accept: ".md,.markdown,text/markdown,text/plain",
     processor: {id: "markdown_to_pdf", inputTypes: ["md"], outputType: "pdf"}
   }),

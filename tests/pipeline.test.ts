@@ -1,5 +1,5 @@
 import {describe, it, expect, beforeAll, afterAll} from "vitest";
-import {mkdtemp, readFile, rm} from "node:fs/promises";
+import {mkdtemp, readFile, rm, writeFile} from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import {
@@ -12,7 +12,7 @@ import {createJob, shouldKeepOriginal} from "@/lib/jobs";
 import {protectPdf} from "@/processors/pdf/security";
 import {PDFDocument} from "pdf-lib";
 import JSZip from "jszip";
-import {fixtureBytes, fixturePath, isQpdfAvailable, pollJob, toArrayBuffer} from "./helpers";
+import {fixtureBytes, fixturePath, isHeicDecoderAvailable, isQpdfAvailable, pollJob, toArrayBuffer} from "./helpers";
 
 const MB = 1024 * 1024;
 let tmp: string;
@@ -64,6 +64,22 @@ describe("compression job pipeline", () => {
       mimeType: "application/pdf",
       tool: "delete_pdf_pages",
       maxSize: 25 * MB
+    });
+    await saveTemporaryFile(file.id, toArrayBuffer(Buffer.from(bytes)));
+    return file;
+  }
+
+  async function uploadMarkdown() {
+    const inputPath = path.join(tmp, "notes.md");
+    await writeFile(inputPath, "# Launch Notes\n\n- Convert\n- Compress\n");
+    const bytes = await readFile(inputPath);
+
+    const file = createTemporaryFile({
+      fileName: "notes.md",
+      fileSize: bytes.length,
+      mimeType: "text/markdown",
+      tool: "markdown_to_pdf",
+      maxSize: 2 * MB
     });
     await saveTemporaryFile(file.id, toArrayBuffer(Buffer.from(bytes)));
     return file;
@@ -358,5 +374,45 @@ describe("compression job pipeline", () => {
 
     const doc = await PDFDocument.load(result!.bytes);
     expect(doc.getPageCount()).toBe(1);
+  });
+
+  it.skipIf(!isHeicDecoderAvailable())("runs heic_to_jpg end to end and produces a JPEG", async () => {
+    const bytes = fixtureBytes("image.heic");
+    const file = createTemporaryFile({
+      fileName: "image.heic",
+      fileSize: bytes.length,
+      mimeType: "image/heic",
+      tool: "heic_to_jpg",
+      maxSize: 25 * MB
+    });
+    await saveTemporaryFile(file.id, toArrayBuffer(bytes));
+
+    const job = createJob({tool: "heic_to_jpg", fileIds: [file.id]});
+    const finished = await pollJob(job.id);
+
+    expect(finished.status).toBe("completed");
+    expect(finished.result).toBeUndefined();
+
+    const result = await readResultFile(job.id);
+    expect(result?.result.mimeType).toBe("image/jpeg");
+    expect(result?.bytes[0]).toBe(0xff);
+    expect(result?.bytes[1]).toBe(0xd8);
+  });
+
+  it("runs markdown_to_pdf end to end and produces a PDF", async () => {
+    const file = await uploadMarkdown();
+
+    const job = createJob({tool: "markdown_to_pdf", fileIds: [file.id]});
+    const finished = await pollJob(job.id);
+
+    expect(finished.status).toBe("completed");
+    expect(finished.result).toBeUndefined();
+
+    const result = await readResultFile(job.id);
+    expect(result?.result.mimeType).toBe("application/pdf");
+    expect(result?.bytes.subarray(0, 5).toString()).toBe("%PDF-");
+
+    const doc = await PDFDocument.load(result!.bytes);
+    expect(doc.getPageCount()).toBeGreaterThan(0);
   });
 });

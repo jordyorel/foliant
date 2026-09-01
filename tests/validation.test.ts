@@ -126,4 +126,26 @@ describe("validateUploadInit", () => {
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.maxSize).toBe(25 * MB);
   });
+
+  it("accepts markdown_to_pdf with a 2 MB limit", () => {
+    const result = validateUploadInit({
+      tool: "markdown_to_pdf",
+      fileName: "notes.md",
+      fileSize: MB,
+      mimeType: "text/markdown"
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.maxSize).toBe(2 * MB);
+  });
+
+  it("rejects a non-Markdown type for markdown_to_pdf", () => {
+    const result = validateUploadInit({
+      tool: "markdown_to_pdf",
+      fileName: "notes.pdf",
+      fileSize: MB,
+      mimeType: "application/pdf"
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.code).toBe(ErrorCode.unsupportedType);
+  });
 });

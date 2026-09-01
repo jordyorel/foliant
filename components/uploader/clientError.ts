@@ -4,6 +4,7 @@ export type ErrorLabels = {
   errorUnsupportedType: string;
   errorInvalidFile: string;
   errorQpdfMissing?: string;
+  errorHeicDecoderMissing?: string;
 };
 
 export function messageFromCode(code: string | undefined | null, labels: ErrorLabels): string | null {
@@ -16,6 +17,8 @@ export function messageFromCode(code: string | undefined | null, labels: ErrorLa
       return labels.errorInvalidFile;
     case "qpdf_missing":
       return labels.errorQpdfMissing ?? null;
+    case "heic_decoder_missing":
+      return labels.errorHeicDecoderMissing ?? null;
     default:
       return null;
   }

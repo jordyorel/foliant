@@ -1,6 +1,8 @@
 import {compressPdf} from "./compression/pdf";
 import {compressImage} from "./compression/image";
+import {heicToJpg, heicToPng} from "./image/heic";
 import {imageToPdf} from "./image/to-pdf";
+import {markdownToPdf} from "./markdown/to-pdf";
 import {deletePdfPages} from "./pdf/delete";
 import {extractPdfPages} from "./pdf/extract";
 import {mergePdfs} from "./pdf/merge";
@@ -58,6 +60,11 @@ export const processors: Record<string, Processor> = {
     extension: ".pdf",
     mimeType: "application/pdf"
   }),
+  markdown_to_pdf: async (inputPaths, outputPath) => ({
+    path: await markdownToPdf(inputPaths[0], outputPath),
+    extension: ".pdf",
+    mimeType: "application/pdf"
+  }),
   pdf_to_image: async (inputPaths, outputPath, context) => ({
     path: await pdfToImage(inputPaths[0], outputPath, {
       format: context.options.pdfToImageFormat,
@@ -112,6 +119,16 @@ export const processors: Record<string, Processor> = {
     }),
     extension: ".pdf",
     mimeType: "application/pdf"
+  }),
+  heic_to_jpg: async (inputPaths, outputPath) => ({
+    path: await heicToJpg(inputPaths[0], outputPath),
+    extension: ".jpg",
+    mimeType: "image/jpeg"
+  }),
+  heic_to_png: async (inputPaths, outputPath) => ({
+    path: await heicToPng(inputPaths[0], outputPath),
+    extension: ".png",
+    mimeType: "image/png"
   })
 };
 

@@ -12,6 +12,7 @@ import {PageRangeUploader} from "@/components/uploader/PageRangeUploader";
 import {NumberPagesUploader} from "@/components/uploader/NumberPagesUploader";
 import {WatermarkUploader} from "@/components/uploader/WatermarkUploader";
 import {PasswordPdfUploader} from "@/components/uploader/PasswordPdfUploader";
+import {HeicToImageUploader} from "@/components/uploader/HeicToImageUploader";
 import {FullToolCatalog} from "@/components/shared/FullToolCatalog";
 import {SiteFooter} from "@/components/shared/SiteFooter";
 import {tools} from "@/content/tools";
@@ -406,6 +407,37 @@ export function LandingPage({locale, activeTool}: LandingPageProps) {
                 errorUnsupportedType: t("upload.errorUnsupportedType"),
                 errorInvalidFile: t("upload.errorInvalidFile"),
                 errorQpdfMissing: t("upload.errorQpdfMissing")
+              }}
+            />
+          ) : toolAction === "heic_to_jpg" || toolAction === "heic_to_png" ? (
+            <HeicToImageUploader
+              tool={toolAction}
+              accept={accept}
+              note={uploadNote}
+              labels={{
+                add: t("upload.heic.add"),
+                close: t("upload.close"),
+                title: t("upload.heic.title"),
+                uploading: t("upload.heic.uploading"),
+                processing: t("upload.heic.processing"),
+                done: t("upload.heic.done"),
+                successSubtitle: t("upload.heic.successSubtitle"),
+                fileName: t("upload.compression.fileName"),
+                currentSize: t("upload.compression.currentSize"),
+                convert: t("upload.heic.convert"),
+                download: t("upload.download"),
+                emailTitle: t("upload.compression.emailTitle"),
+                emailPlaceholder: t("upload.compression.emailPlaceholder"),
+                terms: t("upload.compression.terms"),
+                continue: t("upload.compression.continue"),
+                loginText: t("upload.compression.loginText"),
+                login: t("upload.compression.login"),
+                another: t("upload.heic.another"),
+                error: t("upload.error"),
+                errorTooLarge: t("upload.errorTooLarge"),
+                errorUnsupportedType: t("upload.errorUnsupportedType"),
+                errorInvalidFile: t("upload.errorInvalidFile"),
+                errorHeicDecoderMissing: t("upload.errorHeicDecoderMissing")
               }}
             />
           ) : (

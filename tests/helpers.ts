@@ -38,6 +38,20 @@ export function isPdfEncrypted(filePath: string) {
   }
 }
 
+function binaryExists(bin: string, args: string[]) {
+  try {
+    execFileSync(bin, args, {stdio: "ignore"});
+    return true;
+  } catch (error) {
+    return (error as NodeJS.ErrnoException).code !== "ENOENT";
+  }
+}
+
+export function isHeicDecoderAvailable() {
+  if (process.platform === "darwin") return binaryExists("sips", ["--help"]);
+  return binaryExists("magick", ["--version"]) || binaryExists("heif-convert", ["--version"]);
+}
+
 export async function pollJob(jobId: string, timeoutMs = 30_000) {
   const startedAt = Date.now();
 

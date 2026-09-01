@@ -8,7 +8,7 @@ import {cleanupExpiredFiles} from "@/lib/storage/local";
 import {ErrorCode} from "@/lib/validation/errors";
 import {PDFDocument} from "pdf-lib";
 import JSZip from "jszip";
-import {fixtureBytes, isQpdfAvailable, pollJob} from "./helpers";
+import {fixtureBytes, isHeicDecoderAvailable, isQpdfAvailable, pollJob} from "./helpers";
 
 const MB = 1024 * 1024;
 
@@ -682,5 +682,77 @@ describe("upload → job → download API flow", () => {
 
     const doc = await PDFDocument.load(Buffer.from(new Uint8Array(await unlockedDownloadRes.arrayBuffer())));
     expect(doc.getPageCount()).toBe(1);
+  });
+
+  it.skipIf(!isHeicDecoderAvailable())("converts HEIC to JPG end to end over the HTTP handlers", async () => {
+    const bytes = fixtureBytes("image.heic");
+
+    const initRes = await initUpload(
+      jsonRequest({tool: "heic_to_jpg", fileName: "image.heic", fileSize: bytes.length, mimeType: "image/heic"})
+    );
+    expect(initRes.status).toBe(200);
+    const init = await initRes.json();
+
+    const putRes = await putUpload(
+      new Request(`http://localhost${init.uploadUrl}`, {method: "PUT", body: new Uint8Array(bytes)}),
+      {params: Promise.resolve({fileId: init.fileId})}
+    );
+    expect(putRes.status).toBe(200);
+
+    const jobRes = await createJobRoute(
+      jsonRequest({tool: "heic_to_jpg", fileIds: [init.fileId]})
+    );
+    expect(jobRes.status).toBe(200);
+    const created = await jobRes.json();
+
+    const finished = await pollJob(created.id);
+    expect(finished.status).toBe("completed");
+
+    const downloadRes = await downloadRoute(
+      new Request(`http://localhost/api/jobs/${created.id}/download`),
+      {params: Promise.resolve({jobId: created.id})}
+    );
+    expect(downloadRes.status).toBe(200);
+    expect(downloadRes.headers.get("content-type")).toBe("image/jpeg");
+
+    const resultBytes = new Uint8Array(await downloadRes.arrayBuffer());
+    expect(resultBytes[0]).toBe(0xff);
+    expect(resultBytes[1]).toBe(0xd8);
+  });
+
+  it("converts Markdown to PDF end to end over the HTTP handlers", async () => {
+    const bytes = Buffer.from("# Client Notes\n\n- Upload\n- Convert\n\nReady.");
+
+    const initRes = await initUpload(
+      jsonRequest({tool: "markdown_to_pdf", fileName: "notes.md", fileSize: bytes.length, mimeType: "text/markdown"})
+    );
+    expect(initRes.status).toBe(200);
+    const init = await initRes.json();
+
+    const putRes = await putUpload(
+      new Request(`http://localhost${init.uploadUrl}`, {method: "PUT", body: new Uint8Array(bytes)}),
+      {params: Promise.resolve({fileId: init.fileId})}
+    );
+    expect(putRes.status).toBe(200);
+
+    const jobRes = await createJobRoute(
+      jsonRequest({tool: "markdown_to_pdf", fileIds: [init.fileId]})
+    );
+    expect(jobRes.status).toBe(200);
+    const created = await jobRes.json();
+
+    const finished = await pollJob(created.id);
+    expect(finished.status).toBe("completed");
+
+    const downloadRes = await downloadRoute(
+      new Request(`http://localhost/api/jobs/${created.id}/download`),
+      {params: Promise.resolve({jobId: created.id})}
+    );
+    expect(downloadRes.status).toBe(200);
+    expect(downloadRes.headers.get("content-type")).toBe("application/pdf");
+
+    const resultBytes = Buffer.from(new Uint8Array(await downloadRes.arrayBuffer()));
+    expect(resultBytes.subarray(0, 5).toString()).toBe("%PDF-");
+    expect((await PDFDocument.load(resultBytes)).getPageCount()).toBeGreaterThan(0);
   });
 });

@@ -7,6 +7,8 @@ import {compressImage} from "@/processors/compression/image";
 import {mergePdfs} from "@/processors/pdf/merge";
 import {parsePageRange, splitPdf} from "@/processors/pdf/split";
 import {imageToPdf} from "@/processors/image/to-pdf";
+import {heicToJpg, heicToPng} from "@/processors/image/heic";
+import {markdownToPdf} from "@/processors/markdown/to-pdf";
 import {pdfToImage} from "@/processors/pdf/to-image";
 import {rotatePdf} from "@/processors/pdf/rotate";
 import {extractPdfPages} from "@/processors/pdf/extract";
@@ -17,7 +19,7 @@ import {protectPdf, unlockPdf} from "@/processors/pdf/security";
 import {PDFDocument, degrees} from "pdf-lib";
 import JSZip from "jszip";
 import {ErrorCode, isAppError} from "@/lib/validation/errors";
-import {fixturePath, isPdfEncrypted, isQpdfAvailable} from "./helpers";
+import {fixturePath, isHeicDecoderAvailable, isPdfEncrypted, isQpdfAvailable} from "./helpers";
 
 let tmp: string;
 
@@ -486,5 +488,49 @@ describe("protectPdf / unlockPdf", () => {
     await expect(
       unlockPdf(protectedPath, out("wrong-password-unlocked.pdf"), {password: "wrong"})
     ).rejects.toSatisfy((e) => isAppError(e) && e.code === ErrorCode.invalidRequest);
+  });
+});
+
+describe("heicToJpg / heicToPng", () => {
+  const heicDecoderAvailable = isHeicDecoderAvailable();
+
+  it.skipIf(!heicDecoderAvailable)("converts HEIC to JPEG", async () => {
+    const output = out("heic-converted.jpg");
+    await heicToJpg(fixturePath("image.heic"), output);
+
+    const bytes = await readFile(output);
+    expect(bytes[0]).toBe(0xff);
+    expect(bytes[1]).toBe(0xd8);
+    expect(bytes[2]).toBe(0xff);
+  });
+
+  it.skipIf(!heicDecoderAvailable)("converts HEIC to PNG", async () => {
+    const output = out("heic-converted.png");
+    await heicToPng(fixturePath("image.heic"), output);
+
+    const bytes = await readFile(output);
+    expect(
+      bytes.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
+    ).toBe(true);
+  });
+
+  it("rejects an invalid image input", async () => {
+    await expect(
+      heicToJpg(fixturePath("invalid.jpg"), out("heic-invalid.jpg"))
+    ).rejects.toSatisfy((e) => isAppError(e));
+  });
+});
+
+describe("markdownToPdf", () => {
+  it("produces a readable PDF from Markdown", async () => {
+    const input = out("sample.md");
+    const output = out("sample-markdown.pdf");
+    await writeFile(input, "# Invoice Notes\n\n- Vendor: Airtel\n- Amount: $42,300\n\n> Ready for approval\n\n```text\nstatus=approved\n```");
+
+    await markdownToPdf(input, output);
+
+    const bytes = await readFile(output);
+    expect(bytes.subarray(0, 5).toString()).toBe("%PDF-");
+    expect((await PDFDocument.load(bytes)).getPageCount()).toBeGreaterThan(0);
   });
 });

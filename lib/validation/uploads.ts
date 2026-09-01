@@ -12,7 +12,8 @@ const maxSizeByTool: Partial<Record<ToolAction, number>> = {
   image_to_pdf: 15 * 1024 * 1024,
   merge_pdf: 50 * 1024 * 1024,
   pdf_to_image: defaultMaxSize,
-  split_pdf: defaultMaxSize
+  split_pdf: defaultMaxSize,
+  markdown_to_pdf: 2 * 1024 * 1024
 };
 
 const supportedImageMimeTypes = new Set([
@@ -52,6 +53,7 @@ const imageTools: ToolAction[] = [
   "heic_to_png",
   "image_to_text"
 ];
+const markdownTools: ToolAction[] = ["markdown_to_pdf"];
 
 function hasExtension(fileName: string, extensions: string[]) {
   const normalizedName = fileName.toLowerCase();
@@ -123,6 +125,15 @@ export function validateUploadInit(input: unknown): ValidationResult {
     imageTools.includes(tool as ToolAction) &&
     !supportedImageMimeTypes.has(mimeType) &&
     !hasExtension(fileName, [".jpg", ".jpeg", ".png", ".heic", ".heif"])
+  ) {
+    return {ok: false, error: "Unsupported file type", code: ErrorCode.unsupportedType, status: 415};
+  }
+
+  if (
+    markdownTools.includes(tool as ToolAction) &&
+    mimeType !== "text/markdown" &&
+    mimeType !== "text/plain" &&
+    !hasExtension(fileName, [".md", ".markdown"])
   ) {
     return {ok: false, error: "Unsupported file type", code: ErrorCode.unsupportedType, status: 415};
   }

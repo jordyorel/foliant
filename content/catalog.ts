@@ -77,7 +77,7 @@ export const homePopularTools = [
   {slug: "pdf-en-word", label: "pdfToWord", description: "pdfToWord", icon: "ti-file-type-doc", tone: "blue"},
   {slug: "image-en-pdf", label: "imageToPdf", description: "imageToPdf", icon: "ti-photo", tone: "amber"},
   {slug: "proteger-pdf", label: "protectPdf", description: "protectPdf", icon: "ti-lock", tone: "rose"},
-  {slug: "filigrane-pdf", label: "watermark", description: "watermark", icon: "ti-stamp", tone: "teal"}
+  {slug: "filigrane-pdf", label: "watermark", description: "watermark", icon: "ti-droplet", tone: "teal"}
 ] as const;
 
 export const homeCategoryHighlights = [

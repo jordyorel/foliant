@@ -11,6 +11,7 @@ export const ErrorCode = {
   processorMissing: "processor_missing",
   ghostscriptMissing: "ghostscript_missing",
   qpdfMissing: "qpdf_missing",
+  heicDecoderMissing: "heic_decoder_missing",
   processingFailed: "processing_failed"
 } as const;
 

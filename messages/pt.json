@@ -16,7 +16,13 @@
     "help": "Ajuda",
     "pricing": "Preços"
   },
+  "seo": {
+    "toolTitle": "{tool} online",
+    "toolDescription": "{tool} diretamente online com Foliant. Envie seu arquivo, inicie o processamento e baixe o resultado."
+  },
   "homepage": {
+    "metaTitle": "Foliant - Processamento de documentos 100% online",
+    "metaDescription": "Converta, compacte, organize e proteja seus documentos online com Foliant.",
     "eyebrow": "Processamento de documentos 100% online",
     "title": "Foliant, todos os seus documentos prontos online",
     "subtitle": "Converta, compacte, organize e proteja arquivos em uma interface clara, rápida e multilíngue.",
@@ -155,6 +161,28 @@
       "text": "Pré-visualizações PDF, seleção visual de páginas, assinaturas posicionadas à mão, OCR, tradução e histórico virão depois dos motores simples.",
       "cta": "Ver planos"
     },
+    "faq": {
+      "title": "Perguntas frequentes",
+      "text": "As respostas importantes devem estar visíveis na página inicial.",
+      "items": {
+        "free": {
+          "q": "O que inclui o plano grátis?",
+          "a": "Permite processar alguns arquivos simples por dia com limites claros de tamanho e volume."
+        },
+        "pricing": {
+          "q": "Os preços são definitivos?",
+          "a": "Não. São preços de lançamento para estruturar a oferta. Ainda podem mudar antes do lançamento público."
+        },
+        "privacy": {
+          "q": "O que acontece com os arquivos enviados?",
+          "a": "Os arquivos são usados para o processamento solicitado, permanecem temporários e são excluídos automaticamente."
+        },
+        "advanced": {
+          "q": "Por que alguns recursos serão premium?",
+          "a": "Recursos que exigem mais processamento, armazenamento, histórico, lotes ou editor visual pertencerão aos planos pagos."
+        }
+      }
+    },
     "allTools": {
       "title": "Todas as ferramentas Foliant",
       "text": "O catálogo completo permanece visível no rodapé para manter a navegação coerente em todas as páginas."
@@ -183,6 +211,7 @@
       "errorUnsupportedType": "Este tipo de arquivo não é compatível.",
       "errorInvalidFile": "Este arquivo é inválido ou corrompido.",
       "errorQpdfMissing": "qpdf não está instalado. Instale-o para ativar a proteção de PDF.",
+      "errorHeicDecoderMissing": "Nenhum decodificador HEIC disponível. Instale sips (macOS) ou ImageMagick / libheif para ativar a conversão HEIC.",
       "original": "Original",
       "final": "Final",
       "saved": "Economia",
@@ -364,6 +393,16 @@
         "passwordPlaceholder": "Digite a senha",
         "submit": "Desbloquear",
         "another": "Desbloquear outro PDF"
+      },
+      "heic": {
+        "add": "Escolha uma imagem HEIC",
+        "title": "Converter sua imagem",
+        "uploading": "Enviando sua imagem...",
+        "processing": "Convertendo sua imagem...",
+        "done": "Sua imagem está pronta",
+        "successSubtitle": "Baixe a imagem convertida agora ou adicione seu email para manter um registro.",
+        "convert": "Converter",
+        "another": "Converter outra imagem"
       },
       "compression": {
         "uploadingTitle": "Enviando seu arquivo",

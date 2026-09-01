@@ -12,6 +12,7 @@ type HomePageProps = {
 const flowSteps = ["upload", "process", "download"] as const;
 const pricingPlans = ["free", "pass", "pro", "team"] as const;
 const trustItems = ["online", "privacy", "multilingual", "simplePremium"] as const;
+const faqItems = ["free", "pricing", "privacy", "advanced"] as const;
 
 const toolLabelBySlug: Record<string, string> = {
   "pdf-en-word": "pdfToWord",
@@ -193,6 +194,21 @@ export function HomePage({locale}: HomePageProps) {
             <p>{t("advanced.text")}</p>
           </div>
           <Link className="home-primary" href={`/${locale}#pricing`}>{t("advanced.cta")}</Link>
+        </section>
+
+        <section className="section alt" id="faq" aria-labelledby="home-faq-title">
+          <div className="section-head">
+            <h2 id="home-faq-title">{t("faq.title")}</h2>
+            <p>{t("faq.text")}</p>
+          </div>
+          <div className="faq">
+            {faqItems.map((item) => (
+              <details key={item}>
+                <summary>{t(`faq.items.${item}.q`)} <i className="ti ti-plus" aria-hidden="true" /></summary>
+                <p>{t(`faq.items.${item}.a`)}</p>
+              </details>
+            ))}
+          </div>
         </section>
 
         <section className="section" aria-labelledby="all-tools-title">

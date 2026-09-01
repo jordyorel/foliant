@@ -16,7 +16,13 @@
     "help": "Aide",
     "pricing": "Tarifs"
   },
+  "seo": {
+    "toolTitle": "{tool} en ligne",
+    "toolDescription": "{tool} directement en ligne avec Foliant. Importez votre fichier, lancez le traitement et téléchargez le résultat."
+  },
   "homepage": {
+    "metaTitle": "Foliant - Traitement de documents 100% en ligne",
+    "metaDescription": "Convertissez, compressez, organisez et protégez vos documents en ligne avec Foliant.",
     "eyebrow": "Traitement de documents 100% en ligne",
     "title": "Foliant, tous vos documents prêts en ligne",
     "subtitle": "Convertissez, compressez, organisez et protégez vos fichiers depuis une interface claire, rapide et multilingue.",
@@ -155,6 +161,28 @@
       "text": "Aperçus PDF, sélection visuelle de pages, signatures placées à la main, OCR, traduction et historique arriveront après les moteurs simples.",
       "cta": "Voir les offres"
     },
+    "faq": {
+      "title": "Questions fréquentes",
+      "text": "Les réponses importantes doivent être visibles dès la page d'accueil.",
+      "items": {
+        "free": {
+          "q": "Que permet l'offre gratuite ?",
+          "a": "Elle permet de traiter quelques fichiers simples par jour, avec une limite claire de taille et de volume."
+        },
+        "pricing": {
+          "q": "Les prix sont-ils définitifs ?",
+          "a": "Non. Ce sont des tarifs de lancement pour structurer l'offre. Ils pourront être ajustés avant le lancement public."
+        },
+        "privacy": {
+          "q": "Que deviennent les fichiers importés ?",
+          "a": "Les fichiers servent au traitement demandé, restent temporaires et sont supprimés automatiquement."
+        },
+        "advanced": {
+          "q": "Pourquoi certaines fonctions seront premium ?",
+          "a": "Les fonctions qui demandent plus de calcul, de stockage, d'historique, de batch ou d'éditeur visuel seront réservées aux offres payantes."
+        }
+      }
+    },
     "allTools": {
       "title": "Tous les outils Foliant",
       "text": "Le catalogue complet reste visible en bas de page pour garder une navigation cohérente partout."
@@ -183,6 +211,7 @@
       "errorUnsupportedType": "Ce type de fichier n'est pas pris en charge.",
       "errorInvalidFile": "Ce fichier est invalide ou corrompu.",
       "errorQpdfMissing": "qpdf n'est pas installé. Installez-le pour activer la protection des PDF.",
+      "errorHeicDecoderMissing": "Aucun décodeur HEIC n'est disponible. Installez sips (macOS) ou ImageMagick / libheif pour activer la conversion HEIC.",
       "original": "Original",
       "final": "Final",
       "saved": "Gain",
@@ -364,6 +393,16 @@
         "passwordPlaceholder": "Saisissez le mot de passe",
         "submit": "Déverrouiller",
         "another": "Déverrouiller un autre PDF"
+      },
+      "heic": {
+        "add": "Choisir une image HEIC",
+        "title": "Convertir votre image",
+        "uploading": "Upload de votre image…",
+        "processing": "Conversion de votre image…",
+        "done": "Votre image est prête",
+        "successSubtitle": "Téléchargez l'image convertie maintenant ou ajoutez votre email pour garder une trace.",
+        "convert": "Convertir",
+        "another": "Convertir une autre image"
       },
       "compression": {
         "uploadingTitle": "Upload de votre fichier",

@@ -69,11 +69,11 @@ V2 premium/advanced:
 V1 without browser editor:
 - [x] JPG to PDF
 - [x] PNG to PDF
-- [ ] HEIC to JPG
-- [ ] HEIC to PNG
+- [x] HEIC to JPG
+- [x] HEIC to PNG
 - [x] PDF to JPG
 - [x] PDF to PNG
-- [ ] Markdown to PDF
+- [x] Markdown to PDF
 
 V2 premium/advanced:
 - [ ] batch image conversion
@@ -172,20 +172,21 @@ Purpose: handle lightweight non-Office conversions.
 Features:
 - [x] JPG to PDF
 - [x] PNG to PDF
-- [ ] HEIC to JPG
-- [ ] HEIC to PNG
+- [x] HEIC to JPG
+- [x] HEIC to PNG
 - [x] PDF to JPG
 - [x] PDF to PNG
-- [ ] Markdown to PDF
+- [x] Markdown to PDF
 
 Technologies:
 - [x] Sharp for image processing
 - [x] PDF renderer for PDF to image
-- [ ] Markdown to HTML to PDF pipeline
+- [x] Lightweight Markdown to PDF pipeline
+- [ ] Markdown to HTML to PDF pipeline for higher fidelity
 
 Notes:
-- [ ] Prioritize Image to PDF and PDF to image in V1.
-- [ ] Keep Markdown to PDF for later unless it becomes strategically useful.
+- [x] Prioritize Image to PDF and PDF to image in V1.
+- [x] Markdown to PDF first version keeps the conversion catalogue coherent.
 
 ### Engine E — OCR and AI
 
@@ -230,6 +231,8 @@ Completed:
 - [x] First `compress_pdf` processor is connected.
 - [x] Build passes.
 - [x] Typecheck passes.
+- [x] Basic public SEO metadata, canonical links, hreflang, sitemap, and robots.txt exist.
+- [x] Public homepage includes clear pricing blocks for Free, Day Pass, Week Pass, and Pro.
 
 Remaining before real processing is production-ready:
 - [x] cleanup rules for temporary files
@@ -346,6 +349,7 @@ Tools:
 - [x] PNG to PDF
 - [x] PDF to JPG
 - [x] PDF to PNG
+- [x] Markdown to PDF
 - [x] Rotate PDF
 - [x] Delete PDF Pages
 - [ ] Reorder PDF Pages
@@ -358,11 +362,11 @@ Optional if still lightweight:
 - [ ] Sign PDF visually
 
 Definition of done:
-- [ ] tools are config-driven
-- [ ] processors are registered centrally
-- [ ] all public pages are indexable
-- [ ] English and French pages are usable
-- [ ] SEO metadata exists
+- [x] tools are config-driven
+- [x] processors are registered centrally
+- [x] all public pages are indexable
+- [x] English and French pages are usable
+- [x] SEO metadata exists
 - [ ] basic analytics events exist
 
 ---
@@ -372,11 +376,11 @@ Definition of done:
 Goal: prepare public acquisition.
 
 Build:
-- [ ] dynamic metadata
-- [ ] canonical URLs
-- [ ] hreflang
-- [ ] sitemap
-- [ ] robots.txt
+- [x] dynamic metadata
+- [x] canonical URLs
+- [x] hreflang
+- [x] sitemap
+- [x] robots.txt
 - [ ] structured data for tool pages
 - [ ] guides for the first tools
 - [ ] internal linking matrix
@@ -465,6 +469,42 @@ Definition of done:
 
 ---
 
+## Long-Term Vision — Document Operations SaaS
+
+This is a future direction, not the current MVP scope.
+
+Positioning:
+- [ ] Keep public PDF/document tools as the acquisition funnel.
+- [ ] Evolve from "PDF utilities" to "documents into workflows".
+- [ ] Make Foliant useful for individuals first, then teams, then businesses.
+
+Future product layers:
+- [ ] Public tools: convert, compress, merge, OCR, extract, sign.
+- [ ] Document workspace: documents, folders, search, history, teams.
+- [ ] Document intelligence: OCR, classification, data extraction, document chat.
+- [ ] Automation: rules, approvals, notifications, exports.
+- [ ] Platform/API: business integrations, API usage, agent access.
+
+Business workflow examples:
+- [ ] Supplier invoice inbox by email.
+- [ ] Automatic document classification.
+- [ ] Extraction of vendor, invoice number, amount, VAT, date, currency, and PO.
+- [ ] Approval rules by amount and role.
+- [ ] Export to Excel, ERP, or API.
+- [ ] Archive with audit trail.
+
+Enterprise capabilities:
+- [ ] System of Record: versions, statuses, validations, suppliers, history.
+- [ ] System of Control: roles, permissions, approval thresholds.
+- [ ] System of Learning: repeated supplier formats and learned field positions.
+- [ ] System of Workflow: no-code rules and document routing.
+
+Important constraint:
+- [x] Do not build these layers now.
+- [x] Keep the current MVP focused on public tools, SEO, upload/job/download, and the V1 engine catalogue.
+
+---
+
 ## Immediate Next Steps
 
 - [x] Finish the local processing pipeline.
@@ -482,3 +522,7 @@ Definition of done:
 - [x] Finish Image to PDF first version.
 - [x] Finish PDF to image first version.
 - [x] Expose all planned catalogue items consistently at the bottom of every page.
+- [x] Add homepage pricing blocks so monetization is visible early.
+- [x] Add SEO metadata, canonical links, hreflang, sitemap, and robots.txt for public pages.
+- [x] Finish Markdown to PDF first version.
+- [ ] Start Office conversion prerequisites with LibreOffice headless.
