@@ -2,7 +2,10 @@
 
 import {useState} from "react";
 import type {ToolAction} from "@/content/tools/actions";
-import {MergeFlowModal, type MergeFlowLabels} from "./MergeFlowModal";
+import type {MergeFlowLabels} from "./MergeFlowModal";
+import dynamic from "next/dynamic";
+import {UploadFlowLoading} from "./UploadFlowLoading";
+const MergeFlowModal = dynamic(() => import("./MergeFlowModal").then((module) => module.MergeFlowModal), {loading: UploadFlowLoading});
 
 type MergeLabels = MergeFlowLabels & {add: string};
 

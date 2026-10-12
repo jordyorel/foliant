@@ -1,4 +1,7 @@
 import Link from "next/link";
+import "@/components/shared/marketing.css";
+import {ToolEditorial} from "./ToolEditorial";
+import {getToolEditorial, localize, marketingCopy, publicToolName} from "@/content/tools/editorial";
 import {useTranslations} from "next-intl";
 import {Header} from "@/components/shared/Header";
 import {LandingAccordion} from "./LandingAccordion";
@@ -27,18 +30,20 @@ export function LandingPage({locale, activeTool}: LandingPageProps) {
   const t = useTranslations("home");
   const catalog = useTranslations("catalog");
   const tool = activeTool ? tools[activeTool] : undefined;
-  const heroTitle = tool ? catalog(`tools.${tool.labelKey}`) : t("title");
-  const heroSubtitle = tool ? t("toolSubtitle") : t("subtitle");
+  const heroTitle = tool && activeTool ? publicToolName(activeTool, locale, catalog(`tools.${tool.labelKey}`)) : t("title");
+  const editorial = tool && activeTool ? getToolEditorial(activeTool, locale) : undefined;
+  const heroSubtitle = editorial ? editorial.description : t("subtitle");
   const uploadTitle = tool ? t("toolUploadTitle") : t("uploadTitle");
-  const uploadNote = tool ? t("toolUploadNote") : t("uploadNote");
+  const uploadNote = editorial ? `${editorial.formats} · ${editorial.limitMB} ${localize(marketingCopy.fileLimit, locale)}` : t("uploadNote");
   const accept = tool?.accept ?? ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.heic,.md";
   const toolAction = getToolAction(activeTool);
 
   return (
-    <>
+    <div className="marketing-site">
       <Header locale={locale} />
       <main>
         <section className="hero" aria-labelledby="hero-title">
+          <nav className="tool-breadcrumb" aria-label="Foliant"><Link href={`/${locale}`}>Foliant</Link><i className="ti ti-chevron-right" aria-hidden="true" /><Link href={`/${locale}#outils`}>{localize(marketingCopy.tools, locale)}</Link></nav>
           <div className="hero-copy">
             {!tool ? <p className="eyebrow">{t("eyebrow")}</p> : null}
             <h1 id="hero-title">{heroTitle}</h1>
@@ -166,10 +171,17 @@ export function LandingPage({locale, activeTool}: LandingPageProps) {
                 uploading: t("upload.pdfToImage.uploading"),
                 readyTitle: t("upload.pdfToImage.readyTitle"),
                 selectFormat: t("upload.pdfToImage.selectFormat"),
+                selectResolution: t("upload.pdfToImage.selectResolution"),
                 jpg: t("upload.pdfToImage.jpg"),
                 jpgText: t("upload.pdfToImage.jpgText"),
                 png: t("upload.pdfToImage.png"),
                 pngText: t("upload.pdfToImage.pngText"),
+                web: t("upload.pdfToImage.web"),
+                webText: t("upload.pdfToImage.webText"),
+                standard: t("upload.pdfToImage.standard"),
+                standardText: t("upload.pdfToImage.standardText"),
+                highDefinition: t("upload.pdfToImage.highDefinition"),
+                highDefinitionText: t("upload.pdfToImage.highDefinitionText"),
                 convert: t("upload.pdfToImage.convert"),
                 converting: t("upload.pdfToImage.converting"),
                 done: t("upload.pdfToImage.done"),
@@ -450,15 +462,20 @@ export function LandingPage({locale, activeTool}: LandingPageProps) {
               labels={{
                 selected: t("upload.selected"),
                 start: t("upload.start"),
+                ready: t("upload.ready"),
                 uploading: t("upload.uploading"),
                 queued: t("upload.queued"),
                 processing: t("upload.processing"),
                 completed: t("upload.completed"),
+                completedText: t("upload.completedText"),
                 download: t("upload.download"),
                 error: t("upload.error"),
                 errorTooLarge: t("upload.errorTooLarge"),
                 errorUnsupportedType: t("upload.errorUnsupportedType"),
                 errorInvalidFile: t("upload.errorInvalidFile"),
+                errorLibreOfficeMissing: t("upload.errorLibreOfficeMissing"),
+                errorPdfTextMissing: t("upload.errorPdfTextMissing"),
+                another: t("upload.another"),
                 alreadyOptimizedBadge: t("upload.alreadyOptimizedBadge"),
                 original: t("upload.original"),
                 final: t("upload.final"),
@@ -489,12 +506,13 @@ export function LandingPage({locale, activeTool}: LandingPageProps) {
             />
           )}
           <div className="trust-row" aria-label={t("statsLabel")}>
-            <span><strong>2 min</strong>{t("statFast")}</span>
-            <span><strong>0 app</strong>{t("statInstall")}</span>
-            <span><strong>6 h</strong>{t("statDelete")}</span>
+            <span><i className="ti ti-user-check" aria-hidden="true" />{localize(marketingCopy.noAccount, locale)}</span>
+            <span><i className="ti ti-world" aria-hidden="true" />{localize(marketingCopy.noInstall, locale)}</span>
+            <span><i className="ti ti-clock" aria-hidden="true" />{localize(marketingCopy.temporary, locale)}</span>
           </div>
         </section>
 
+        {activeTool ? <ToolEditorial slug={activeTool} locale={locale} /> : <>
         <section className="section" aria-labelledby="workspace-title">
           <div className="section-head">
             <h2 id="workspace-title">{t("workspaceTitle")}</h2>
@@ -532,7 +550,7 @@ export function LandingPage({locale, activeTool}: LandingPageProps) {
             <h2 id="faq-title">{t("faqTitle")}</h2>
           </div>
           <div className="faq">
-            {["free", "install", "privacy", "signature"].map((key) => (
+            {["free", "install", "privacy"].map((key) => (
               <details key={key}>
                 <summary>{t(`faq.${key}.q`)} <i className="ti ti-plus" aria-hidden="true" /></summary>
                 <p>{t(`faq.${key}.a`)}</p>
@@ -550,12 +568,13 @@ export function LandingPage({locale, activeTool}: LandingPageProps) {
             <Link className="tool-card" href={`/${locale}/pdf-en-word`}><i className="ti ti-refresh" aria-hidden="true" /><span>{catalog("tools.pdfToWord")}</span></Link>
             <Link className="tool-card" href={`/${locale}/compresser-pdf`}><i className="ti ti-arrows-diagonal-minimize-2" aria-hidden="true" /><span>{catalog("tools.compressPdf")}</span></Link>
             <Link className="tool-card" href={`/${locale}/fusionner-pdf`}><i className="ti ti-stack-2" aria-hidden="true" /><span>{catalog("tools.mergePdf")}</span></Link>
-            <Link className="tool-card" href={`/${locale}/signer-pdf`}><i className="ti ti-signature" aria-hidden="true" /><span>{catalog("tools.signPdf")}</span></Link>
+            <Link className="tool-card" href={`/${locale}/reorganiser-pdf`}><i className="ti ti-layout-grid" aria-hidden="true" /><span>{catalog("tools.reorderPdf")}</span></Link>
           </div>
           <FullToolCatalog locale={locale} />
         </section>
+        </>}
       </main>
       <SiteFooter locale={locale} />
-    </>
+    </div>
   );
 }

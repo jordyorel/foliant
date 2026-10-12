@@ -1,8 +1,12 @@
 "use client";
+import {useTransferLifecycle} from "./useTransferLifecycle";
+import {pollJobUntilSettled} from "@/lib/jobs/client-poll";
+import {ProcessingStatus} from "./ProcessingStatus";
 
 import {useEffect, useState} from "react";
 import type {ToolAction} from "@/content/tools/actions";
 import {messageFromCode, messageFromResponse, type ErrorLabels} from "./clientError";
+import {redirectToGuestStudio} from "./guestStudio";
 import {formatSize, uploadFileWithProgress, type JobResponse} from "./upload";
 
 export type PasswordPdfMode = "protect" | "unlock";
@@ -54,9 +58,9 @@ type UploadState = {
 };
 
 export function PasswordPdfFlowModal({file, mode, tool, labels, onClose}: PasswordPdfFlowModalProps) {
+  const {getSignal, runSubmission, retryCount, retry, retryLabel, errorExpired} = useTransferLifecycle(file, tool);
   const [flowState, setFlowState] = useState<FlowState>("uploading");
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [jobProgress, setJobProgress] = useState(0);
   const [upload, setUpload] = useState<UploadState | null>(null);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -75,17 +79,20 @@ export function PasswordPdfFlowModal({file, mode, tool, labels, onClose}: Passwo
   const canSubmit = Boolean(upload) &&
     password.trim().length > 0 &&
     (!isProtect || (confirmPassword.trim().length > 0 && password === confirmPassword));
-  const progress = flowState === "uploading" ? uploadProgress : jobProgress;
+  const progress = uploadProgress;
 
   useEffect(() => {
+    setError("");
     let cancelled = false;
+    const signal = getSignal();
 
     async function startUpload() {
       try {
         setFlowState("uploading");
-        setUploadProgress(4);
+        setUploadProgress(0);
 
         const initResponse = await fetch("/api/upload/init", {
+          signal,
           method: "POST",
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify({
@@ -96,7 +103,7 @@ export function PasswordPdfFlowModal({file, mode, tool, labels, onClose}: Passwo
           })
         });
 
-        if (!initResponse.ok) throw new Error(await messageFromResponse(initResponse, errorLabels));
+        if (!initResponse.ok) throw new Error(await messageFromResponse(initResponse, {...errorLabels, errorExpired}));
 
         const nextUpload = await initResponse.json() as UploadState;
         if (cancelled) return;
@@ -104,13 +111,11 @@ export function PasswordPdfFlowModal({file, mode, tool, labels, onClose}: Passwo
         setUpload(nextUpload);
         await uploadFileWithProgress(nextUpload.uploadUrl, file, errorLabels, (nextProgress) => {
           if (!cancelled) setUploadProgress(nextProgress);
-        });
+        }, signal);
 
         if (cancelled) return;
 
-        window.setTimeout(() => {
-          if (!cancelled) setFlowState("ready");
-        }, 260);
+        if (!cancelled) setFlowState("ready");
       } catch (uploadError) {
         if (cancelled) return;
         setError(uploadError instanceof Error ? uploadError.message : labels.error);
@@ -123,18 +128,16 @@ export function PasswordPdfFlowModal({file, mode, tool, labels, onClose}: Passwo
     return () => {
       cancelled = true;
     };
-  }, [file, labels.error, tool]);
+  }, [file, labels.error, tool, retryCount]);
 
   async function pollJob(jobId: string) {
-    const response = await fetch(`/api/jobs/${jobId}`);
-    if (!response.ok) throw new Error(labels.error);
-
-    const nextJob = await response.json() as JobResponse;
-    setJobProgress(nextJob.progress);
+    const signal = getSignal();
+    const nextJob = await pollJobUntilSettled<JobResponse>(jobId, labels.error, signal);
+    if (signal.aborted) return;
 
     if (nextJob.status === "completed") {
       setDownloadUrl(nextJob.resultUrl ?? `/api/jobs/${jobId}/download`);
-      setFlowState("completed");
+      redirectToGuestStudio(jobId);
       return;
     }
 
@@ -144,24 +147,20 @@ export function PasswordPdfFlowModal({file, mode, tool, labels, onClose}: Passwo
       return;
     }
 
-    window.setTimeout(() => {
-      void pollJob(jobId).catch(() => {
-        setError(labels.error);
-        setFlowState("failed");
-      });
-    }, 700);
   }
 
   async function startProcessing() {
+    return runSubmission(async () => {
+      const signal = getSignal();
     if (!upload || !canSubmit) return;
 
     try {
       setError("");
       setFlowState("processing");
-      setJobProgress(8);
 
       const jobResponse = await fetch("/api/jobs", {
-        method: "POST",
+        signal,
+          method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
           tool,
@@ -170,12 +169,11 @@ export function PasswordPdfFlowModal({file, mode, tool, labels, onClose}: Passwo
         })
       });
 
-      if (!jobResponse.ok) throw new Error(await messageFromResponse(jobResponse, errorLabels));
+      if (!jobResponse.ok) throw new Error(await messageFromResponse(jobResponse, {...errorLabels, errorExpired}));
 
       const createdJob = await jobResponse.json() as JobResponse;
       setPassword("");
       setConfirmPassword("");
-      setJobProgress(createdJob.progress);
       await pollJob(createdJob.id);
     } catch (processingError) {
       setPassword("");
@@ -183,6 +181,7 @@ export function PasswordPdfFlowModal({file, mode, tool, labels, onClose}: Passwo
       setError(processingError instanceof Error ? processingError.message : labels.error);
       setFlowState("failed");
     }
+    });
   }
 
   return (
@@ -247,10 +246,7 @@ export function PasswordPdfFlowModal({file, mode, tool, labels, onClose}: Passwo
         {flowState === "processing" ? (
           <div className="flow-panel compact">
             <h2 id="password-pdf-flow-title">{labels.processing}</h2>
-            <div className="large-progress" aria-label={labels.processing}>
-              <span style={{width: `${progress}%`}} />
-            </div>
-            <p className="progress-percent">{progress}%</p>
+            <ProcessingStatus label={labels.processing} />
           </div>
         ) : null}
 
@@ -280,7 +276,8 @@ export function PasswordPdfFlowModal({file, mode, tool, labels, onClose}: Passwo
           <div className="flow-panel compact">
             <h2 id="password-pdf-flow-title">{labels.error}</h2>
             <p className="upload-error">{error || labels.error}</p>
-            <button className="modal-primary" type="button" onClick={onClose}>{labels.another}</button>
+            <button className="modal-primary" type="button" onClick={retry}><i className="ti ti-refresh" aria-hidden="true" />{retryLabel}</button>
+            <button className="text-button" type="button" onClick={onClose}>{labels.another}</button>
           </div>
         ) : null}
       </div>

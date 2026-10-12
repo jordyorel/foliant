@@ -1,16 +1,17 @@
 import {NextResponse} from "next/server";
-import {getJob} from "@/lib/jobs";
+import {canAccessGuestJob, getJob, recordJobDownload} from "@/lib/jobs";
+import {guestSessionId} from "@/lib/studio/guest-session";
 import {readResultFile} from "@/lib/storage/local";
 
 type Props = {
   params: Promise<{jobId: string}>;
 };
 
-export async function GET(_request: Request, {params}: Props) {
+export async function GET(request: Request, {params}: Props) {
   const {jobId} = await params;
   const job = getJob(jobId);
 
-  if (!job) {
+  if (!job || !canAccessGuestJob(job, guestSessionId(request))) {
     return NextResponse.json({error: "Job not found"}, {status: 404});
   }
 
@@ -24,6 +25,7 @@ export async function GET(_request: Request, {params}: Props) {
     return NextResponse.json({error: "Result not found"}, {status: 404});
   }
 
+  recordJobDownload(jobId);
   return new Response(file.bytes, {
     headers: {
       "Content-Type": file.result.mimeType,

@@ -1,9 +1,13 @@
 "use client";
+import {useTransferLifecycle} from "./useTransferLifecycle";
+import {pollJobUntilSettled} from "@/lib/jobs/client-poll";
+import {ProcessingStatus} from "./ProcessingStatus";
 
 import {useEffect, useMemo, useState} from "react";
 import type {ToolAction} from "@/content/tools/actions";
 import type {WatermarkPosition} from "@/processors/pdf/watermark";
 import {messageFromCode, messageFromResponse, type ErrorLabels} from "./clientError";
+import {redirectToGuestStudio} from "./guestStudio";
 import {formatSize, uploadFileWithProgress, type JobResponse} from "./upload";
 
 export type WatermarkFlowLabels = {
@@ -56,9 +60,9 @@ type UploadState = {
 };
 
 export function WatermarkFlowModal({file, tool, labels, onClose}: WatermarkFlowModalProps) {
+  const {getSignal, runSubmission, retryCount, retry, retryLabel, errorExpired} = useTransferLifecycle(file, tool);
   const [flowState, setFlowState] = useState<FlowState>("uploading");
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [jobProgress, setJobProgress] = useState(0);
   const [upload, setUpload] = useState<UploadState | null>(null);
   const [text, setText] = useState("");
   const [position, setPosition] = useState<WatermarkPosition>("center");
@@ -73,7 +77,7 @@ export function WatermarkFlowModal({file, tool, labels, onClose}: WatermarkFlowM
     errorInvalidFile: labels.errorInvalidFile
   };
   const canSubmit = Boolean(upload) && text.trim().length > 0;
-  const progress = flowState === "uploading" ? uploadProgress : jobProgress;
+  const progress = uploadProgress;
 
   const positions = useMemo(() => [
     {id: "center" as const, title: labels.center, text: labels.centerText},
@@ -89,14 +93,17 @@ export function WatermarkFlowModal({file, tool, labels, onClose}: WatermarkFlowM
   ]);
 
   useEffect(() => {
+    setError("");
     let cancelled = false;
+    const signal = getSignal();
 
     async function startUpload() {
       try {
         setFlowState("uploading");
-        setUploadProgress(4);
+        setUploadProgress(0);
 
         const initResponse = await fetch("/api/upload/init", {
+          signal,
           method: "POST",
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify({
@@ -107,7 +114,7 @@ export function WatermarkFlowModal({file, tool, labels, onClose}: WatermarkFlowM
           })
         });
 
-        if (!initResponse.ok) throw new Error(await messageFromResponse(initResponse, errorLabels));
+        if (!initResponse.ok) throw new Error(await messageFromResponse(initResponse, {...errorLabels, errorExpired}));
 
         const nextUpload = await initResponse.json() as UploadState;
         if (cancelled) return;
@@ -115,13 +122,11 @@ export function WatermarkFlowModal({file, tool, labels, onClose}: WatermarkFlowM
         setUpload(nextUpload);
         await uploadFileWithProgress(nextUpload.uploadUrl, file, errorLabels, (nextProgress) => {
           if (!cancelled) setUploadProgress(nextProgress);
-        });
+        }, signal);
 
         if (cancelled) return;
 
-        window.setTimeout(() => {
-          if (!cancelled) setFlowState("ready");
-        }, 260);
+        if (!cancelled) setFlowState("ready");
       } catch (uploadError) {
         if (cancelled) return;
         setError(uploadError instanceof Error ? uploadError.message : labels.error);
@@ -134,18 +139,16 @@ export function WatermarkFlowModal({file, tool, labels, onClose}: WatermarkFlowM
     return () => {
       cancelled = true;
     };
-  }, [file, labels.error, tool]);
+  }, [file, labels.error, tool, retryCount]);
 
   async function pollJob(jobId: string) {
-    const response = await fetch(`/api/jobs/${jobId}`);
-    if (!response.ok) throw new Error(labels.error);
-
-    const nextJob = await response.json() as JobResponse;
-    setJobProgress(nextJob.progress);
+    const signal = getSignal();
+    const nextJob = await pollJobUntilSettled<JobResponse>(jobId, labels.error, signal);
+    if (signal.aborted) return;
 
     if (nextJob.status === "completed") {
       setDownloadUrl(nextJob.resultUrl ?? `/api/jobs/${jobId}/download`);
-      setFlowState("completed");
+      redirectToGuestStudio(jobId);
       return;
     }
 
@@ -155,24 +158,20 @@ export function WatermarkFlowModal({file, tool, labels, onClose}: WatermarkFlowM
       return;
     }
 
-    window.setTimeout(() => {
-      void pollJob(jobId).catch(() => {
-        setError(labels.error);
-        setFlowState("failed");
-      });
-    }, 700);
   }
 
   async function startWatermark() {
+    return runSubmission(async () => {
+      const signal = getSignal();
     if (!upload || !canSubmit) return;
 
     try {
       setError("");
       setFlowState("processing");
-      setJobProgress(8);
 
       const jobResponse = await fetch("/api/jobs", {
-        method: "POST",
+        signal,
+          method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
           tool,
@@ -185,15 +184,16 @@ export function WatermarkFlowModal({file, tool, labels, onClose}: WatermarkFlowM
         })
       });
 
-      if (!jobResponse.ok) throw new Error(await messageFromResponse(jobResponse, errorLabels));
+      if (!jobResponse.ok) throw new Error(await messageFromResponse(jobResponse, {...errorLabels, errorExpired}));
 
       const createdJob = await jobResponse.json() as JobResponse;
-      setJobProgress(createdJob.progress);
       await pollJob(createdJob.id);
     } catch (watermarkError) {
+      if (signal.aborted) return;
       setError(watermarkError instanceof Error ? watermarkError.message : labels.error);
       setFlowState("failed");
     }
+    });
   }
 
   return (
@@ -273,10 +273,7 @@ export function WatermarkFlowModal({file, tool, labels, onClose}: WatermarkFlowM
         {flowState === "processing" ? (
           <div className="flow-panel compact">
             <h2 id="watermark-flow-title">{labels.processing}</h2>
-            <div className="large-progress" aria-label={labels.processing}>
-              <span style={{width: `${progress}%`}} />
-            </div>
-            <p className="progress-percent">{progress}%</p>
+            <ProcessingStatus label={labels.processing} />
           </div>
         ) : null}
 
@@ -306,7 +303,8 @@ export function WatermarkFlowModal({file, tool, labels, onClose}: WatermarkFlowM
           <div className="flow-panel compact">
             <h2 id="watermark-flow-title">{labels.error}</h2>
             <p className="upload-error">{error || labels.error}</p>
-            <button className="modal-primary" type="button" onClick={onClose}>{labels.another}</button>
+            <button className="modal-primary" type="button" onClick={retry}><i className="ti ti-refresh" aria-hidden="true" />{retryLabel}</button>
+            <button className="text-button" type="button" onClick={onClose}>{labels.another}</button>
           </div>
         ) : null}
       </div>

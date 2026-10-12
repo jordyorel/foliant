@@ -2,7 +2,10 @@
 
 import {useState} from "react";
 import type {ToolAction} from "@/content/tools/actions";
-import {WatermarkFlowModal, type WatermarkFlowLabels} from "./WatermarkFlowModal";
+import type {WatermarkFlowLabels} from "./WatermarkFlowModal";
+import dynamic from "next/dynamic";
+import {UploadFlowLoading} from "./UploadFlowLoading";
+const WatermarkFlowModal = dynamic(() => import("./WatermarkFlowModal").then((module) => module.WatermarkFlowModal), {loading: UploadFlowLoading});
 
 export function WatermarkUploader({tool, accept, note, labels}: {
   tool: ToolAction;

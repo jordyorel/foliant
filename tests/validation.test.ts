@@ -27,6 +27,18 @@ describe("validateUploadInit", () => {
     if (result.ok) expect(result.maxSize).toBe(15 * MB);
   });
 
+  it.each(["fill_pdf", "sign_pdf"])("accepts public PDF imports for %s", (tool) => {
+    const input = {
+      tool,
+      fileName: "application.pdf",
+      fileSize: MB,
+      mimeType: "application/pdf"
+    };
+
+    expect(validateUploadInit(input).ok).toBe(true);
+    expect(validateUploadInit(input, {allowStudioOnly: true}).ok).toBe(true);
+  });
+
   it("rejects a PDF over 25 MB", () => {
     const result = validateUploadInit({
       tool: "compress_pdf",
@@ -127,6 +139,39 @@ describe("validateUploadInit", () => {
     if (result.ok) expect(result.maxSize).toBe(25 * MB);
   });
 
+  it("accepts pdf_to_word with a 25 MB limit", () => {
+    const result = validateUploadInit({
+      tool: "pdf_to_word",
+      fileName: "document.pdf",
+      fileSize: MB,
+      mimeType: "application/pdf"
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.maxSize).toBe(25 * MB);
+  });
+
+  it("accepts pdf_to_excel with a 25 MB limit", () => {
+    const result = validateUploadInit({
+      tool: "pdf_to_excel",
+      fileName: "document.pdf",
+      fileSize: MB,
+      mimeType: "application/pdf"
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.maxSize).toBe(25 * MB);
+  });
+
+  it("accepts pdf_to_powerpoint with a 25 MB limit", () => {
+    const result = validateUploadInit({
+      tool: "pdf_to_powerpoint",
+      fileName: "document.pdf",
+      fileSize: MB,
+      mimeType: "application/pdf"
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.maxSize).toBe(25 * MB);
+  });
+
   it("accepts markdown_to_pdf with a 2 MB limit", () => {
     const result = validateUploadInit({
       tool: "markdown_to_pdf",
@@ -142,6 +187,48 @@ describe("validateUploadInit", () => {
     const result = validateUploadInit({
       tool: "markdown_to_pdf",
       fileName: "notes.pdf",
+      fileSize: MB,
+      mimeType: "application/pdf"
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.code).toBe(ErrorCode.unsupportedType);
+  });
+
+  it("accepts word_to_pdf DOCX uploads", () => {
+    const result = validateUploadInit({
+      tool: "word_to_pdf",
+      fileName: "document.docx",
+      fileSize: MB,
+      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.maxSize).toBe(25 * MB);
+  });
+
+  it("accepts excel_to_pdf XLSX uploads", () => {
+    const result = validateUploadInit({
+      tool: "excel_to_pdf",
+      fileName: "sheet.xlsx",
+      fileSize: MB,
+      mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("accepts powerpoint_to_pdf PPTX uploads", () => {
+    const result = validateUploadInit({
+      tool: "powerpoint_to_pdf",
+      fileName: "slides.pptx",
+      fileSize: MB,
+      mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("rejects a non-Word type for word_to_pdf", () => {
+    const result = validateUploadInit({
+      tool: "word_to_pdf",
+      fileName: "document.pdf",
       fileSize: MB,
       mimeType: "application/pdf"
     });

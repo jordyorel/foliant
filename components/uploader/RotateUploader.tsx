@@ -2,7 +2,10 @@
 
 import {useState} from "react";
 import type {ToolAction} from "@/content/tools/actions";
-import {RotateFlowModal, type RotateFlowLabels} from "./RotateFlowModal";
+import type {RotateFlowLabels} from "./RotateFlowModal";
+import dynamic from "next/dynamic";
+import {UploadFlowLoading} from "./UploadFlowLoading";
+const RotateFlowModal = dynamic(() => import("./RotateFlowModal").then((module) => module.RotateFlowModal), {loading: UploadFlowLoading});
 
 type RotateUploaderLabels = RotateFlowLabels & {
   add: string;

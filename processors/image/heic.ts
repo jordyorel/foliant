@@ -1,5 +1,9 @@
 import {execFile} from "node:child_process";
 import {promisify} from "node:util";
+import {mkdtemp, rm} from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import sharp from "sharp";
 import {AppError, ErrorCode} from "@/lib/validation/errors";
 
 const execFileAsync = promisify(execFile);
@@ -25,6 +29,14 @@ async function convertHeic(inputPath: string, outputPath: string, format: HeicOu
 
   if (process.platform === "darwin") {
     attempts.push(() => execFileAsync("sips", ["-s", "format", format, inputPath, "--out", outputPath]));
+    if (format === "png") attempts.push(async () => {
+      const directory = await mkdtemp(path.join(os.tmpdir(), "foliant-heic-"));
+      try {
+        const intermediate = path.join(directory, "decoded.tiff");
+        await execFileAsync("sips", ["-s", "format", "tiff", inputPath, "--out", intermediate]);
+        await sharp(intermediate).png().toFile(outputPath);
+      } finally {await rm(directory, {recursive: true, force: true});}
+    });
   }
   attempts.push(() => execFileAsync("magick", [inputPath, outputPath]));
   attempts.push(() => execFileAsync("heif-convert", [inputPath, outputPath]));

@@ -1,8 +1,12 @@
 "use client";
+import {useTransferLifecycle} from "./useTransferLifecycle";
+import {pollJobUntilSettled} from "@/lib/jobs/client-poll";
+import {ProcessingStatus} from "./ProcessingStatus";
 
 import {useEffect, useState} from "react";
 import type {ToolAction} from "@/content/tools/actions";
 import {messageFromResponse, type ErrorLabels} from "./clientError";
+import {redirectToGuestStudio} from "./guestStudio";
 import {formatSize, uploadFileWithProgress as uploadFile} from "./upload";
 
 export type MergeFlowLabels = {
@@ -60,10 +64,11 @@ type JobResponse = {
 };
 
 export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalProps) {
+  const {getSignal, runSubmission, retryCount, retry, retryLabel, errorExpired} = useTransferLifecycle(files, tool);
   const [flowState, setFlowState] = useState<FlowState>("uploading");
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [jobProgress, setJobProgress] = useState(0);
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [draggedEntryIndex, setDraggedEntryIndex] = useState<number | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState("");
 
@@ -77,7 +82,9 @@ export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalPro
   const totalBytes = files.reduce((sum, file) => sum + file.size, 0);
 
   useEffect(() => {
+    setError("");
     let cancelled = false;
+    const signal = getSignal();
 
     async function uploadAll() {
       try {
@@ -87,7 +94,8 @@ export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalPro
 
         for (const file of files) {
           const initResponse = await fetch("/api/upload/init", {
-            method: "POST",
+            signal,
+          method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
               tool,
@@ -97,7 +105,7 @@ export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalPro
             })
           });
 
-          if (!initResponse.ok) throw new Error(await messageFromResponse(initResponse, errorLabels));
+          if (!initResponse.ok) throw new Error(await messageFromResponse(initResponse, {...errorLabels, errorExpired}));
           const init = await initResponse.json() as {fileId: string; uploadUrl: string};
           if (cancelled) return;
 
@@ -107,7 +115,7 @@ export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalPro
               ? Math.round(((uploadedBytes + (percent / 100) * file.size) / totalBytes) * 100)
               : 0;
             setUploadProgress(Math.min(100, overall));
-          });
+          }, signal);
 
           uploadedBytes += file.size;
           nextEntries.push({name: file.name, size: file.size, fileId: init.fileId});
@@ -129,18 +137,16 @@ export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalPro
     return () => {
       cancelled = true;
     };
-  }, [files, tool]);
+  }, [files, tool, retryCount]);
 
   async function poll(jobId: string) {
-    const response = await fetch(`/api/jobs/${jobId}`);
-    if (!response.ok) throw new Error(labels.error);
-
-    const nextJob = await response.json() as JobResponse;
-    setJobProgress(nextJob.progress);
+    const signal = getSignal();
+    const nextJob = await pollJobUntilSettled<JobResponse>(jobId, labels.error, signal);
+    if (signal.aborted) return;
 
     if (nextJob.status === "completed") {
       setDownloadUrl(nextJob.resultUrl ?? `/api/jobs/${jobId}/download`);
-      setFlowState("completed");
+      redirectToGuestStudio(jobId);
       return;
     }
 
@@ -150,36 +156,33 @@ export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalPro
       return;
     }
 
-    window.setTimeout(() => {
-      void poll(jobId).catch(() => {
-        setError(labels.error);
-        setFlowState("failed");
-      });
-    }, 700);
   }
 
   async function startMerge() {
+    return runSubmission(async () => {
+      const signal = getSignal();
     if (entries.length < 2) return;
 
     try {
       setError("");
       setFlowState("merging");
-      setJobProgress(8);
 
       const jobResponse = await fetch("/api/jobs", {
-        method: "POST",
+        signal,
+          method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({tool, fileIds: entries.map((entry) => entry.fileId), options: {}})
       });
 
-      if (!jobResponse.ok) throw new Error(await messageFromResponse(jobResponse, errorLabels));
+      if (!jobResponse.ok) throw new Error(await messageFromResponse(jobResponse, {...errorLabels, errorExpired}));
       const created = await jobResponse.json() as JobResponse;
-      setJobProgress(created.progress);
       await poll(created.id);
     } catch (err) {
+      if (signal.aborted) return;
       setError(err instanceof Error && err.message ? err.message : labels.error);
       setFlowState("failed");
     }
+    });
   }
 
   function move(index: number, delta: number) {
@@ -194,6 +197,16 @@ export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalPro
 
   function removeAt(index: number) {
     setEntries((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function moveTo(fromIndex: number, toIndex: number) {
+    if (fromIndex === toIndex) return;
+    setEntries((prev) => {
+      const next = [...prev];
+      const [entry] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, entry);
+      return next;
+    });
   }
 
   return (
@@ -222,8 +235,20 @@ export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalPro
             <h2 id="merge-flow-title">{labels.readyTitle}</h2>
             <div className="merge-list">
               {entries.map((entry, index) => (
-                <div className="mini-card merge-row" key={entry.fileId}>
-                  <span className="merge-name">{entry.name}</span>
+                <div
+                  className={`mini-card merge-row${draggedEntryIndex === index ? " is-dragging" : ""}`}
+                  draggable
+                  key={entry.fileId}
+                  onDragEnd={() => setDraggedEntryIndex(null)}
+                  onDragOver={(event) => event.preventDefault()}
+                  onDragStart={() => setDraggedEntryIndex(index)}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    if (draggedEntryIndex !== null) moveTo(draggedEntryIndex, index);
+                    setDraggedEntryIndex(null);
+                  }}
+                >
+                  <span className="merge-name"><i className="ti ti-grip-vertical" aria-hidden="true" />{index + 1}. {entry.name}</span>
                   <span className="badge">{formatSize(entry.size)}</span>
                   <button
                     className="merge-icon-button"
@@ -269,10 +294,7 @@ export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalPro
         {flowState === "merging" ? (
           <div className="flow-panel compact">
             <h2 id="merge-flow-title">{labels.mergingTitle}</h2>
-            <div className="large-progress" aria-label={labels.mergingTitle}>
-              <span style={{width: `${jobProgress}%`}} />
-            </div>
-            <p className="progress-percent">{jobProgress}%</p>
+            <ProcessingStatus label={labels.mergingTitle} />
           </div>
         ) : null}
 
@@ -306,7 +328,8 @@ export function MergeFlowModal({files, tool, labels, onClose}: MergeFlowModalPro
           <div className="flow-panel compact">
             <h2 id="merge-flow-title">{labels.error}</h2>
             <p className="upload-error">{error || labels.error}</p>
-            <button className="modal-primary" type="button" onClick={onClose}>{labels.another}</button>
+            <button className="modal-primary" type="button" onClick={retry}><i className="ti ti-refresh" aria-hidden="true" />{retryLabel}</button>
+            <button className="text-button" type="button" onClick={onClose}>{labels.another}</button>
           </div>
         ) : null}
       </div>

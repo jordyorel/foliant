@@ -8,14 +8,18 @@
     "start": "next start",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run --fileParallelism false",
+    "test:watch": "vitest",
+    "worker:workflows": "node --env-file-if-exists=.env.local scripts/workflow-worker.mjs"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.116.0",
     "jszip": "^3.10.1",
     "next": "latest",
     "next-intl": "latest",
     "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^6.3.289",
     "react": "latest",
     "react-dom": "latest",
     "sharp": "^0.35.4"

@@ -1,8 +1,12 @@
 "use client";
+import {useTransferLifecycle} from "./useTransferLifecycle";
+import {pollJobUntilSettled} from "@/lib/jobs/client-poll";
+import {ProcessingStatus} from "./ProcessingStatus";
 
 import {useEffect, useMemo, useState} from "react";
 import type {ToolAction} from "@/content/tools/actions";
 import {messageFromCode, messageFromResponse, type ErrorLabels} from "./clientError";
+import {redirectToGuestStudio} from "./guestStudio";
 import {formatSize, uploadFileWithProgress, type JobResponse} from "./upload";
 
 type RotateDegrees = 90 | 180 | 270;
@@ -54,9 +58,9 @@ type UploadState = {
 };
 
 export function RotateFlowModal({file, tool, labels, onClose}: RotateFlowModalProps) {
+  const {getSignal, runSubmission, retryCount, retry, retryLabel, errorExpired} = useTransferLifecycle(file, tool);
   const [flowState, setFlowState] = useState<FlowState>("uploading");
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [jobProgress, setJobProgress] = useState(0);
   const [upload, setUpload] = useState<UploadState | null>(null);
   const [rotation, setRotation] = useState<RotateDegrees>(90);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
@@ -68,7 +72,7 @@ export function RotateFlowModal({file, tool, labels, onClose}: RotateFlowModalPr
     errorUnsupportedType: labels.errorUnsupportedType,
     errorInvalidFile: labels.errorInvalidFile
   };
-  const progress = flowState === "uploading" ? uploadProgress : jobProgress;
+  const progress = uploadProgress;
 
   const options = useMemo(() => [
     {id: 90 as const, title: labels.right, text: labels.rightText, icon: "ti-rotate-clockwise"},
@@ -84,14 +88,17 @@ export function RotateFlowModal({file, tool, labels, onClose}: RotateFlowModalPr
   ]);
 
   useEffect(() => {
+    setError("");
     let cancelled = false;
+    const signal = getSignal();
 
     async function startUpload() {
       try {
         setFlowState("uploading");
-        setUploadProgress(4);
+        setUploadProgress(0);
 
         const initResponse = await fetch("/api/upload/init", {
+          signal,
           method: "POST",
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify({
@@ -102,7 +109,7 @@ export function RotateFlowModal({file, tool, labels, onClose}: RotateFlowModalPr
           })
         });
 
-        if (!initResponse.ok) throw new Error(await messageFromResponse(initResponse, errorLabels));
+        if (!initResponse.ok) throw new Error(await messageFromResponse(initResponse, {...errorLabels, errorExpired}));
 
         const nextUpload = await initResponse.json() as UploadState;
         if (cancelled) return;
@@ -110,13 +117,11 @@ export function RotateFlowModal({file, tool, labels, onClose}: RotateFlowModalPr
         setUpload(nextUpload);
         await uploadFileWithProgress(nextUpload.uploadUrl, file, errorLabels, (nextProgress) => {
           if (!cancelled) setUploadProgress(nextProgress);
-        });
+        }, signal);
 
         if (cancelled) return;
 
-        window.setTimeout(() => {
-          if (!cancelled) setFlowState("ready");
-        }, 260);
+        if (!cancelled) setFlowState("ready");
       } catch (uploadError) {
         if (cancelled) return;
         setError(uploadError instanceof Error ? uploadError.message : labels.error);
@@ -129,18 +134,16 @@ export function RotateFlowModal({file, tool, labels, onClose}: RotateFlowModalPr
     return () => {
       cancelled = true;
     };
-  }, [file, labels.error, tool]);
+  }, [file, labels.error, tool, retryCount]);
 
   async function pollJob(jobId: string) {
-    const response = await fetch(`/api/jobs/${jobId}`);
-    if (!response.ok) throw new Error(labels.error);
-
-    const nextJob = await response.json() as JobResponse;
-    setJobProgress(nextJob.progress);
+    const signal = getSignal();
+    const nextJob = await pollJobUntilSettled<JobResponse>(jobId, labels.error, signal);
+    if (signal.aborted) return;
 
     if (nextJob.status === "completed") {
       setDownloadUrl(nextJob.resultUrl ?? `/api/jobs/${jobId}/download`);
-      setFlowState("completed");
+      redirectToGuestStudio(jobId);
       return;
     }
 
@@ -150,24 +153,20 @@ export function RotateFlowModal({file, tool, labels, onClose}: RotateFlowModalPr
       return;
     }
 
-    window.setTimeout(() => {
-      void pollJob(jobId).catch(() => {
-        setError(labels.error);
-        setFlowState("failed");
-      });
-    }, 700);
   }
 
   async function startRotate() {
+    return runSubmission(async () => {
+      const signal = getSignal();
     if (!upload) return;
 
     try {
       setError("");
       setFlowState("rotating");
-      setJobProgress(8);
 
       const jobResponse = await fetch("/api/jobs", {
-        method: "POST",
+        signal,
+          method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
           tool,
@@ -176,15 +175,16 @@ export function RotateFlowModal({file, tool, labels, onClose}: RotateFlowModalPr
         })
       });
 
-      if (!jobResponse.ok) throw new Error(await messageFromResponse(jobResponse, errorLabels));
+      if (!jobResponse.ok) throw new Error(await messageFromResponse(jobResponse, {...errorLabels, errorExpired}));
 
       const createdJob = await jobResponse.json() as JobResponse;
-      setJobProgress(createdJob.progress);
       await pollJob(createdJob.id);
     } catch (rotateError) {
+      if (signal.aborted) return;
       setError(rotateError instanceof Error ? rotateError.message : labels.error);
       setFlowState("failed");
     }
+    });
   }
 
   return (
@@ -243,10 +243,7 @@ export function RotateFlowModal({file, tool, labels, onClose}: RotateFlowModalPr
         {flowState === "rotating" ? (
           <div className="flow-panel compact">
             <h2 id="rotate-flow-title">{labels.rotating}</h2>
-            <div className="large-progress" aria-label={labels.rotating}>
-              <span style={{width: `${progress}%`}} />
-            </div>
-            <p className="progress-percent">{progress}%</p>
+            <ProcessingStatus label={labels.rotating} />
           </div>
         ) : null}
 
@@ -276,7 +273,8 @@ export function RotateFlowModal({file, tool, labels, onClose}: RotateFlowModalPr
           <div className="flow-panel compact">
             <h2 id="rotate-flow-title">{labels.error}</h2>
             <p className="upload-error">{error || labels.error}</p>
-            <button className="modal-primary" type="button" onClick={onClose}>{labels.another}</button>
+            <button className="modal-primary" type="button" onClick={retry}><i className="ti ti-refresh" aria-hidden="true" />{retryLabel}</button>
+            <button className="text-button" type="button" onClick={onClose}>{labels.another}</button>
           </div>
         ) : null}
       </div>

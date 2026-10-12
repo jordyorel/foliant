@@ -1,4 +1,4 @@
-import {describe, it, expect, afterAll} from "vitest";
+import {describe, it, expect, afterAll, vi} from "vitest";
 import {
   cleanupExpiredFiles,
   createTemporaryFile,
@@ -56,6 +56,18 @@ describe("saveTemporaryFile", () => {
 
     expect(saved).not.toBeNull();
     expect(saved?.fileSize).toBe(bytes.length);
+  });
+
+  it("restores upload metadata after a module reload", async () => {
+    const file = pdfUpload("light.pdf");
+    const bytes = fixtureBytes("light.pdf");
+    await saveTemporaryFile(file.id, toArrayBuffer(bytes));
+
+    vi.resetModules();
+    const storage = await import("@/lib/storage/local");
+
+    expect(storage.hasTemporaryFile(file.id)).toBe(true);
+    expect(storage.getTemporaryFile(file.id)?.fileSize).toBe(bytes.length);
   });
 
   it("rejects invalid PDF content regardless of extension", async () => {

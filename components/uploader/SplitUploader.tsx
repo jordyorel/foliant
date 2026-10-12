@@ -2,7 +2,10 @@
 
 import {useState} from "react";
 import type {ToolAction} from "@/content/tools/actions";
-import {SplitFlowModal, type SplitFlowLabels} from "./SplitFlowModal";
+import type {SplitFlowLabels} from "./SplitFlowModal";
+import dynamic from "next/dynamic";
+import {UploadFlowLoading} from "./UploadFlowLoading";
+const SplitFlowModal = dynamic(() => import("./SplitFlowModal").then((module) => module.SplitFlowModal), {loading: UploadFlowLoading});
 
 type SplitUploaderLabels = SplitFlowLabels & {
   add: string;

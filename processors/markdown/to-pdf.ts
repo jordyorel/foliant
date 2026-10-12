@@ -1,5 +1,4 @@
 import {readFile, writeFile} from "node:fs/promises";
-import {basename} from "node:path";
 import {PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage} from "pdf-lib";
 import {AppError, ErrorCode} from "@/lib/validation/errors";
 
@@ -177,12 +176,6 @@ export async function markdownToPdf(inputPath: string, outputPath: string) {
     const italic = await doc.embedFont(StandardFonts.HelveticaOblique);
     const mono = await doc.embedFont(StandardFonts.Courier);
     const state: RendererState = {doc, page: doc.addPage([pageWidth, pageHeight]), y: pageHeight - margin};
-    const title = basename(inputPath).replace(/\.(md|markdown)$/i, "");
-
-    if (title) {
-      drawLines(state, wrapText(title, bold, 11, contentWidth), bold, 11, 18, margin, rgb(0.42, 0.42, 0.39));
-      state.y -= 16;
-    }
 
     for (const block of parseMarkdown(markdown)) {
       if (block.type === "space") {

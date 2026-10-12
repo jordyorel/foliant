@@ -2,7 +2,10 @@
 
 import {useState} from "react";
 import type {ToolAction} from "@/content/tools/actions";
-import {NumberPagesFlowModal, type NumberPagesFlowLabels} from "./NumberPagesFlowModal";
+import type {NumberPagesFlowLabels} from "./NumberPagesFlowModal";
+import dynamic from "next/dynamic";
+import {UploadFlowLoading} from "./UploadFlowLoading";
+const NumberPagesFlowModal = dynamic(() => import("./NumberPagesFlowModal").then((module) => module.NumberPagesFlowModal), {loading: UploadFlowLoading});
 
 export function NumberPagesUploader({tool, accept, note, labels}: {
   tool: ToolAction;

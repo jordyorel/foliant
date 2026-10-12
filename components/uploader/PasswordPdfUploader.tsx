@@ -2,7 +2,10 @@
 
 import {useState} from "react";
 import type {ToolAction} from "@/content/tools/actions";
-import {PasswordPdfFlowModal, type PasswordPdfFlowLabels, type PasswordPdfMode} from "./PasswordPdfFlowModal";
+import type {PasswordPdfFlowLabels, PasswordPdfMode} from "./PasswordPdfFlowModal";
+import dynamic from "next/dynamic";
+import {UploadFlowLoading} from "./UploadFlowLoading";
+const PasswordPdfFlowModal = dynamic(() => import("./PasswordPdfFlowModal").then((module) => module.PasswordPdfFlowModal), {loading: UploadFlowLoading});
 
 export function PasswordPdfUploader({tool, mode, accept, note, labels}: {
   tool: ToolAction;

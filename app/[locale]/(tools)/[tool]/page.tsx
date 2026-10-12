@@ -3,6 +3,7 @@ import {getTranslations} from "next-intl/server";
 import {notFound} from "next/navigation";
 import {LandingPage} from "@/components/tool/LandingPage";
 import {tools} from "@/content/tools";
+import {getToolEditorial, publicToolName} from "@/content/tools/editorial";
 import {localizedAlternates, openGraphLocale, siteName} from "@/lib/seo";
 import {routing, type Locale} from "@/lib/i18n/routing";
 
@@ -27,9 +28,9 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
   const locale = routing.locales.includes(rawLocale as Locale) ? rawLocale as Locale : routing.defaultLocale;
   const catalog = await getTranslations({locale, namespace: "catalog"});
   const seo = await getTranslations({locale, namespace: "seo"});
-  const toolName = catalog(`tools.${toolConfig.labelKey}`);
+  const toolName = publicToolName(tool, locale, catalog(`tools.${toolConfig.labelKey}`));
   const title = seo("toolTitle", {tool: toolName});
-  const description = seo("toolDescription", {tool: toolName});
+  const description = getToolEditorial(tool, locale).description;
 
   return {
     title,

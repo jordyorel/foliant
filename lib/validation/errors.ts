@@ -1,4 +1,5 @@
 export const ErrorCode = {
+  serverBusy: "server_busy",
   invalidRequest: "invalid_request",
   unsupportedTool: "unsupported_tool",
   fileTooLarge: "file_too_large",
@@ -12,6 +13,8 @@ export const ErrorCode = {
   ghostscriptMissing: "ghostscript_missing",
   qpdfMissing: "qpdf_missing",
   heicDecoderMissing: "heic_decoder_missing",
+  libreOfficeMissing: "libreoffice_missing",
+  pdfTextMissing: "pdf_text_missing",
   processingFailed: "processing_failed"
 } as const;
 

@@ -1,20 +1,10 @@
-import {toolActions, type ToolAction} from "@/content/tools/actions";
+import {toolActions, isBetaToolAction, type ToolAction} from "@/content/tools/actions";
 import {ErrorCode} from "./errors";
+import {maxUploadBytes} from "@/content/tools/upload-limits";
 
-const supportedTools = new Set<ToolAction>(["auto", ...Object.values(toolActions)]);
+const supportedTools = new Set<ToolAction>(["auto", ...Object.values(toolActions).filter(isBetaToolAction)]);
+const studioOnlyTools = new Set<ToolAction>(["fill_pdf", "sign_pdf"]);
 
-const defaultMaxSize = 25 * 1024 * 1024;
-
-const maxSizeByTool: Partial<Record<ToolAction, number>> = {
-  auto: defaultMaxSize,
-  compress_pdf: defaultMaxSize,
-  compress_image: 15 * 1024 * 1024,
-  image_to_pdf: 15 * 1024 * 1024,
-  merge_pdf: 50 * 1024 * 1024,
-  pdf_to_image: defaultMaxSize,
-  split_pdf: defaultMaxSize,
-  markdown_to_pdf: 2 * 1024 * 1024
-};
 
 const supportedImageMimeTypes = new Set([
   "image/jpeg",
@@ -54,6 +44,29 @@ const imageTools: ToolAction[] = [
   "image_to_text"
 ];
 const markdownTools: ToolAction[] = ["markdown_to_pdf"];
+const officeTools: Partial<Record<ToolAction, {extensions: string[]; mimeTypes: Set<string>}>> = {
+  word_to_pdf: {
+    extensions: [".doc", ".docx"],
+    mimeTypes: new Set([
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ])
+  },
+  excel_to_pdf: {
+    extensions: [".xls", ".xlsx"],
+    mimeTypes: new Set([
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    ])
+  },
+  powerpoint_to_pdf: {
+    extensions: [".ppt", ".pptx"],
+    mimeTypes: new Set([
+      "application/vnd.ms-powerpoint",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    ])
+  }
+};
 
 function hasExtension(fileName: string, extensions: string[]) {
   const normalizedName = fileName.toLowerCase();
@@ -83,7 +96,7 @@ export function expectedKindsFor(tool: ToolAction): FileKind[] {
   return [];
 }
 
-export function validateUploadInit(input: unknown): ValidationResult {
+export function validateUploadInit(input: unknown, options: {allowStudioOnly?: boolean} = {}): ValidationResult {
   if (!input || typeof input !== "object") {
     return {ok: false, error: "Invalid upload request", code: ErrorCode.invalidRequest, status: 400};
   }
@@ -103,11 +116,11 @@ export function validateUploadInit(input: unknown): ValidationResult {
     return {ok: false, error: "Invalid upload request", code: ErrorCode.invalidRequest, status: 400};
   }
 
-  if (!supportedTools.has(tool as ToolAction)) {
+  if (!supportedTools.has(tool as ToolAction) && !(options.allowStudioOnly && studioOnlyTools.has(tool as ToolAction))) {
     return {ok: false, error: "Unsupported tool", code: ErrorCode.unsupportedTool, status: 400};
   }
 
-  const maxSize = maxSizeByTool[tool as ToolAction] ?? defaultMaxSize;
+  const maxSize = maxUploadBytes(tool as ToolAction);
 
   if (fileSize > maxSize) {
     return {ok: false, error: "File too large", code: ErrorCode.fileTooLarge, status: 413, maxSize};
@@ -134,6 +147,15 @@ export function validateUploadInit(input: unknown): ValidationResult {
     mimeType !== "text/markdown" &&
     mimeType !== "text/plain" &&
     !hasExtension(fileName, [".md", ".markdown"])
+  ) {
+    return {ok: false, error: "Unsupported file type", code: ErrorCode.unsupportedType, status: 415};
+  }
+
+  const officeTool = officeTools[tool as ToolAction];
+  if (
+    officeTool &&
+    !officeTool.mimeTypes.has(mimeType) &&
+    !hasExtension(fileName, officeTool.extensions)
   ) {
     return {ok: false, error: "Unsupported file type", code: ErrorCode.unsupportedType, status: 415};
   }

@@ -5,6 +5,9 @@
     "flow": "Fluxo",
     "pricing": "Preços",
     "faq": "FAQ",
+    "studio": "Studio",
+    "signIn": "Entrar",
+    "signedIn": "Conectado",
     "language": "Seleção de idioma",
     "start": "Começar"
   },
@@ -24,10 +27,10 @@
     "metaTitle": "Foliant - Processamento de documentos 100% online",
     "metaDescription": "Converta, compacte, organize e proteja seus documentos online com Foliant.",
     "eyebrow": "Processamento de documentos 100% online",
-    "title": "Foliant, todos os seus documentos prontos online",
+    "title": "Suas ferramentas PDF online",
     "subtitle": "Converta, compacte, organize e proteja arquivos em uma interface clara, rápida e multilíngue.",
     "primaryCta": "Ver ferramentas",
-    "secondaryCta": "Comparar planos",
+    "secondaryCta": "Abrir Studio",
     "visual": {
       "ready": "Pronto",
       "secure": "Seguro",
@@ -36,9 +39,9 @@
       "deleted": "Exclusão automática"
     },
     "launcher": {
-      "kicker": "Caixa de ferramentas",
-      "title": "O que você quer fazer agora?",
-      "text": "As ações mais usadas ficam acessíveis na página inicial sem sobrecarregar o usuário com todo o catálogo."
+      "kicker": "Ferramentas essenciais",
+      "title": "Comece pelo essencial",
+      "text": "Acesse rapidamente as ferramentas de que precisa para trabalhar com seus documentos."
     },
     "popular": {
       "compressPdf": "Reduza um PDF pesado em segundos.",
@@ -49,22 +52,22 @@
       "watermark": "Marque um PDF com texto visível."
     },
     "categories": {
-      "kicker": "Categorias de motor",
-      "title": "Uma lógica clara para cada documento",
-      "text": "Foliant separa motores simples e rápidos dos usos avançados que precisam de mais controle.",
+      "kicker": "Por necessidade",
+      "title": "As ferramentas certas para cada documento",
+      "text": "Escolha a ferramenta que atende à sua necessidade, do processamento rápido às tarefas mais avançadas.",
       "items": {
         "fromPdf": "Exporte PDFs para formatos editáveis ou imagens.",
         "toPdf": "Transforme Word, imagens ou Markdown em PDF.",
         "compress": "Reduza arquivos pesados antes de enviar.",
         "edit": "Junte, divida, gire, numere ou marque PDFs.",
-        "secure": "Proteja, desbloqueie ou assine visualmente documentos.",
+        "secure": "Proteja ou desbloqueie seus documentos PDF.",
         "ai": "Prepare OCR, tradução e resumos para usos premium."
       }
     },
     "flow": {
-      "kicker": "Fluxo",
-      "title": "Um fluxo curto: arquivo, ação, resultado",
-      "text": "As páginas de ferramentas mantêm o upload no topo. A homepage explica o produto, ajuda a escolher uma ferramenta e mostra os planos.",
+      "kicker": "Como funciona",
+      "title": "Três passos, sem desvios",
+      "text": "Escolha uma ferramenta, envie seu arquivo e receba o resultado em instantes.",
       "steps": {
         "upload": {
           "title": "Envie o arquivo",
@@ -72,7 +75,7 @@
         },
         "process": {
           "title": "Escolha a ação",
-          "text": "Compactação, conversão, organização, proteção ou assinatura visual."
+          "text": "Compactação, conversão, organização e proteção de documentos."
         },
         "download": {
           "title": "Receba o resultado",
@@ -134,24 +137,24 @@
     },
     "trust": {
       "kicker": "Confiança",
-      "title": "Feito para ir rápido sem confundir",
-      "text": "A promessa continua simples: site claro, internacional, arquivos temporários e ferramentas agrupadas por uso.",
+      "title": "Uma experiência simples, pensada para seus documentos",
+      "text": "O Foliant reúne ferramentas essenciais em um espaço claro, com gestão transparente dos arquivos.",
       "items": {
         "online": {
           "title": "100% online",
-          "text": "O processamento começa no navegador e mantém o mesmo fluxo em todas as páginas de ferramentas."
+          "text": "Sem software para instalar: trabalhe com seus documentos diretamente no navegador."
         },
         "privacy": {
           "title": "Exclusão automática",
-          "text": "Os arquivos são temporários e a retenção permanece limitada."
+          "text": "Os arquivos de convidados são usados no processamento e depois excluídos automaticamente."
         },
         "multilingual": {
           "title": "Multilíngue",
-          "text": "A mesma homepage existe em francês, inglês, espanhol e português."
+          "text": "Use o Foliant no idioma que preferir: francês, inglês, espanhol ou português."
         },
         "simplePremium": {
-          "title": "Simples, depois premium",
-          "text": "As ferramentas gratuitas continuam diretas; recursos avançados adicionam mais controle."
+          "title": "Studio pessoal",
+          "text": "Entre para encontrar seus documentos salvos, versões e histórico."
         }
       }
     },
@@ -163,29 +166,29 @@
     },
     "faq": {
       "title": "Perguntas frequentes",
-      "text": "As respostas importantes devem estar visíveis na página inicial.",
+      "text": "As respostas essenciais antes de começar.",
       "items": {
-        "free": {
-          "q": "O que inclui o plano grátis?",
-          "a": "Permite processar alguns arquivos simples por dia com limites claros de tamanho e volume."
+        "account": {
+          "q": "Preciso de uma conta para usar o Foliant?",
+          "a": "Não. Você pode processar e baixar documentos imediatamente como convidado."
         },
-        "pricing": {
-          "q": "Os preços são definitivos?",
-          "a": "Não. São preços de lançamento para estruturar a oferta. Ainda podem mudar antes do lançamento público."
+        "studio": {
+          "q": "Para que serve o Studio?",
+          "a": "O Studio permite que usuários conectados encontrem documentos salvos, versões e histórico."
         },
         "privacy": {
           "q": "O que acontece com os arquivos enviados?",
-          "a": "Os arquivos são usados para o processamento solicitado, permanecem temporários e são excluídos automaticamente."
+          "a": "Os arquivos de convidados são usados para o processamento solicitado, permanecem temporários e são excluídos automaticamente. Um documento salvo no Studio fica disponível na sua conta até você excluí-lo."
         },
-        "advanced": {
-          "q": "Por que alguns recursos serão premium?",
-          "a": "Recursos que exigem mais processamento, armazenamento, histórico, lotes ou editor visual pertencerão aos planos pagos."
+        "tools": {
+          "q": "Quais ferramentas estão disponíveis?",
+          "a": "As ferramentas prontas para uso estão no catálogo. Os recursos em desenvolvimento têm a etiqueta Em breve."
         }
       }
     },
     "allTools": {
       "title": "Todas as ferramentas Foliant",
-      "text": "O catálogo completo permanece visível no rodapé para manter a navegação coerente em todas as páginas."
+      "text": "Explore todas as ferramentas disponíveis. Os recursos em desenvolvimento estão claramente indicados."
     }
   },
   "home": {
@@ -201,17 +204,23 @@
     "upload": {
       "selected": "Arquivo selecionado",
       "start": "Iniciar processamento",
+      "ready": "Arquivo pronto",
       "uploading": "Enviando arquivo",
       "queued": "Na fila",
       "processing": "Processando",
       "completed": "Documento pronto",
+      "completedText": "Baixe o resultado agora ou adicione seu email para manter um registro.",
       "download": "Baixar resultado",
+      "another": "Processar outro arquivo",
       "error": "Não é possível processar este arquivo agora.",
       "errorTooLarge": "Este arquivo é muito grande.",
       "errorUnsupportedType": "Este tipo de arquivo não é compatível.",
       "errorInvalidFile": "Este arquivo é inválido ou corrompido.",
       "errorQpdfMissing": "qpdf não está instalado. Instale-o para ativar a proteção de PDF.",
       "errorHeicDecoderMissing": "Nenhum decodificador HEIC disponível. Instale sips (macOS) ou ImageMagick / libheif para ativar a conversão HEIC.",
+      "errorLibreOfficeMissing": "LibreOffice não está instalado. Instale-o para ativar a conversão de Office para PDF.",
+      "errorPdfTextMissing": "Este PDF não contém texto selecionável. OCR será necessário para PDFs digitalizados.",
+      "officeConversion": "O PDF deve conter texto selecionável. O arquivo Office será editável, mas o layout, as imagens e as tabelas complexas não são reproduzidos exatamente.",
       "original": "Original",
       "final": "Final",
       "saved": "Economia",
@@ -250,6 +259,9 @@
         "intervalLabel": "Páginas por arquivo",
         "rangeLabel": "Páginas a extrair",
         "rangePlaceholder": "Ex. 1-3,5",
+        "previewEveryPage": "Resultado: {count} PDFs, um por página.",
+        "previewInterval": "Resultado: cerca de {count} PDFs.",
+        "previewRange": "Resultado: um PDF com as páginas selecionadas.",
         "split": "Dividir",
         "another": "Dividir outro PDF"
       },
@@ -275,10 +287,17 @@
         "uploading": "Enviando seu PDF...",
         "readyTitle": "Converter seu PDF",
         "selectFormat": "Escolha o formato de saída:",
+        "selectResolution": "Escolha a resolução:",
         "jpg": "JPG",
         "jpgText": "Imagens JPG, ótimas para compartilhar.",
         "png": "PNG",
         "pngText": "Imagens PNG, sem perda de qualidade.",
+        "web": "Web (72 DPI)",
+        "webText": "Arquivos leves para web e compartilhamento.",
+        "standard": "Padrão (150 DPI)",
+        "standardText": "Bom equilíbrio para o uso diário.",
+        "highDefinition": "Alta definição (300 DPI)",
+        "highDefinitionText": "Para impressão e detalhes finos.",
         "convert": "Converter",
         "converting": "Convertendo para imagens...",
         "done": "Suas imagens estão prontas",
@@ -293,6 +312,8 @@
         "done": "Seu PDF está pronto",
         "successSubtitle": "Baixe o PDF girado agora ou adicione seu email para manter um registro.",
         "selectAngle": "Escolha a rotação a aplicar:",
+        "rangeLabel": "Páginas a girar",
+        "rangePlaceholder": "Ex. 1-3,5",
         "right": "90° à direita",
         "rightText": "Girar 90° no sentido horário.",
         "half": "180°",
@@ -344,6 +365,13 @@
         "topRight": "Superior direita",
         "startPageLabel": "Primeira página a numerar",
         "startNumberLabel": "Número inicial",
+        "formatLabel": "Formato do número",
+        "formatNumber": "1",
+        "formatPage": "Página 1",
+        "formatPageOfTotal": "1 / 12",
+        "fontSizeLabel": "Tamanho",
+        "marginLabel": "Margem",
+        "colorLabel": "Cor do número",
         "submit": "Numerar",
         "another": "Numerar outro PDF"
       },
@@ -379,6 +407,10 @@
         "confirmLabel": "Confirmar senha",
         "confirmPlaceholder": "Repita a senha",
         "mismatch": "As senhas não coincidem.",
+        "passwordNote": "Esta senha é usada apenas para criar o PDF protegido. Ela nunca é armazenada.",
+        "showPassword": "Mostrar senha",
+        "hidePassword": "Ocultar senha",
+        "passwordStrength": {"weak": "Senha curta", "good": "Senha adequada", "strong": "Senha forte"},
         "submit": "Proteger",
         "another": "Proteger outro PDF"
       },
@@ -391,6 +423,7 @@
         "successSubtitle": "Baixe o PDF desbloqueado agora ou adicione seu email para manter um registro.",
         "passwordLabel": "Senha do PDF",
         "passwordPlaceholder": "Digite a senha",
+        "passwordNote": "Esta senha é usada apenas para desbloquear este PDF e nunca é armazenada.",
         "submit": "Desbloquear",
         "another": "Desbloquear outro PDF"
       },
@@ -412,6 +445,8 @@
         "selectLevel": "Escolha o nível de compressão:",
         "bestSize": "Menor tamanho",
         "bestSizeText": "Ótimo para compartilhar, menor qualidade",
+        "standard": "Equilibrado",
+        "standardText": "O melhor equilíbrio para o uso diário.",
         "bestQuality": "Melhor qualidade",
         "bestQualityText": "Ideal para imprimir, maior qualidade",
         "compress": "Comprimir",
@@ -484,6 +519,7 @@
     }
   },
   "catalog": {
+    "comingSoon": "Em breve",
     "groups": {
       "fromPdf": "Converter de PDF",
       "toPdf": "Converter para PDF",

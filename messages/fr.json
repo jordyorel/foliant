@@ -5,6 +5,9 @@
     "flow": "Parcours",
     "pricing": "Tarifs",
     "faq": "FAQ",
+    "studio": "Studio",
+    "signIn": "Se connecter",
+    "signedIn": "Connecté",
     "language": "Choix de langue",
     "start": "Commencer"
   },
@@ -24,10 +27,10 @@
     "metaTitle": "Foliant - Traitement de documents 100% en ligne",
     "metaDescription": "Convertissez, compressez, organisez et protégez vos documents en ligne avec Foliant.",
     "eyebrow": "Traitement de documents 100% en ligne",
-    "title": "Foliant, tous vos documents prêts en ligne",
+    "title": "Vos outils PDF en ligne",
     "subtitle": "Convertissez, compressez, organisez et protégez vos fichiers depuis une interface claire, rapide et multilingue.",
     "primaryCta": "Voir les outils",
-    "secondaryCta": "Comparer les offres",
+    "secondaryCta": "Ouvrir le Studio",
     "visual": {
       "ready": "Prêt",
       "secure": "Sécurisé",
@@ -36,9 +39,9 @@
       "deleted": "Suppression auto"
     },
     "launcher": {
-      "kicker": "Boîte à outils",
-      "title": "Que voulez-vous faire maintenant ?",
-      "text": "Les actions les plus utilisées restent accessibles dès l'accueil, sans noyer l'utilisateur dans tout le catalogue."
+      "kicker": "Outils essentiels",
+      "title": "Commencez par l'essentiel",
+      "text": "Accédez rapidement aux outils dont vous avez besoin pour traiter vos documents."
     },
     "popular": {
       "compressPdf": "Réduire un PDF lourd en quelques secondes.",
@@ -49,22 +52,22 @@
       "watermark": "Marquer un PDF avec un texte visible."
     },
     "categories": {
-      "kicker": "Catégories moteur",
-      "title": "Une logique claire pour chaque type de document",
-      "text": "Foliant sépare les moteurs simples, rapides et gratuits des usages avancés qui demanderont plus de contrôle.",
+      "kicker": "Par besoin",
+      "title": "Les bons outils pour chaque document",
+      "text": "Choisissez l'outil adapté à votre besoin, du traitement rapide aux opérations plus avancées.",
       "items": {
         "fromPdf": "Exportez vos PDF vers des formats modifiables ou des images.",
         "toPdf": "Transformez vos fichiers Word, images ou Markdown en PDF.",
         "compress": "Allégez les fichiers lourds avant de les envoyer.",
         "edit": "Fusionnez, divisez, pivotez, numérotez ou marquez vos PDF.",
-        "secure": "Protégez, déverrouillez ou signez visuellement vos documents.",
+        "secure": "Protégez ou déverrouillez vos documents PDF.",
         "ai": "Préparez l'OCR, la traduction et le résumé pour les usages premium."
       }
     },
     "flow": {
-      "kicker": "Parcours",
-      "title": "Un flow court : fichier, action, résultat",
-      "text": "Les pages outils gardent l'upload en haut. La homepage sert à comprendre le produit, choisir le bon outil et comparer les offres.",
+      "kicker": "Comment ça marche",
+      "title": "Trois étapes, aucun détour",
+      "text": "Choisissez un outil, importez votre fichier, puis récupérez le résultat en quelques instants.",
       "steps": {
         "upload": {
           "title": "Importez le fichier",
@@ -72,7 +75,7 @@
         },
         "process": {
           "title": "Choisissez l'action",
-          "text": "Compression, conversion, organisation, protection ou signature visuelle."
+          "text": "Compression, conversion, organisation et protection de documents."
         },
         "download": {
           "title": "Récupérez le résultat",
@@ -134,24 +137,24 @@
     },
     "trust": {
       "kicker": "Confiance",
-      "title": "Conçu pour aller vite sans brouiller l'expérience",
-      "text": "La promesse reste simple : un site clair, international, avec des fichiers temporaires et des outils classés par usage.",
+      "title": "Une expérience simple, pensée pour vos documents",
+      "text": "Foliant réunit les outils essentiels dans un espace clair, avec une gestion transparente de vos fichiers.",
       "items": {
         "online": {
           "title": "100% en ligne",
-          "text": "Les traitements se lancent depuis le navigateur et gardent le même flow sur toutes les pages outils."
+          "text": "Aucun logiciel à installer : traitez vos documents directement depuis votre navigateur."
         },
         "privacy": {
           "title": "Suppression automatique",
-          "text": "Les fichiers sont temporaires et la conservation reste limitée."
+          "text": "Vos fichiers invités sont utilisés le temps du traitement, puis supprimés automatiquement."
         },
         "multilingual": {
           "title": "Multilingue",
-          "text": "La même homepage existe en français, anglais, espagnol et portugais."
+          "text": "Utilisez Foliant dans la langue qui vous convient : français, anglais, espagnol ou portugais."
         },
         "simplePremium": {
-          "title": "Simple puis premium",
-          "text": "Les outils gratuits restent directs, les fonctions avancées ajoutent plus de contrôle."
+          "title": "Studio personnel",
+          "text": "Connectez-vous pour retrouver vos documents enregistrés, leurs versions et leur historique."
         }
       }
     },
@@ -163,29 +166,29 @@
     },
     "faq": {
       "title": "Questions fréquentes",
-      "text": "Les réponses importantes doivent être visibles dès la page d'accueil.",
+      "text": "Les réponses essentielles avant de commencer.",
       "items": {
-        "free": {
-          "q": "Que permet l'offre gratuite ?",
-          "a": "Elle permet de traiter quelques fichiers simples par jour, avec une limite claire de taille et de volume."
+        "account": {
+          "q": "Faut-il un compte pour utiliser Foliant ?",
+          "a": "Non. Vous pouvez traiter et télécharger vos documents immédiatement en tant qu'invité."
         },
-        "pricing": {
-          "q": "Les prix sont-ils définitifs ?",
-          "a": "Non. Ce sont des tarifs de lancement pour structurer l'offre. Ils pourront être ajustés avant le lancement public."
+        "studio": {
+          "q": "À quoi sert le Studio ?",
+          "a": "Le Studio permet aux utilisateurs connectés de retrouver leurs documents enregistrés, leurs versions et leur historique."
         },
         "privacy": {
           "q": "Que deviennent les fichiers importés ?",
-          "a": "Les fichiers servent au traitement demandé, restent temporaires et sont supprimés automatiquement."
+          "a": "Les fichiers Guest servent au traitement demandé, restent temporaires et sont supprimés automatiquement. Un document enregistré dans Studio reste disponible dans votre compte jusqu'à sa suppression."
         },
-        "advanced": {
-          "q": "Pourquoi certaines fonctions seront premium ?",
-          "a": "Les fonctions qui demandent plus de calcul, de stockage, d'historique, de batch ou d'éditeur visuel seront réservées aux offres payantes."
+        "tools": {
+          "q": "Quels outils sont disponibles ?",
+          "a": "Les outils prêts à l'emploi sont accessibles depuis le catalogue. Les fonctionnalités en cours de développement portent la mention À venir."
         }
       }
     },
     "allTools": {
       "title": "Tous les outils Foliant",
-      "text": "Le catalogue complet reste visible en bas de page pour garder une navigation cohérente partout."
+      "text": "Explorez l'ensemble des outils disponibles. Les fonctionnalités en préparation sont signalées clairement."
     }
   },
   "home": {
@@ -201,17 +204,23 @@
     "upload": {
       "selected": "Fichier sélectionné",
       "start": "Lancer le traitement",
+      "ready": "Fichier prêt",
       "uploading": "Upload du fichier",
       "queued": "En file d'attente",
       "processing": "Traitement en cours",
       "completed": "Document prêt",
+      "completedText": "Téléchargez le résultat maintenant ou ajoutez votre email pour garder une trace.",
       "download": "Télécharger le résultat",
+      "another": "Traiter un autre fichier",
       "error": "Impossible de traiter ce fichier pour le moment.",
       "errorTooLarge": "Ce fichier est trop volumineux.",
       "errorUnsupportedType": "Ce type de fichier n'est pas pris en charge.",
       "errorInvalidFile": "Ce fichier est invalide ou corrompu.",
       "errorQpdfMissing": "qpdf n'est pas installé. Installez-le pour activer la protection des PDF.",
       "errorHeicDecoderMissing": "Aucun décodeur HEIC n'est disponible. Installez sips (macOS) ou ImageMagick / libheif pour activer la conversion HEIC.",
+      "errorLibreOfficeMissing": "LibreOffice n'est pas installé. Installez-le pour activer la conversion Office en PDF.",
+      "errorPdfTextMissing": "Ce PDF ne contient pas de texte sélectionnable. L'OCR sera nécessaire pour les PDF scannés.",
+      "officeConversion": "Le PDF doit contenir du texte sélectionnable. Le fichier Office sera éditable, mais la mise en page, les images et les tableaux complexes ne sont pas reproduits à l'identique.",
       "original": "Original",
       "final": "Final",
       "saved": "Gain",
@@ -250,6 +259,9 @@
         "intervalLabel": "Nombre de pages par fichier",
         "rangeLabel": "Pages à extraire",
         "rangePlaceholder": "Ex. 1-3,5",
+        "previewEveryPage": "Résultat : {count} PDF, un par page.",
+        "previewInterval": "Résultat : environ {count} PDF.",
+        "previewRange": "Résultat : un PDF avec les pages choisies.",
         "split": "Diviser",
         "another": "Diviser un autre PDF"
       },
@@ -275,10 +287,17 @@
         "uploading": "Upload de votre PDF…",
         "readyTitle": "Convertir votre PDF",
         "selectFormat": "Choisissez le format de sortie :",
+        "selectResolution": "Choisissez la résolution :",
         "jpg": "JPG",
         "jpgText": "Images JPG, idéales pour le partage.",
         "png": "PNG",
         "pngText": "Images PNG, sans perte de qualité.",
+        "web": "Web (72 DPI)",
+        "webText": "Fichiers légers, adaptés au web et au partage.",
+        "standard": "Standard (150 DPI)",
+        "standardText": "Bon équilibre entre netteté et taille.",
+        "highDefinition": "Haute définition (300 DPI)",
+        "highDefinitionText": "Pour l'impression et les détails fins.",
         "convert": "Convertir",
         "converting": "Conversion en images…",
         "done": "Vos images sont prêtes",
@@ -293,6 +312,8 @@
         "done": "Votre PDF est prêt",
         "successSubtitle": "Téléchargez le PDF pivoté maintenant ou ajoutez votre email pour garder une trace.",
         "selectAngle": "Choisissez la rotation à appliquer :",
+        "rangeLabel": "Pages à pivoter",
+        "rangePlaceholder": "Ex. 1-3,5",
         "right": "90° à droite",
         "rightText": "Pivoter de 90° dans le sens horaire.",
         "half": "180°",
@@ -344,6 +365,13 @@
         "topRight": "Haut droite",
         "startPageLabel": "Première page à numéroter",
         "startNumberLabel": "Numéro de départ",
+        "formatLabel": "Format du numéro",
+        "formatNumber": "1",
+        "formatPage": "Page 1",
+        "formatPageOfTotal": "1 / 12",
+        "fontSizeLabel": "Taille",
+        "marginLabel": "Marge",
+        "colorLabel": "Couleur du numéro",
         "submit": "Numéroter",
         "another": "Numéroter un autre PDF"
       },
@@ -379,6 +407,10 @@
         "confirmLabel": "Confirmer le mot de passe",
         "confirmPlaceholder": "Répétez le mot de passe",
         "mismatch": "Les mots de passe ne correspondent pas.",
+        "passwordNote": "Ce mot de passe sert uniquement à créer le PDF protégé. Il n'est jamais conservé.",
+        "showPassword": "Afficher le mot de passe",
+        "hidePassword": "Masquer le mot de passe",
+        "passwordStrength": {"weak": "Mot de passe court", "good": "Mot de passe correct", "strong": "Mot de passe robuste"},
         "submit": "Protéger",
         "another": "Protéger un autre PDF"
       },
@@ -391,6 +423,7 @@
         "successSubtitle": "Téléchargez le PDF déverrouillé maintenant ou ajoutez votre email pour garder une trace.",
         "passwordLabel": "Mot de passe du PDF",
         "passwordPlaceholder": "Saisissez le mot de passe",
+        "passwordNote": "Ce mot de passe est utilisé uniquement pour déverrouiller ce PDF et n'est jamais conservé.",
         "submit": "Déverrouiller",
         "another": "Déverrouiller un autre PDF"
       },
@@ -412,6 +445,8 @@
         "selectLevel": "Choisissez le niveau de compression :",
         "bestSize": "Taille minimale",
         "bestSizeText": "Idéal pour partager, qualité réduite",
+        "standard": "Équilibré",
+        "standardText": "Le meilleur compromis pour un usage courant.",
         "bestQuality": "Meilleure qualité",
         "bestQualityText": "Idéal pour imprimer, qualité élevée",
         "compress": "Compresser",
@@ -508,6 +543,7 @@
     }
   },
   "catalog": {
+    "comingSoon": "À venir",
     "groups": {
       "fromPdf": "Convertir depuis PDF",
       "toPdf": "Convertir en PDF",

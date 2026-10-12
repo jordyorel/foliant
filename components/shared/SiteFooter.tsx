@@ -15,7 +15,6 @@ export function SiteFooter({locale}: SiteFooterProps) {
         <Link href={`/${locale}/confidentialite`}>{t("privacy")}</Link>
         <Link href={`/${locale}/conditions`}>{t("terms")}</Link>
         <Link href={`/${locale}/aide`}>{t("help")}</Link>
-        <Link href={`/${locale}#pricing`}>{t("pricing")}</Link>
       </nav>
     </footer>
   );

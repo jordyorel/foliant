@@ -1,5 +1,6 @@
 import {describe, it, expect, beforeAll, afterAll} from "vitest";
 import {mkdtemp, readFile, rm, stat, writeFile} from "node:fs/promises";
+import {inflateSync} from "node:zlib";
 import os from "node:os";
 import path from "node:path";
 import {compressPdf} from "@/processors/compression/pdf";
@@ -9,17 +10,25 @@ import {parsePageRange, splitPdf} from "@/processors/pdf/split";
 import {imageToPdf} from "@/processors/image/to-pdf";
 import {heicToJpg, heicToPng} from "@/processors/image/heic";
 import {markdownToPdf} from "@/processors/markdown/to-pdf";
+import {excelToPdf, powerpointToPdf, wordToPdf} from "@/processors/office/to-pdf";
 import {pdfToImage} from "@/processors/pdf/to-image";
+import {pdfToExcel} from "@/processors/pdf/to-excel";
+import {pdfToPowerpoint} from "@/processors/pdf/to-powerpoint";
+import {pdfToWord} from "@/processors/pdf/to-word";
 import {rotatePdf} from "@/processors/pdf/rotate";
 import {extractPdfPages} from "@/processors/pdf/extract";
+import {insertPdfPages} from "@/processors/pdf/insert";
 import {deletePdfPages} from "@/processors/pdf/delete";
+import {fillPdf} from "@/processors/pdf/fill";
+import {reorderPdf} from "@/processors/pdf/reorder";
+import {formatAnnotationDate} from "@/lib/studio/date-annotation";
 import {numberPdfDocument, numberPdfPages} from "@/processors/pdf/number";
 import {centeredRotatedOrigin, watermarkDocument, watermarkPdf} from "@/processors/pdf/watermark";
 import {protectPdf, unlockPdf} from "@/processors/pdf/security";
 import {PDFDocument, degrees} from "pdf-lib";
 import JSZip from "jszip";
 import {ErrorCode, isAppError} from "@/lib/validation/errors";
-import {fixturePath, isHeicDecoderAvailable, isPdfEncrypted, isQpdfAvailable} from "./helpers";
+import {createBlankPdfBytes, createDocxBytes, createPptxBytes, createTextPdfBytes, createWideXlsxBytes, createXlsxBytes, fixturePath, isHeicDecoderAvailable, isLibreOfficeAvailable, isPdfEncrypted, isQpdfAvailable} from "./helpers";
 
 let tmp: string;
 
@@ -43,7 +52,14 @@ function pageContent(doc: PDFDocument, index: number): string {
   return streams
     .map((ref: any) => (doc as any).context.lookup(ref))
     .filter(Boolean)
-    .map((stream: any) => Buffer.from(stream.getContentsString()).toString("latin1"))
+    .map((stream: any) => {
+      const contents = Buffer.from(stream.getContents());
+      try {
+        return inflateSync(contents).toString("latin1");
+      } catch {
+        return contents.toString("latin1");
+      }
+    })
     .join("\n");
 }
 
@@ -77,6 +93,124 @@ describe("compressPdf", () => {
     await expect(
       compressPdf(fixturePath("invalid.pdf"), out("invalid-out.pdf"), "ebook")
     ).rejects.toSatisfy((e) => isAppError(e));
+  });
+});
+
+describe("fillPdf", () => {
+  it("preserves and fills a realistic AcroForm with text, checkbox, list, and radio fields", async () => {
+    const source = out("fillable-source.pdf");
+    const output = out("fillable-completed.pdf");
+    const pdf = await PDFDocument.create();
+    const page = pdf.addPage([595, 842]);
+    const form = pdf.getForm();
+    form.createTextField("Full name").addToPage(page, {x: 72, y: 700, width: 240, height: 24});
+    form.createTextField("Email address").addToPage(page, {x: 72, y: 665, width: 240, height: 24});
+    form.createCheckBox("Accept terms").addToPage(page, {x: 72, y: 650, width: 18, height: 18});
+    const country = form.createDropdown("Country");
+    country.addOptions(["Congo", "France"]);
+    country.addToPage(page, {x: 72, y: 600, width: 160, height: 24});
+    const contact = form.createRadioGroup("Preferred contact");
+    contact.addOptionToPage("Email", page, {x: 72, y: 565, width: 18, height: 18});
+    contact.addOptionToPage("Phone", page, {x: 112, y: 565, width: 18, height: 18});
+    await writeFile(source, await pdf.save());
+
+    await fillPdf(source, output, {"Accept terms": true, "Country": "Congo", "Email address": "jordy@example.com", "Full name": "Jordy Konda", "Preferred contact": "Email"});
+
+    const completed = await PDFDocument.load(await readFile(output));
+    const completedForm = completed.getForm();
+    expect(completedForm.getTextField("Full name").getText()).toBe("Jordy Konda");
+    expect(completedForm.getTextField("Email address").getText()).toBe("jordy@example.com");
+    expect(completedForm.getCheckBox("Accept terms").isChecked()).toBe(true);
+    expect(completedForm.getDropdown("Country").getSelected()).toEqual(["Congo"]);
+    expect(completedForm.getRadioGroup("Preferred contact").getSelected()).toBe("Email");
+  });
+});
+
+describe("reorderPdf", () => {
+  it("embeds all date formats into the exported PDF as text", async () => {
+    const source = out("date-source.pdf");
+    const output = out("date-output.pdf");
+    const pdf = await PDFDocument.create();
+    pdf.addPage([595, 842]);
+    await writeFile(source, await pdf.save());
+    const dates = (["numeric", "long", "iso"] as const).map((format) => formatAnnotationDate("2026-10-05", format, "fr"));
+    await reorderPdf(source, output, undefined, undefined, dates.map((text, index) => ({
+      type: "text", text, page: 1, width: 0.5, height: 0.06, x: 0.1, y: 0.2 + index * 0.1
+    })));
+    const result = await PDFDocument.load(await readFile(output));
+    for (const date of dates) expect(pageContent(result, 0)).toContain(Buffer.from(date).toString("hex").toUpperCase());
+  });
+
+  it("removes trailing pages even when the remaining pages keep their order", async () => {
+    const source = out("trailing-page-source.pdf");
+    const output = out("trailing-page-output.pdf");
+    const pdf = await PDFDocument.create();
+    pdf.addPage(); pdf.addPage(); pdf.addPage();
+    await writeFile(source, await pdf.save());
+    await reorderPdf(source, output, [1, 2], undefined);
+    expect((await PDFDocument.load(await readFile(output))).getPageCount()).toBe(2);
+  });
+
+  it("retains completed interactive form fields when adding text", async () => {
+    const source = out("annotated-form-source.pdf");
+    const output = out("annotated-form-output.pdf");
+    const pdf = await PDFDocument.create();
+    const page = pdf.addPage([595, 842]);
+    const field = pdf.getForm().createTextField("Full name");
+    field.addToPage(page, {x: 72, y: 720, width: 220, height: 24});
+    field.setText("QA Foliant");
+    await writeFile(source, await pdf.save());
+    await reorderPdf(source, output, [1], undefined, [{type: "text", text: "Checked", page: 1, width: 0.3, height: 0.1, x: 0.1, y: 0.5}]);
+    const result = await PDFDocument.load(await readFile(output));
+    expect(result.getForm().getTextField("Full name").getText()).toBe("QA Foliant");
+    expect(pageContent(result, 0)).toContain("436865636B6564");
+  });
+
+  it("keeps AcroForm fields intact when Studio imports a PDF without edits", async () => {
+    const source = out("reorder-form-source.pdf");
+    const output = out("reorder-form-import.pdf");
+    const pdf = await PDFDocument.create();
+    const page = pdf.addPage([595, 842]);
+    pdf.getForm().createTextField("Full name").addToPage(page, {x: 72, y: 720, width: 220, height: 24});
+    await writeFile(source, await pdf.save());
+
+    await reorderPdf(source, output, undefined, undefined);
+
+    const imported = await PDFDocument.load(await readFile(output));
+    expect(imported.getForm().getTextField("Full name").getText()).toBeUndefined();
+  });
+
+  it("burns a drawn signature into the saved PDF when its text is empty", async () => {
+    const source = out("drawn-signature-source.pdf");
+    const output = out("drawn-signature-output.pdf");
+    const pdf = await PDFDocument.create();
+    pdf.addPage([595, 842]);
+    await writeFile(source, await pdf.save());
+
+    await reorderPdf(source, output, undefined, undefined, [
+      {
+        height: 0.1,
+        page: 1,
+        signatureColor: "#141412",
+        signatureStrokes: [[
+          {x: 0.1, y: 0.7},
+          {x: 0.36, y: 0.25},
+          {x: 0.62, y: 0.72},
+          {x: 0.9, y: 0.32}
+        ]],
+        text: "",
+        type: "signature",
+        width: 0.28,
+        x: 0.2,
+        y: 0.3
+      }
+    ]);
+
+    const sourceSize = (await stat(source)).size;
+    const saved = await PDFDocument.load(await readFile(output));
+
+    expect((await stat(output)).size).toBeGreaterThan(sourceSize);
+    expect(pageContent(saved, 0)).toContain(" l");
   });
 });
 
@@ -248,6 +382,18 @@ describe("rotatePdf", () => {
     }
   });
 
+  it("rotates only the requested pages when a range is provided", async () => {
+    const source = out("rotate-range-source.pdf");
+    await mergePdfs([fixturePath("light.pdf"), fixturePath("light.pdf")], source);
+
+    const output = out("rotated-range.pdf");
+    await rotatePdf(source, output, 90, "2");
+
+    const doc = await PDFDocument.load(await readFile(output));
+    expect(doc.getPage(0).getRotation().angle).toBe(0);
+    expect(doc.getPage(1).getRotation().angle).toBe(90);
+  });
+
   it("applies 180 and 270 rotations", async () => {
     const source = out("rotate-angles-source.pdf");
     await mergePdfs([fixturePath("light.pdf")], source);
@@ -318,6 +464,28 @@ describe("extractPdfPages", () => {
   });
 });
 
+describe("insertPdfPages", () => {
+  it("inserts another PDF after the requested source page", async () => {
+    const source = out("insert-source.pdf");
+    await mergePdfs([fixturePath("light.pdf"), fixturePath("heavy.pdf")], source);
+
+    const output = out("inserted.pdf");
+    await insertPdfPages([source, fixturePath("tiny.pdf")], output, 1);
+
+    const doc = await PDFDocument.load(await readFile(output));
+    expect(doc.getPageCount()).toBe(3);
+  });
+
+  it("rejects an invalid insert position", async () => {
+    const source = out("insert-invalid-source.pdf");
+    await mergePdfs([fixturePath("light.pdf")], source);
+
+    await expect(
+      insertPdfPages([source, fixturePath("tiny.pdf")], out("insert-invalid.pdf"), 2)
+    ).rejects.toThrow("Invalid insert position.");
+  });
+});
+
 describe("deletePdfPages", () => {
   it("removes the requested pages and keeps the rest", async () => {
     const source = out("delete-source.pdf");
@@ -364,6 +532,23 @@ describe("numberPdfPages", () => {
     expect(pageContent(doc, 0)).not.toContain("Tj");
     expect(pageContent(doc, 1)).toContain("<35>");
     expect(pageContent(doc, 2)).toContain("<36>");
+  });
+
+  it("supports page and total formats with visual controls", async () => {
+    const doc = await blankDocument(3);
+    await numberPdfDocument(doc, {
+      color: "#1d4ed8",
+      fontSize: 16,
+      format: "page_of_total",
+      margin: 48,
+      position: "top_left",
+      startPage: 2,
+      startNumber: 5
+    });
+
+    expect(pageDrawnText(doc, 0)).toBe("");
+    expect(pageDrawnText(doc, 1)).toBe("5 / 6");
+    expect(pageDrawnText(doc, 2)).toBe("6 / 6");
   });
 
   it("produces a valid PDF from a file input", async () => {
@@ -528,6 +713,146 @@ describe("markdownToPdf", () => {
     await writeFile(input, "# Invoice Notes\n\n- Vendor: Airtel\n- Amount: $42,300\n\n> Ready for approval\n\n```text\nstatus=approved\n```");
 
     await markdownToPdf(input, output);
+
+    const bytes = await readFile(output);
+    expect(bytes.subarray(0, 5).toString()).toBe("%PDF-");
+    expect((await PDFDocument.load(bytes)).getPageCount()).toBeGreaterThan(0);
+  });
+
+  it("does not leak the upload file id into the PDF", async () => {
+    const input = out("file_a6498fcf-ec76-4e06-83df-8e22647a718f.md");
+    const output = out("leak-markdown.pdf");
+    await writeFile(input, "# Hello\n\nWorld");
+
+    await markdownToPdf(input, output);
+
+    const doc = await PDFDocument.load(await readFile(output));
+    const text = Array.from({length: doc.getPageCount()}, (_, page) => pageDrawnText(doc, page)).join("");
+    expect(text).not.toContain("file_a6498fcf");
+  });
+});
+
+describe("pdfToWord", () => {
+  it("converts a selectable-text PDF to DOCX", async () => {
+    const input = out("text-source.pdf");
+    const output = out("text-source.docx");
+    await writeFile(input, await createTextPdfBytes("PDF to Word test\nSecond line"));
+
+    await pdfToWord(input, output);
+
+    const zip = await JSZip.loadAsync(await readFile(output));
+    const xml = await zip.file("word/document.xml")?.async("string");
+    expect(xml).toContain("PDF to Word test");
+    expect(xml).toContain("Second line");
+  });
+
+  it("returns an OCR-required error when the PDF has no selectable text", async () => {
+    const input = out("blank-source.pdf");
+    const output = out("blank-source.docx");
+    await writeFile(input, await createBlankPdfBytes());
+
+    await expect(pdfToWord(input, output)).rejects.toMatchObject({
+      code: ErrorCode.pdfTextMissing
+    });
+  });
+});
+
+describe("pdfToExcel", () => {
+  it("converts a selectable-text PDF to XLSX", async () => {
+    const input = out("text-source-excel.pdf");
+    const output = out("text-source.xlsx");
+    await writeFile(input, await createTextPdfBytes("Vendor  Amount\nAirtel  42300"));
+
+    await pdfToExcel(input, output);
+
+    const zip = await JSZip.loadAsync(await readFile(output));
+    const xml = await zip.file("xl/worksheets/sheet1.xml")?.async("string");
+    expect(xml).toContain("Vendor");
+    expect(xml).toContain("Amount");
+    expect(xml).toContain("Airtel");
+  });
+
+  it("returns an OCR-required error when the PDF has no selectable text", async () => {
+    const input = out("blank-source-excel.pdf");
+    const output = out("blank-source.xlsx");
+    await writeFile(input, await createBlankPdfBytes());
+
+    await expect(pdfToExcel(input, output)).rejects.toMatchObject({
+      code: ErrorCode.pdfTextMissing
+    });
+  });
+});
+
+describe("pdfToPowerpoint", () => {
+  it("converts a selectable-text PDF to PPTX", async () => {
+    const input = out("text-source-powerpoint.pdf");
+    const output = out("text-source.pptx");
+    await writeFile(input, await createTextPdfBytes("PDF to PowerPoint test\nSecond slide line"));
+
+    await pdfToPowerpoint(input, output);
+
+    const zip = await JSZip.loadAsync(await readFile(output));
+    const presentationXml = await zip.file("ppt/presentation.xml")?.async("string");
+    const slideXml = await zip.file("ppt/slides/slide1.xml")?.async("string");
+    expect(presentationXml).toContain("rId1");
+    expect(slideXml).toContain("PDF to PowerPoint test");
+    expect(slideXml).toContain("Second slide line");
+  });
+
+  it("returns an OCR-required error when the PDF has no selectable text", async () => {
+    const input = out("blank-source-powerpoint.pdf");
+    const output = out("blank-source.pptx");
+    await writeFile(input, await createBlankPdfBytes());
+
+    await expect(pdfToPowerpoint(input, output)).rejects.toMatchObject({
+      code: ErrorCode.pdfTextMissing
+    });
+  });
+});
+
+describe("wordToPdf", () => {
+  it.skipIf(!isLibreOfficeAvailable())("converts DOCX to a readable PDF", async () => {
+    const input = out("sample.docx");
+    const output = out("sample-word.pdf");
+    await writeFile(input, await createDocxBytes("Word to PDF test"));
+
+    await wordToPdf(input, output);
+
+    const bytes = await readFile(output);
+    expect(bytes.subarray(0, 5).toString()).toBe("%PDF-");
+    expect((await PDFDocument.load(bytes)).getPageCount()).toBeGreaterThan(0);
+  });
+
+  it.skipIf(!isLibreOfficeAvailable())("converts XLSX to a readable PDF", async () => {
+    const input = out("sample.xlsx");
+    const output = out("sample-excel.pdf");
+    await writeFile(input, await createXlsxBytes("Excel to PDF test"));
+
+    await excelToPdf(input, output);
+
+    const bytes = await readFile(output);
+    expect(bytes.subarray(0, 5).toString()).toBe("%PDF-");
+    expect((await PDFDocument.load(bytes)).getPageCount()).toBeGreaterThan(0);
+  });
+
+  it.skipIf(!isLibreOfficeAvailable())("fits wide XLSX columns on a single PDF page", async () => {
+    const input = out("wide.xlsx");
+    const output = out("wide-excel.pdf");
+    await writeFile(input, await createWideXlsxBytes());
+
+    await excelToPdf(input, output);
+
+    const bytes = await readFile(output);
+    expect(bytes.subarray(0, 5).toString()).toBe("%PDF-");
+    expect((await PDFDocument.load(bytes)).getPageCount()).toBe(1);
+  });
+
+  it.skipIf(!isLibreOfficeAvailable())("converts PPTX to a readable PDF", async () => {
+    const input = out("sample.pptx");
+    const output = out("sample-powerpoint.pdf");
+    await writeFile(input, await createPptxBytes("PowerPoint to PDF test"));
+
+    await powerpointToPdf(input, output);
 
     const bytes = await readFile(output);
     expect(bytes.subarray(0, 5).toString()).toBe("%PDF-");

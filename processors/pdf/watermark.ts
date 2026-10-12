@@ -5,11 +5,15 @@ import {AppError, ErrorCode} from "@/lib/validation/errors";
 export type WatermarkPosition = "center" | "diagonal" | "repeated";
 
 export type WatermarkPdfOptions = {
+  color?: string;
+  fontSize?: number;
   text?: string;
   position?: WatermarkPosition;
   /** Opacity in the 0..1 range (default 0.2). */
   opacity?: number;
 };
+
+const watermarkColors = new Set(["#141412", "#334155", "#1d4ed8", "#047857", "#b45309", "#b91c1c", "#7e22ce"]);
 
 function resolvePosition(position?: WatermarkPosition): WatermarkPosition {
   return position ?? "center";
@@ -26,6 +30,11 @@ function fontSizeFor(width: number, height: number) {
 
 function repeatedFontSizeFor(width: number, height: number) {
   return Math.max(8, Math.min(12, Math.round(Math.min(width, height) * 0.019)));
+}
+
+function colorFromHex(value?: string) {
+  const hex = watermarkColors.has(value ?? "") ? value! : "#737373";
+  return rgb(Number.parseInt(hex.slice(1, 3), 16) / 255, Number.parseInt(hex.slice(3, 5), 16) / 255, Number.parseInt(hex.slice(5, 7), 16) / 255);
 }
 
 export function centeredRotatedOrigin(
@@ -53,12 +62,12 @@ export async function watermarkDocument(doc: PDFDocument, options: WatermarkPdfO
 
   for (const page of doc.getPages()) {
     const {width, height} = page.getSize();
-    const fontSize = fontSizeFor(width, height);
+    const fontSize = typeof options.fontSize === "number" ? Math.min(120, Math.max(8, options.fontSize)) : fontSizeFor(width, height);
     const textWidth = font.widthOfTextAtSize(text, fontSize);
-    const color = rgb(0.45, 0.45, 0.45);
+    const color = colorFromHex(options.color);
 
     if (position === "repeated") {
-      const repeatedFontSize = repeatedFontSizeFor(width, height);
+      const repeatedFontSize = typeof options.fontSize === "number" ? Math.min(36, Math.max(8, options.fontSize)) : repeatedFontSizeFor(width, height);
       const repeatedTextWidth = font.widthOfTextAtSize(text, repeatedFontSize);
       const angle = -32;
       const gapX = Math.max(320, repeatedTextWidth + 230);

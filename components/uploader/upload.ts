@@ -11,9 +11,9 @@ export type JobResponse = {
 };
 
 export function formatSize(bytes: number) {
-  if (!bytes) return "0 MB";
-  const mb = bytes / 1024 / 1024;
-  return `${mb < 1 ? mb.toFixed(2) : mb.toFixed(1)} MB`;
+  if (bytes < 1024) return `${Math.max(0, bytes)} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 /**
@@ -24,14 +24,22 @@ export function uploadFileWithProgress(
   uploadUrl: string,
   file: File,
   labels: ErrorLabels,
-  onProgress: (progress: number) => void
+  onProgress: (progress: number) => void,
+  signal?: AbortSignal
 ) {
   return new Promise<void>((resolve, reject) => {
     const request = new XMLHttpRequest();
+    const aborted = () => { request.abort(); reject(signal?.reason ?? new DOMException("Aborted", "AbortError")); };
+    if (signal?.aborted) { aborted(); return; }
+    signal?.addEventListener("abort", aborted, {once: true});
+    request.onloadend = () => signal?.removeEventListener("abort", aborted);
+    request.onabort = () => reject(new DOMException("Aborted", "AbortError"));
+    request.timeout = 120_000;
+    request.ontimeout = () => reject(new Error(labels.error));
 
     request.upload.onprogress = (event) => {
-      if (!event.lengthComputable) return;
-      onProgress(Math.max(1, Math.round((event.loaded / event.total) * 100)));
+      if (!event.lengthComputable || event.total <= 0) return;
+      onProgress(Math.min(100, Math.max(0, Math.round((event.loaded / event.total) * 100))));
     };
 
     request.onload = () => {

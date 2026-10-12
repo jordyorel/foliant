@@ -5,6 +5,9 @@
     "flow": "Flow",
     "pricing": "Pricing",
     "faq": "FAQ",
+    "studio": "Studio",
+    "signIn": "Sign in",
+    "signedIn": "Signed in",
     "language": "Language selection",
     "start": "Start"
   },
@@ -24,10 +27,10 @@
     "metaTitle": "Foliant - 100% online document processing",
     "metaDescription": "Convert, compress, organize, and protect your documents online with Foliant.",
     "eyebrow": "100% online document processing",
-    "title": "Foliant, all your documents ready online",
+    "title": "Your online PDF tools",
     "subtitle": "Convert, compress, organize, and protect files from one clear, fast, multilingual interface.",
     "primaryCta": "View tools",
-    "secondaryCta": "Compare plans",
+    "secondaryCta": "Open Studio",
     "visual": {
       "ready": "Ready",
       "secure": "Secure",
@@ -36,9 +39,9 @@
       "deleted": "Auto deletion"
     },
     "launcher": {
-      "kicker": "Toolkit",
-      "title": "What do you need to do now?",
-      "text": "The most used actions stay accessible from the homepage without overwhelming users with the full catalog."
+      "kicker": "Essential tools",
+      "title": "Start with what matters",
+      "text": "Quickly access the tools you need to work with your documents."
     },
     "popular": {
       "compressPdf": "Reduce a heavy PDF in seconds.",
@@ -49,22 +52,22 @@
       "watermark": "Mark a PDF with visible text."
     },
     "categories": {
-      "kicker": "Engine categories",
-      "title": "A clear logic for every document task",
-      "text": "Foliant separates fast simple engines from advanced use cases that need more control.",
+      "kicker": "By need",
+      "title": "The right tools for every document",
+      "text": "Choose the tool that fits your needs, from quick processing to more advanced work.",
       "items": {
         "fromPdf": "Export PDFs to editable formats or images.",
         "toPdf": "Turn Word files, images, or Markdown into PDFs.",
         "compress": "Make heavy files easier to send.",
         "edit": "Merge, split, rotate, number, or watermark PDFs.",
-        "secure": "Protect, unlock, or visually sign documents.",
+        "secure": "Protect or unlock your PDF documents.",
         "ai": "Prepare OCR, translation, and summaries for premium use."
       }
     },
     "flow": {
-      "kicker": "Flow",
-      "title": "A short flow: file, action, result",
-      "text": "Tool pages keep upload at the top. The homepage explains the product, helps users choose a tool, and shows the plans.",
+      "kicker": "How it works",
+      "title": "Three steps, no detours",
+      "text": "Choose a tool, upload your file, then get your result in moments.",
       "steps": {
         "upload": {
           "title": "Upload the file",
@@ -72,7 +75,7 @@
         },
         "process": {
           "title": "Choose the action",
-          "text": "Compression, conversion, organization, protection, or visual signing."
+          "text": "Document compression, conversion, organization, and protection."
         },
         "download": {
           "title": "Get the result",
@@ -134,24 +137,24 @@
     },
     "trust": {
       "kicker": "Trust",
-      "title": "Built for speed without making the product confusing",
-      "text": "The promise stays simple: a clear international site, temporary files, and tools grouped by usage.",
+      "title": "A simple experience, built around your documents",
+      "text": "Foliant brings essential tools together in a clear workspace with transparent file handling.",
       "items": {
         "online": {
           "title": "100% online",
-          "text": "Processing starts from the browser and keeps the same flow across all tool pages."
+          "text": "No software to install: work with your documents directly in your browser."
         },
         "privacy": {
           "title": "Automatic deletion",
-          "text": "Files are temporary and retention stays limited."
+          "text": "Guest files are used for processing, then automatically deleted."
         },
         "multilingual": {
           "title": "Multilingual",
-          "text": "The same homepage exists in French, English, Spanish, and Portuguese."
+          "text": "Use Foliant in the language that suits you: French, English, Spanish, or Portuguese."
         },
         "simplePremium": {
-          "title": "Simple, then premium",
-          "text": "Free tools stay direct while advanced features add more control."
+          "title": "Personal Studio",
+          "text": "Sign in to find your saved documents, versions, and history."
         }
       }
     },
@@ -163,29 +166,29 @@
     },
     "faq": {
       "title": "Frequently asked questions",
-      "text": "The important answers should be visible from the homepage.",
+      "text": "The essential answers before you begin.",
       "items": {
-        "free": {
-          "q": "What does the free plan include?",
-          "a": "It lets users process a few simple files per day with clear size and volume limits."
+        "account": {
+          "q": "Do I need an account to use Foliant?",
+          "a": "No. You can process and download documents right away as a Guest."
         },
-        "pricing": {
-          "q": "Are the prices final?",
-          "a": "No. These are launch prices used to structure the offer. They can still change before public launch."
+        "studio": {
+          "q": "What is Studio for?",
+          "a": "Studio lets signed-in users find their saved documents, versions, and history."
         },
         "privacy": {
           "q": "What happens to uploaded files?",
-          "a": "Files are used for the requested processing, remain temporary, and are deleted automatically."
+          "a": "Guest files are used for the requested processing, remain temporary, and are deleted automatically. A document saved in Studio stays available in your account until you delete it."
         },
-        "advanced": {
-          "q": "Why will some features be premium?",
-          "a": "Features that need more processing, storage, history, batch workflows, or a visual editor will belong to paid plans."
+        "tools": {
+          "q": "Which tools are available?",
+          "a": "Ready-to-use tools are available from the catalogue. Features still in development are marked Coming soon."
         }
       }
     },
     "allTools": {
       "title": "All Foliant tools",
-      "text": "The full catalog stays visible at the bottom so navigation remains consistent everywhere."
+      "text": "Explore every available tool. Features in development are clearly marked."
     }
   },
   "home": {
@@ -201,17 +204,23 @@
     "upload": {
       "selected": "Selected file",
       "start": "Start processing",
+      "ready": "File ready",
       "uploading": "Uploading file",
       "queued": "Queued",
       "processing": "Processing",
       "completed": "Document ready",
+      "completedText": "Download the result now or add your email to keep a trace.",
       "download": "Download result",
+      "another": "Process another file",
       "error": "This file cannot be processed right now.",
       "errorTooLarge": "This file is too large.",
       "errorUnsupportedType": "This file type is not supported.",
       "errorInvalidFile": "This file is invalid or corrupted.",
       "errorQpdfMissing": "qpdf is not installed. Install it to enable PDF protection.",
       "errorHeicDecoderMissing": "No HEIC decoder is available. Install sips (macOS) or ImageMagick / libheif to enable HEIC conversion.",
+      "errorLibreOfficeMissing": "LibreOffice is not installed. Install it to enable Office to PDF conversion.",
+      "errorPdfTextMissing": "This PDF does not contain selectable text. OCR is required for scanned PDFs.",
+      "officeConversion": "The PDF must contain selectable text. The Office file will be editable, but the original layout, images, and complex tables are not reproduced exactly.",
       "original": "Original",
       "final": "Final",
       "saved": "Saved",
@@ -250,6 +259,9 @@
         "intervalLabel": "Pages per file",
         "rangeLabel": "Pages to extract",
         "rangePlaceholder": "E.g. 1-3,5",
+        "previewEveryPage": "Result: {count} PDFs, one per page.",
+        "previewInterval": "Result: about {count} PDFs.",
+        "previewRange": "Result: one PDF with the selected pages.",
         "split": "Split",
         "another": "Split another PDF"
       },
@@ -275,10 +287,17 @@
         "uploading": "Uploading your PDF...",
         "readyTitle": "Convert your PDF",
         "selectFormat": "Choose the output format:",
+        "selectResolution": "Choose the resolution:",
         "jpg": "JPG",
         "jpgText": "JPG images, great for sharing.",
         "png": "PNG",
         "pngText": "PNG images, lossless quality.",
+        "web": "Web (72 DPI)",
+        "webText": "Light files for the web and sharing.",
+        "standard": "Standard (150 DPI)",
+        "standardText": "A balanced result for everyday use.",
+        "highDefinition": "High definition (300 DPI)",
+        "highDefinitionText": "For printing and fine details.",
         "convert": "Convert",
         "converting": "Converting to images...",
         "done": "Your images are ready",
@@ -293,6 +312,8 @@
         "done": "Your PDF is ready",
         "successSubtitle": "Download the rotated PDF now or add your email to keep a trace.",
         "selectAngle": "Choose the rotation to apply:",
+        "rangeLabel": "Pages to rotate",
+        "rangePlaceholder": "E.g. 1-3,5",
         "right": "90° right",
         "rightText": "Rotate 90° clockwise.",
         "half": "180°",
@@ -344,6 +365,13 @@
         "topRight": "Top right",
         "startPageLabel": "First page to number",
         "startNumberLabel": "Starting number",
+        "formatLabel": "Number format",
+        "formatNumber": "1",
+        "formatPage": "Page 1",
+        "formatPageOfTotal": "1 / 12",
+        "fontSizeLabel": "Size",
+        "marginLabel": "Margin",
+        "colorLabel": "Number color",
         "submit": "Number pages",
         "another": "Number another PDF"
       },
@@ -379,6 +407,10 @@
         "confirmLabel": "Confirm password",
         "confirmPlaceholder": "Repeat the password",
         "mismatch": "Passwords do not match.",
+        "passwordNote": "This password is used only to create the protected PDF. It is never stored.",
+        "showPassword": "Show password",
+        "hidePassword": "Hide password",
+        "passwordStrength": {"weak": "Short password", "good": "Good password", "strong": "Strong password"},
         "submit": "Protect",
         "another": "Protect another PDF"
       },
@@ -391,6 +423,7 @@
         "successSubtitle": "Download the unlocked PDF now or add your email to keep a trace.",
         "passwordLabel": "PDF password",
         "passwordPlaceholder": "Enter the password",
+        "passwordNote": "This password is used only to unlock this PDF and is never stored.",
         "submit": "Unlock",
         "another": "Unlock another PDF"
       },
@@ -412,6 +445,8 @@
         "selectLevel": "Select compression level:",
         "bestSize": "Best size",
         "bestSizeText": "Great for sharing, lower quality",
+        "standard": "Balanced",
+        "standardText": "The best trade-off for everyday use.",
         "bestQuality": "Best quality",
         "bestQualityText": "Ideal for printing, higher quality",
         "compress": "Compress",
@@ -484,6 +519,7 @@
     }
   },
   "catalog": {
+    "comingSoon": "Coming soon",
     "groups": {
       "fromPdf": "Convert from PDF",
       "toPdf": "Convert to PDF",

@@ -24,13 +24,6 @@ const items = [
     from: "3 PDF",
     to: "1 PDF",
     status: "Merge"
-  },
-  {
-    key: "sign",
-    previewTitle: "contrat-signe.pdf",
-    from: "PDF",
-    to: "Signé",
-    status: "OK"
   }
 ];
 

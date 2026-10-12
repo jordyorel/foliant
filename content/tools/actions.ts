@@ -36,7 +36,18 @@ export const toolActions = {
   "traduire-pdf": "pdf_translator"
 } as const;
 
-export type ToolAction = (typeof toolActions)[keyof typeof toolActions] | "auto";
+// Import is a workspace origin, not a public processing tool.
+export type ToolAction = (typeof toolActions)[keyof typeof toolActions] | "auto" | "import_pdf";
+
+const deferredActions = new Set<string>(["image_to_text", "ocr_pdf", "document_summarizer", "pdf_translator"]);
+export function isBetaToolAction(action: string) {
+  return (action === "auto" || Object.values(toolActions).some(value => value === action)) && !deferredActions.has(action);
+}
+
+export function isBetaToolSlug(slug: string) {
+  const action = toolActions[slug as keyof typeof toolActions];
+  return Boolean(action && isBetaToolAction(action));
+}
 
 export function getToolAction(slug?: string): ToolAction {
   if (!slug) return "auto";

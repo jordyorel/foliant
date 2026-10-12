@@ -1,4 +1,6 @@
-export const catalogSections = [
+import {isBetaToolSlug} from "./tools/actions";
+
+const plannedSections = [
   {
     group: "fromPdf",
     links: [
@@ -80,7 +82,7 @@ export const homePopularTools = [
   {slug: "filigrane-pdf", label: "watermark", description: "watermark", icon: "ti-droplet", tone: "teal"}
 ] as const;
 
-export const homeCategoryHighlights = [
+const plannedHighlights = [
   {group: "fromPdf", description: "fromPdf", icon: "ti-file-export", links: ["pdf-en-word", "pdf-en-excel", "pdf-en-image"]},
   {group: "toPdf", description: "toPdf", icon: "ti-file-import", links: ["word-en-pdf", "image-en-pdf", "markdown-en-pdf"]},
   {group: "compress", description: "compress", icon: "ti-arrows-diagonal-minimize-2", links: ["compresser-pdf", "compresser-image"]},
@@ -89,4 +91,19 @@ export const homeCategoryHighlights = [
   {group: "ai", description: "ai", icon: "ti-sparkles", links: ["ocr-pdf", "resumer-document", "traduire-pdf"]}
 ] as const;
 
-export type CatalogToolLabel = (typeof catalogSections)[number]["links"][number][1];
+export const catalogSections = plannedSections.map(section => ({...section,
+  links: section.links.filter(([slug]) => isBetaToolSlug(slug))
+})).filter(section => section.links.length > 0);
+
+export const fullCatalogSections = plannedSections.map(section => ({
+  ...section,
+  links: section.links.map(([slug, label]) => ({
+    slug,
+    label,
+    available: isBetaToolSlug(slug)
+  }))
+}));
+export const homeCategoryHighlights = plannedHighlights.map(section => ({...section,
+  links: section.links.filter(isBetaToolSlug)
+})).filter(section => section.links.length > 0);
+export type CatalogToolLabel = (typeof plannedSections)[number]["links"][number][1];

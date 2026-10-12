@@ -2,7 +2,10 @@
 
 import {useState} from "react";
 import type {ToolAction} from "@/content/tools/actions";
-import {ImageToPdfFlowModal, type ImageToPdfFlowLabels} from "./ImageToPdfFlowModal";
+import type {ImageToPdfFlowLabels} from "./ImageToPdfFlowModal";
+import dynamic from "next/dynamic";
+import {UploadFlowLoading} from "./UploadFlowLoading";
+const ImageToPdfFlowModal = dynamic(() => import("./ImageToPdfFlowModal").then((module) => module.ImageToPdfFlowModal), {loading: UploadFlowLoading});
 
 type ImageToPdfUploaderLabels = ImageToPdfFlowLabels & {
   add: string;

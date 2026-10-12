@@ -2,7 +2,10 @@
 
 import {useState} from "react";
 import type {ToolAction} from "@/content/tools/actions";
-import {PageRangeFlowModal, type PageRangeFlowLabels} from "./PageRangeFlowModal";
+import type {PageRangeFlowLabels} from "./PageRangeFlowModal";
+import dynamic from "next/dynamic";
+import {UploadFlowLoading} from "./UploadFlowLoading";
+const PageRangeFlowModal = dynamic(() => import("./PageRangeFlowModal").then((module) => module.PageRangeFlowModal), {loading: UploadFlowLoading});
 
 export function PageRangeUploader({tool, accept, note, labels}: {
   tool: ToolAction;

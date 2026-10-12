@@ -2,7 +2,10 @@
 
 import {useState} from "react";
 import type {ToolAction} from "@/content/tools/actions";
-import {HeicToImageFlowModal, type HeicFlowLabels} from "./HeicToImageFlowModal";
+import type {HeicFlowLabels} from "./HeicToImageFlowModal";
+import dynamic from "next/dynamic";
+import {UploadFlowLoading} from "./UploadFlowLoading";
+const HeicToImageFlowModal = dynamic(() => import("./HeicToImageFlowModal").then((module) => module.HeicToImageFlowModal), {loading: UploadFlowLoading});
 
 export function HeicToImageUploader({tool, accept, note, labels}: {
   tool: ToolAction;

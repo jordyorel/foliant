@@ -1,8 +1,12 @@
 "use client";
+import {useTransferLifecycle} from "./useTransferLifecycle";
+import {pollJobUntilSettled} from "@/lib/jobs/client-poll";
+import {ProcessingStatus} from "./ProcessingStatus";
 
 import {useEffect, useMemo, useState} from "react";
 import type {ToolAction} from "@/content/tools/actions";
 import {messageFromCode, messageFromResponse, type ErrorLabels} from "./clientError";
+import {redirectToGuestStudio} from "./guestStudio";
 import {formatSize, uploadFileWithProgress, type JobResponse} from "./upload";
 
 type PdfFormat = "jpg" | "png";
@@ -12,10 +16,17 @@ export type PdfToImageFlowLabels = {
   uploading: string;
   readyTitle: string;
   selectFormat: string;
+  selectResolution: string;
   jpg: string;
   jpgText: string;
   png: string;
   pngText: string;
+  web: string;
+  webText: string;
+  standard: string;
+  standardText: string;
+  highDefinition: string;
+  highDefinitionText: string;
   convert: string;
   converting: string;
   done: string;
@@ -52,11 +63,12 @@ type UploadState = {
 };
 
 export function PdfToImageFlowModal({file, tool, defaultFormat = "jpg", labels, onClose}: PdfToImageFlowModalProps) {
+  const {getSignal, runSubmission, retryCount, retry, retryLabel, errorExpired} = useTransferLifecycle(file, tool);
   const [flowState, setFlowState] = useState<FlowState>("uploading");
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [jobProgress, setJobProgress] = useState(0);
   const [upload, setUpload] = useState<UploadState | null>(null);
   const [format, setFormat] = useState<PdfFormat>(defaultFormat);
+  const [dpi, setDpi] = useState<72 | 150 | 300>(150);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState("");
 
@@ -68,22 +80,30 @@ export function PdfToImageFlowModal({file, tool, defaultFormat = "jpg", labels, 
   };
 
   const canConvert = Boolean(upload);
-  const progress = flowState === "uploading" ? uploadProgress : jobProgress;
+  const progress = uploadProgress;
 
   const formatOptions = useMemo(() => [
     {id: "jpg" as const, title: labels.jpg, text: labels.jpgText},
     {id: "png" as const, title: labels.png, text: labels.pngText}
   ], [labels.jpg, labels.jpgText, labels.png, labels.pngText]);
+  const resolutionOptions = useMemo(() => [
+    {id: 72 as const, title: labels.web, text: labels.webText},
+    {id: 150 as const, title: labels.standard, text: labels.standardText},
+    {id: 300 as const, title: labels.highDefinition, text: labels.highDefinitionText}
+  ], [labels.highDefinition, labels.highDefinitionText, labels.standard, labels.standardText, labels.web, labels.webText]);
 
   useEffect(() => {
+    setError("");
     let cancelled = false;
+    const signal = getSignal();
 
     async function startUpload() {
       try {
         setFlowState("uploading");
-        setUploadProgress(4);
+        setUploadProgress(0);
 
         const initResponse = await fetch("/api/upload/init", {
+          signal,
           method: "POST",
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify({
@@ -94,7 +114,7 @@ export function PdfToImageFlowModal({file, tool, defaultFormat = "jpg", labels, 
           })
         });
 
-        if (!initResponse.ok) throw new Error(await messageFromResponse(initResponse, errorLabels));
+        if (!initResponse.ok) throw new Error(await messageFromResponse(initResponse, {...errorLabels, errorExpired}));
 
         const nextUpload = await initResponse.json() as UploadState;
         if (cancelled) return;
@@ -102,13 +122,11 @@ export function PdfToImageFlowModal({file, tool, defaultFormat = "jpg", labels, 
         setUpload(nextUpload);
         await uploadFileWithProgress(nextUpload.uploadUrl, file, errorLabels, (nextProgress) => {
           if (!cancelled) setUploadProgress(nextProgress);
-        });
+        }, signal);
 
         if (cancelled) return;
 
-        window.setTimeout(() => {
-          if (!cancelled) setFlowState("ready");
-        }, 260);
+        if (!cancelled) setFlowState("ready");
       } catch (uploadError) {
         if (cancelled) return;
         setError(uploadError instanceof Error ? uploadError.message : labels.error);
@@ -121,18 +139,16 @@ export function PdfToImageFlowModal({file, tool, defaultFormat = "jpg", labels, 
     return () => {
       cancelled = true;
     };
-  }, [file, labels.error, tool]);
+  }, [file, labels.error, tool, retryCount]);
 
   async function pollJob(jobId: string) {
-    const response = await fetch(`/api/jobs/${jobId}`);
-    if (!response.ok) throw new Error(labels.error);
-
-    const nextJob = await response.json() as JobResponse;
-    setJobProgress(nextJob.progress);
+    const signal = getSignal();
+    const nextJob = await pollJobUntilSettled<JobResponse>(jobId, labels.error, signal);
+    if (signal.aborted) return;
 
     if (nextJob.status === "completed") {
       setDownloadUrl(nextJob.resultUrl ?? `/api/jobs/${jobId}/download`);
-      setFlowState("completed");
+      redirectToGuestStudio(jobId);
       return;
     }
 
@@ -142,41 +158,38 @@ export function PdfToImageFlowModal({file, tool, defaultFormat = "jpg", labels, 
       return;
     }
 
-    window.setTimeout(() => {
-      void pollJob(jobId).catch(() => {
-        setError(labels.error);
-        setFlowState("failed");
-      });
-    }, 700);
   }
 
   async function startConvert() {
+    return runSubmission(async () => {
+      const signal = getSignal();
     if (!upload || !canConvert) return;
 
     try {
       setError("");
       setFlowState("converting");
-      setJobProgress(8);
 
       const jobResponse = await fetch("/api/jobs", {
-        method: "POST",
+        signal,
+          method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
           tool,
           fileIds: [upload.fileId],
-          options: {pdfToImageFormat: format}
+          options: {pdfToImageDpi: dpi, pdfToImageFormat: format}
         })
       });
 
-      if (!jobResponse.ok) throw new Error(await messageFromResponse(jobResponse, errorLabels));
+      if (!jobResponse.ok) throw new Error(await messageFromResponse(jobResponse, {...errorLabels, errorExpired}));
 
       const createdJob = await jobResponse.json() as JobResponse;
-      setJobProgress(createdJob.progress);
       await pollJob(createdJob.id);
     } catch (convertError) {
+      if (signal.aborted) return;
       setError(convertError instanceof Error ? convertError.message : labels.error);
       setFlowState("failed");
     }
+    });
   }
 
   return (
@@ -225,6 +238,24 @@ export function PdfToImageFlowModal({file, tool, defaultFormat = "jpg", labels, 
                 </button>
               ))}
             </div>
+            <p className="choice-label">{labels.selectResolution}</p>
+            <div className="compression-choices">
+              {resolutionOptions.map((option) => (
+                <button
+                  className={`compression-choice${dpi === option.id ? " is-selected" : ""}`}
+                  key={option.id}
+                  type="button"
+                  aria-pressed={dpi === option.id}
+                  onClick={() => setDpi(option.id)}
+                >
+                  <span className="radio-dot" aria-hidden="true" />
+                  <span>
+                    <strong>{option.title}</strong>
+                    <small>{option.text}</small>
+                  </span>
+                </button>
+              ))}
+            </div>
             <button className="modal-primary" type="button" onClick={startConvert} disabled={!canConvert}>
               {labels.convert}
             </button>
@@ -234,10 +265,7 @@ export function PdfToImageFlowModal({file, tool, defaultFormat = "jpg", labels, 
         {flowState === "converting" ? (
           <div className="flow-panel compact">
             <h2 id="pdf-image-flow-title">{labels.converting}</h2>
-            <div className="large-progress" aria-label={labels.converting}>
-              <span style={{width: `${progress}%`}} />
-            </div>
-            <p className="progress-percent">{progress}%</p>
+            <ProcessingStatus label={labels.converting} />
           </div>
         ) : null}
 
@@ -267,7 +295,8 @@ export function PdfToImageFlowModal({file, tool, defaultFormat = "jpg", labels, 
           <div className="flow-panel compact">
             <h2 id="pdf-image-flow-title">{labels.error}</h2>
             <p className="upload-error">{error || labels.error}</p>
-            <button className="modal-primary" type="button" onClick={onClose}>{labels.another}</button>
+            <button className="modal-primary" type="button" onClick={retry}><i className="ti ti-refresh" aria-hidden="true" />{retryLabel}</button>
+            <button className="text-button" type="button" onClick={onClose}>{labels.another}</button>
           </div>
         ) : null}
       </div>

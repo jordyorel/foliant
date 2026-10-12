@@ -1,3 +1,5 @@
+import {isBetaToolSlug} from "./actions";
+
 export type ToolConfig = {
   slug: string;
   labelKey: string;
@@ -53,16 +55,16 @@ function defineTool(config: Omit<ToolConfig, "seo" | "ui" | "content"> & {
   };
 }
 
-export const tools: Record<string, ToolConfig> = {
+const plannedTools: Record<string, ToolConfig> = {
   "pdf-en-word": defineTool({
     slug: "pdf-en-word",
     labelKey: "pdfToWord",
     category: "convert",
     archetype: "file",
     title: "Convertir PDF en Word",
-    description: "Transformez un PDF en document Word modifiable directement en ligne.",
+    description: "Extrayez le texte d'un PDF vers un document Word modifiable.",
     uploadTitle: "Déposez votre PDF ici",
-    uploadNote: "PDF uniquement. Le document Word sera généré après traitement.",
+    uploadNote: "PDF avec texte sélectionnable uniquement. La mise en page et les images ne sont pas reproduites à l'identique.",
     accept: ".pdf,application/pdf",
     processor: {id: "pdf_to_word", inputTypes: ["pdf"], outputType: "docx"}
   }),
@@ -72,9 +74,9 @@ export const tools: Record<string, ToolConfig> = {
     category: "convert",
     archetype: "file",
     title: "Convertir PDF en Excel",
-    description: "Extrayez les tableaux d'un PDF vers un fichier Excel exploitable.",
+    description: "Extrayez le texte et les colonnes simples d'un PDF vers Excel.",
     uploadTitle: "Déposez votre PDF ici",
-    uploadNote: "PDF uniquement. Idéal pour tableaux, factures et rapports.",
+    uploadNote: "PDF avec texte sélectionnable uniquement. Les tableaux complexes peuvent demander un ajustement dans Excel.",
     accept: ".pdf,application/pdf",
     processor: {id: "pdf_to_excel", inputTypes: ["pdf"], outputType: "xlsx"}
   }),
@@ -84,9 +86,9 @@ export const tools: Record<string, ToolConfig> = {
     category: "convert",
     archetype: "file",
     title: "Convertir PDF en PowerPoint",
-    description: "Transformez les pages d'un PDF en présentation PowerPoint.",
+    description: "Créez une présentation PowerPoint à partir du texte de chaque page PDF.",
     uploadTitle: "Déposez votre PDF ici",
-    uploadNote: "PDF uniquement. Chaque page peut devenir une diapositive.",
+    uploadNote: "PDF avec texte sélectionnable uniquement. Les diapositives sont éditables, mais la mise en page d'origine n'est pas conservée.",
     accept: ".pdf,application/pdf",
     processor: {id: "pdf_to_powerpoint", inputTypes: ["pdf"], outputType: "pptx"}
   }),
@@ -409,7 +411,7 @@ export const tools: Record<string, ToolConfig> = {
     title: "Remplir un PDF",
     description: "Complétez un formulaire PDF directement en ligne.",
     uploadTitle: "Déposez votre PDF ici",
-    uploadNote: "Cette fonction sera liée à l'éditeur navigateur.",
+    uploadNote: "Complétez les champs de formulaire interactifs dans le Studio.",
     accept: ".pdf,application/pdf",
     processor: {id: "fill_pdf", inputTypes: ["pdf"], outputType: "pdf"},
     related: ["Ajouter du texte", "Signer PDF", "Protéger PDF", "Déverrouiller PDF"]
@@ -504,3 +506,7 @@ export const tools: Record<string, ToolConfig> = {
     processor: {id: "pdf_translator", inputTypes: ["pdf"], outputType: "pdf"}
   })
 };
+
+export const tools: Record<string, ToolConfig> = Object.fromEntries(
+  Object.entries(plannedTools).filter(([slug]) => isBetaToolSlug(slug))
+);

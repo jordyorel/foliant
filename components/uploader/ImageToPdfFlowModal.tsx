@@ -1,8 +1,12 @@
 "use client";
+import {useTransferLifecycle} from "./useTransferLifecycle";
+import {pollJobUntilSettled} from "@/lib/jobs/client-poll";
+import {ProcessingStatus} from "./ProcessingStatus";
 
 import {useEffect, useState} from "react";
 import type {ToolAction} from "@/content/tools/actions";
 import {messageFromCode, messageFromResponse, type ErrorLabels} from "./clientError";
+import {redirectToGuestStudio} from "./guestStudio";
 import {formatSize, uploadFileWithProgress as uploadFile} from "./upload";
 
 export type ImageToPdfFlowLabels = {
@@ -60,10 +64,11 @@ type JobResponse = {
 };
 
 export function ImageToPdfFlowModal({files, tool, labels, onClose}: ImageToPdfFlowModalProps) {
+  const {getSignal, runSubmission, retryCount, retry, retryLabel, errorExpired} = useTransferLifecycle(files, tool);
   const [flowState, setFlowState] = useState<FlowState>("uploading");
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [jobProgress, setJobProgress] = useState(0);
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [draggedEntryIndex, setDraggedEntryIndex] = useState<number | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState("");
 
@@ -76,7 +81,9 @@ export function ImageToPdfFlowModal({files, tool, labels, onClose}: ImageToPdfFl
   const totalBytes = files.reduce((sum, file) => sum + file.size, 0);
 
   useEffect(() => {
+    setError("");
     let cancelled = false;
+    const signal = getSignal();
 
     async function uploadAll() {
       try {
@@ -86,7 +93,8 @@ export function ImageToPdfFlowModal({files, tool, labels, onClose}: ImageToPdfFl
 
         for (const file of files) {
           const initResponse = await fetch("/api/upload/init", {
-            method: "POST",
+            signal,
+          method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
               tool,
@@ -96,7 +104,7 @@ export function ImageToPdfFlowModal({files, tool, labels, onClose}: ImageToPdfFl
             })
           });
 
-          if (!initResponse.ok) throw new Error(await messageFromResponse(initResponse, errorLabels));
+          if (!initResponse.ok) throw new Error(await messageFromResponse(initResponse, {...errorLabels, errorExpired}));
           const init = await initResponse.json() as {fileId: string; uploadUrl: string};
           if (cancelled) return;
 
@@ -106,7 +114,7 @@ export function ImageToPdfFlowModal({files, tool, labels, onClose}: ImageToPdfFl
               ? Math.round(((uploadedBytes + (percent / 100) * file.size) / totalBytes) * 100)
               : 0;
             setUploadProgress(Math.min(100, overall));
-          });
+          }, signal);
 
           uploadedBytes += file.size;
           nextEntries.push({name: file.name, size: file.size, fileId: init.fileId});
@@ -128,18 +136,16 @@ export function ImageToPdfFlowModal({files, tool, labels, onClose}: ImageToPdfFl
     return () => {
       cancelled = true;
     };
-  }, [files, tool]);
+  }, [files, tool, retryCount]);
 
   async function poll(jobId: string) {
-    const response = await fetch(`/api/jobs/${jobId}`);
-    if (!response.ok) throw new Error(labels.error);
-
-    const nextJob = await response.json() as JobResponse;
-    setJobProgress(nextJob.progress);
+    const signal = getSignal();
+    const nextJob = await pollJobUntilSettled<JobResponse>(jobId, labels.error, signal);
+    if (signal.aborted) return;
 
     if (nextJob.status === "completed") {
       setDownloadUrl(nextJob.resultUrl ?? `/api/jobs/${jobId}/download`);
-      setFlowState("completed");
+      redirectToGuestStudio(jobId);
       return;
     }
 
@@ -149,24 +155,20 @@ export function ImageToPdfFlowModal({files, tool, labels, onClose}: ImageToPdfFl
       return;
     }
 
-    window.setTimeout(() => {
-      void poll(jobId).catch(() => {
-        setError(labels.error);
-        setFlowState("failed");
-      });
-    }, 700);
   }
 
   async function startCreate() {
+    return runSubmission(async () => {
+      const signal = getSignal();
     if (entries.length === 0) return;
 
     try {
       setError("");
       setFlowState("creating");
-      setJobProgress(8);
 
       const jobResponse = await fetch("/api/jobs", {
-        method: "POST",
+        signal,
+          method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
           tool,
@@ -175,14 +177,15 @@ export function ImageToPdfFlowModal({files, tool, labels, onClose}: ImageToPdfFl
         })
       });
 
-      if (!jobResponse.ok) throw new Error(await messageFromResponse(jobResponse, errorLabels));
+      if (!jobResponse.ok) throw new Error(await messageFromResponse(jobResponse, {...errorLabels, errorExpired}));
       const created = await jobResponse.json() as JobResponse;
-      setJobProgress(created.progress);
       await poll(created.id);
     } catch (createError) {
+      if (signal.aborted) return;
       setError(createError instanceof Error && createError.message ? createError.message : labels.error);
       setFlowState("failed");
     }
+    });
   }
 
   function move(index: number, delta: number) {
@@ -197,6 +200,16 @@ export function ImageToPdfFlowModal({files, tool, labels, onClose}: ImageToPdfFl
 
   function removeAt(index: number) {
     setEntries((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function moveTo(fromIndex: number, toIndex: number) {
+    if (fromIndex === toIndex) return;
+    setEntries((prev) => {
+      const next = [...prev];
+      const [entry] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, entry);
+      return next;
+    });
   }
 
   return (
@@ -225,8 +238,20 @@ export function ImageToPdfFlowModal({files, tool, labels, onClose}: ImageToPdfFl
             <h2 id="image-pdf-flow-title">{labels.readyTitle}</h2>
             <div className="merge-list">
               {entries.map((entry, index) => (
-                <div className="mini-card merge-row" key={entry.fileId}>
-                  <span className="merge-name">{entry.name}</span>
+                <div
+                  className={`mini-card merge-row${draggedEntryIndex === index ? " is-dragging" : ""}`}
+                  draggable
+                  key={entry.fileId}
+                  onDragEnd={() => setDraggedEntryIndex(null)}
+                  onDragOver={(event) => event.preventDefault()}
+                  onDragStart={() => setDraggedEntryIndex(index)}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    if (draggedEntryIndex !== null) moveTo(draggedEntryIndex, index);
+                    setDraggedEntryIndex(null);
+                  }}
+                >
+                  <span className="merge-name"><i className="ti ti-grip-vertical" aria-hidden="true" />{index + 1}. {entry.name}</span>
                   <span className="badge">{formatSize(entry.size)}</span>
                   <button
                     className="merge-icon-button"
@@ -272,10 +297,7 @@ export function ImageToPdfFlowModal({files, tool, labels, onClose}: ImageToPdfFl
         {flowState === "creating" ? (
           <div className="flow-panel compact">
             <h2 id="image-pdf-flow-title">{labels.creatingTitle}</h2>
-            <div className="large-progress" aria-label={labels.creatingTitle}>
-              <span style={{width: `${jobProgress}%`}} />
-            </div>
-            <p className="progress-percent">{jobProgress}%</p>
+            <ProcessingStatus label={labels.creatingTitle} />
           </div>
         ) : null}
 
@@ -309,7 +331,8 @@ export function ImageToPdfFlowModal({files, tool, labels, onClose}: ImageToPdfFl
           <div className="flow-panel compact">
             <h2 id="image-pdf-flow-title">{labels.error}</h2>
             <p className="upload-error">{error || labels.error}</p>
-            <button className="modal-primary" type="button" onClick={onClose}>{labels.another}</button>
+            <button className="modal-primary" type="button" onClick={retry}><i className="ti ti-refresh" aria-hidden="true" />{retryLabel}</button>
+            <button className="text-button" type="button" onClick={onClose}>{labels.another}</button>
           </div>
         ) : null}
       </div>

@@ -1,8 +1,12 @@
 "use client";
+import {useTransferLifecycle} from "./useTransferLifecycle";
+import {pollJobUntilSettled} from "@/lib/jobs/client-poll";
+import {ProcessingStatus} from "./ProcessingStatus";
 
 import {useEffect, useMemo, useState} from "react";
 import type {ToolAction} from "@/content/tools/actions";
 import {messageFromCode, messageFromResponse, type ErrorLabels} from "./clientError";
+import {redirectToGuestStudio} from "./guestStudio";
 import {formatSize, uploadFileWithProgress as uploadFile} from "./upload";
 
 type CompressionLevel = "best_size" | "best_quality";
@@ -71,16 +75,16 @@ type JobResponse = {
 };
 
 export function CompressionFlowModal({file, tool, labels, onClose}: CompressionFlowModalProps) {
+  const {getSignal, runSubmission, retryCount, retry, retryLabel, errorExpired} = useTransferLifecycle(file, tool);
   const [flowState, setFlowState] = useState<FlowState>("uploading");
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [jobProgress, setJobProgress] = useState(0);
   const [upload, setUpload] = useState<UploadState | null>(null);
   const [level, setLevel] = useState<CompressionLevel>("best_size");
   const [job, setJob] = useState<JobResponse | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState("");
 
-  const progress = flowState === "uploading" ? uploadProgress : jobProgress;
+  const progress = uploadProgress;
   const canCompress = flowState === "ready" && upload;
 
   const compressionOptions = useMemo(() => [
@@ -97,13 +101,16 @@ export function CompressionFlowModal({file, tool, labels, onClose}: CompressionF
   ], [labels.bestQuality, labels.bestQualityText, labels.bestSize, labels.bestSizeText]);
 
   useEffect(() => {
+    setError("");
     let cancelled = false;
+    const signal = getSignal();
 
     async function startUpload() {
       try {
         setFlowState("uploading");
-        setUploadProgress(4);
+        setUploadProgress(0);
         const initResponse = await fetch("/api/upload/init", {
+          signal,
           method: "POST",
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify({
@@ -114,7 +121,7 @@ export function CompressionFlowModal({file, tool, labels, onClose}: CompressionF
           })
         });
 
-        if (!initResponse.ok) throw new Error(await messageFromResponse(initResponse, labels));
+        if (!initResponse.ok) throw new Error(await messageFromResponse(initResponse, {...labels, errorExpired}));
 
         const nextUpload = await initResponse.json() as UploadState;
         if (cancelled) return;
@@ -122,13 +129,11 @@ export function CompressionFlowModal({file, tool, labels, onClose}: CompressionF
         setUpload(nextUpload);
         await uploadFile(nextUpload.uploadUrl, file, labels, (nextProgress) => {
           if (!cancelled) setUploadProgress(nextProgress);
-        });
+        }, signal);
 
         if (cancelled) return;
 
-        window.setTimeout(() => {
-          if (!cancelled) setFlowState("ready");
-        }, 260);
+        if (!cancelled) setFlowState("ready");
       } catch (uploadError) {
         if (cancelled) return;
         setError(uploadError instanceof Error ? uploadError.message : labels.error);
@@ -141,19 +146,17 @@ export function CompressionFlowModal({file, tool, labels, onClose}: CompressionF
     return () => {
       cancelled = true;
     };
-  }, [file, labels.error, tool]);
+  }, [file, labels.error, tool, retryCount]);
 
   async function pollJob(jobId: string) {
-    const response = await fetch(`/api/jobs/${jobId}`);
-    if (!response.ok) throw new Error(labels.error);
-
-    const nextJob = await response.json() as JobResponse;
+    const signal = getSignal();
+    const nextJob = await pollJobUntilSettled<JobResponse>(jobId, labels.error, signal);
+    if (signal.aborted) return;
     setJob(nextJob);
-    setJobProgress(nextJob.progress);
 
     if (nextJob.status === "completed") {
       setDownloadUrl(nextJob.resultUrl ?? `/api/jobs/${jobId}/download`);
-      setFlowState("completed");
+      redirectToGuestStudio(jobId);
       return;
     }
 
@@ -163,24 +166,20 @@ export function CompressionFlowModal({file, tool, labels, onClose}: CompressionF
       return;
     }
 
-    window.setTimeout(() => {
-      void pollJob(jobId).catch(() => {
-        setError(labels.error);
-        setFlowState("failed");
-      });
-    }, 700);
   }
 
   async function startCompression() {
+    return runSubmission(async () => {
+      const signal = getSignal();
     if (!canCompress) return;
 
     try {
       setError("");
       setFlowState("compressing");
-      setJobProgress(8);
 
       const jobResponse = await fetch("/api/jobs", {
-        method: "POST",
+        signal,
+          method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
           tool,
@@ -189,16 +188,17 @@ export function CompressionFlowModal({file, tool, labels, onClose}: CompressionF
         })
       });
 
-      if (!jobResponse.ok) throw new Error(await messageFromResponse(jobResponse, labels));
+      if (!jobResponse.ok) throw new Error(await messageFromResponse(jobResponse, {...labels, errorExpired}));
 
       const createdJob = await jobResponse.json() as JobResponse;
       setJob(createdJob);
-      setJobProgress(createdJob.progress);
       await pollJob(createdJob.id);
     } catch (compressionError) {
+      if (signal.aborted) return;
       setError(compressionError instanceof Error ? compressionError.message : labels.error);
       setFlowState("failed");
     }
+    });
   }
 
   return (
@@ -255,10 +255,7 @@ export function CompressionFlowModal({file, tool, labels, onClose}: CompressionF
         {flowState === "compressing" ? (
           <div className="flow-panel compact">
             <h2 id="compression-flow-title">{labels.compressingTitle}</h2>
-            <div className="large-progress" aria-label={labels.compressingTitle}>
-              <span style={{width: `${progress}%`}} />
-            </div>
-            <p className="progress-percent">{progress}%</p>
+            <ProcessingStatus label={labels.compressingTitle} />
           </div>
         ) : null}
 
@@ -301,7 +298,8 @@ export function CompressionFlowModal({file, tool, labels, onClose}: CompressionF
           <div className="flow-panel compact">
             <h2 id="compression-flow-title">{labels.error}</h2>
             <p className="upload-error">{error || labels.error}</p>
-            <button className="modal-primary" type="button" onClick={onClose}>{labels.another}</button>
+            <button className="modal-primary" type="button" onClick={retry}><i className="ti ti-refresh" aria-hidden="true" />{retryLabel}</button>
+            <button className="text-button" type="button" onClick={onClose}>{labels.another}</button>
           </div>
         ) : null}
       </div>

@@ -5,10 +5,15 @@ export type ErrorLabels = {
   errorInvalidFile: string;
   errorQpdfMissing?: string;
   errorHeicDecoderMissing?: string;
+  errorLibreOfficeMissing?: string;
+  errorPdfTextMissing?: string;
+  errorExpired?: string;
 };
 
 export function messageFromCode(code: string | undefined | null, labels: ErrorLabels): string | null {
   switch (code) {
+    case "upload_not_found":
+      return labels.errorExpired ?? labels.error;
     case "file_too_large":
       return labels.errorTooLarge;
     case "unsupported_type":
@@ -19,6 +24,10 @@ export function messageFromCode(code: string | undefined | null, labels: ErrorLa
       return labels.errorQpdfMissing ?? null;
     case "heic_decoder_missing":
       return labels.errorHeicDecoderMissing ?? null;
+    case "libreoffice_missing":
+      return labels.errorLibreOfficeMissing ?? null;
+    case "pdf_text_missing":
+      return labels.errorPdfTextMissing ?? null;
     default:
       return null;
   }

@@ -12,7 +12,7 @@ import {createJob, shouldKeepOriginal} from "@/lib/jobs";
 import {protectPdf} from "@/processors/pdf/security";
 import {PDFDocument} from "pdf-lib";
 import JSZip from "jszip";
-import {fixtureBytes, fixturePath, isHeicDecoderAvailable, isQpdfAvailable, pollJob, toArrayBuffer} from "./helpers";
+import {createDocxBytes, createPptxBytes, createTextPdfBytes, createXlsxBytes, fixtureBytes, fixturePath, isHeicDecoderAvailable, isLibreOfficeAvailable, isQpdfAvailable, pollJob, toArrayBuffer} from "./helpers";
 
 const MB = 1024 * 1024;
 let tmp: string;
@@ -82,6 +82,65 @@ describe("compression job pipeline", () => {
       maxSize: 2 * MB
     });
     await saveTemporaryFile(file.id, toArrayBuffer(Buffer.from(bytes)));
+    return file;
+  }
+
+  async function uploadDocx() {
+    const bytes = await createDocxBytes("Pipeline Word conversion");
+    const file = createTemporaryFile({
+      fileName: "document.docx",
+      fileSize: bytes.length,
+      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      tool: "word_to_pdf",
+      maxSize: 25 * MB
+    });
+    await saveTemporaryFile(file.id, toArrayBuffer(bytes));
+    return file;
+  }
+
+  async function uploadXlsx() {
+    const bytes = await createXlsxBytes("Pipeline Excel conversion");
+    const file = createTemporaryFile({
+      fileName: "sheet.xlsx",
+      fileSize: bytes.length,
+      mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      tool: "excel_to_pdf",
+      maxSize: 25 * MB
+    });
+    await saveTemporaryFile(file.id, toArrayBuffer(bytes));
+    return file;
+  }
+
+  async function uploadPptx() {
+    const bytes = await createPptxBytes("Pipeline PowerPoint conversion");
+    const file = createTemporaryFile({
+      fileName: "deck.pptx",
+      fileSize: bytes.length,
+      mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      tool: "powerpoint_to_pdf",
+      maxSize: 25 * MB
+    });
+    await saveTemporaryFile(file.id, toArrayBuffer(bytes));
+    return file;
+  }
+
+  async function uploadTextPdfForWord() {
+    return uploadTextPdfForOffice("pdf_to_word", "Pipeline PDF to Word conversion");
+  }
+
+  async function uploadTextPdfForOffice(
+    tool: "pdf_to_word" | "pdf_to_excel" | "pdf_to_powerpoint",
+    text: string
+  ) {
+    const bytes = await createTextPdfBytes(text);
+    const file = createTemporaryFile({
+      fileName: "text-source.pdf",
+      fileSize: bytes.length,
+      mimeType: "application/pdf",
+      tool,
+      maxSize: 25 * MB
+    });
+    await saveTemporaryFile(file.id, toArrayBuffer(bytes));
     return file;
   }
 
@@ -414,5 +473,105 @@ describe("compression job pipeline", () => {
 
     const doc = await PDFDocument.load(result!.bytes);
     expect(doc.getPageCount()).toBeGreaterThan(0);
+  });
+
+  it.skipIf(!isLibreOfficeAvailable())("runs word_to_pdf end to end and produces a PDF", async () => {
+    const file = await uploadDocx();
+
+    const job = createJob({tool: "word_to_pdf", fileIds: [file.id]});
+    const finished = await pollJob(job.id);
+
+    expect(finished.status).toBe("completed");
+    expect(finished.result).toBeUndefined();
+
+    const result = await readResultFile(job.id);
+    expect(result?.result.mimeType).toBe("application/pdf");
+    expect(result?.bytes.subarray(0, 5).toString()).toBe("%PDF-");
+
+    const doc = await PDFDocument.load(result!.bytes);
+    expect(doc.getPageCount()).toBeGreaterThan(0);
+  });
+
+  it.skipIf(!isLibreOfficeAvailable())("runs excel_to_pdf end to end and produces a PDF", async () => {
+    const file = await uploadXlsx();
+
+    const job = createJob({tool: "excel_to_pdf", fileIds: [file.id]});
+    const finished = await pollJob(job.id);
+
+    expect(finished.status).toBe("completed");
+    expect(finished.result).toBeUndefined();
+
+    const result = await readResultFile(job.id);
+    expect(result?.result.mimeType).toBe("application/pdf");
+    expect(result?.bytes.subarray(0, 5).toString()).toBe("%PDF-");
+
+    const doc = await PDFDocument.load(result!.bytes);
+    expect(doc.getPageCount()).toBeGreaterThan(0);
+  });
+
+  it.skipIf(!isLibreOfficeAvailable())("runs powerpoint_to_pdf end to end and produces a PDF", async () => {
+    const file = await uploadPptx();
+
+    const job = createJob({tool: "powerpoint_to_pdf", fileIds: [file.id]});
+    const finished = await pollJob(job.id);
+
+    expect(finished.status).toBe("completed");
+    expect(finished.result).toBeUndefined();
+
+    const result = await readResultFile(job.id);
+    expect(result?.result.mimeType).toBe("application/pdf");
+    expect(result?.bytes.subarray(0, 5).toString()).toBe("%PDF-");
+
+    const doc = await PDFDocument.load(result!.bytes);
+    expect(doc.getPageCount()).toBeGreaterThan(0);
+  });
+
+  it("runs pdf_to_word end to end and produces a DOCX", async () => {
+    const file = await uploadTextPdfForWord();
+
+    const job = createJob({tool: "pdf_to_word", fileIds: [file.id]});
+    const finished = await pollJob(job.id);
+
+    expect(finished.status).toBe("completed");
+
+    const result = await readResultFile(job.id);
+    expect(result?.result.mimeType).toBe("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+
+    const zip = await JSZip.loadAsync(result!.bytes);
+    const xml = await zip.file("word/document.xml")?.async("string");
+    expect(xml).toContain("Pipeline PDF to Word conversion");
+  });
+
+  it("runs pdf_to_excel end to end and produces an XLSX", async () => {
+    const file = await uploadTextPdfForOffice("pdf_to_excel", "Vendor  Amount\nAirtel  42300");
+
+    const job = createJob({tool: "pdf_to_excel", fileIds: [file.id]});
+    const finished = await pollJob(job.id);
+
+    expect(finished.status).toBe("completed");
+
+    const result = await readResultFile(job.id);
+    expect(result?.result.mimeType).toBe("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+    const zip = await JSZip.loadAsync(result!.bytes);
+    const xml = await zip.file("xl/worksheets/sheet1.xml")?.async("string");
+    expect(xml).toContain("Vendor");
+    expect(xml).toContain("Airtel");
+  });
+
+  it("runs pdf_to_powerpoint end to end and produces a PPTX", async () => {
+    const file = await uploadTextPdfForOffice("pdf_to_powerpoint", "Pipeline PDF to PowerPoint conversion");
+
+    const job = createJob({tool: "pdf_to_powerpoint", fileIds: [file.id]});
+    const finished = await pollJob(job.id);
+
+    expect(finished.status).toBe("completed");
+
+    const result = await readResultFile(job.id);
+    expect(result?.result.mimeType).toBe("application/vnd.openxmlformats-officedocument.presentationml.presentation");
+
+    const zip = await JSZip.loadAsync(result!.bytes);
+    const xml = await zip.file("ppt/slides/slide1.xml")?.async("string");
+    expect(xml).toContain("Pipeline PDF to PowerPoint conversion");
   });
 });
