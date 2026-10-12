@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export async function GET(request:Request) {
   return inboxRoute(request,false,async userId=>{
     const query = new URL(request.url).searchParams;
-    return inboxJson(await listInbox(userId,(query.get("status")??"received") as InboxStatus,Number(query.get("offset")??0)));
+    return inboxJson(await listInbox(userId,(query.get("status")??"received") as InboxStatus,Number(query.get("offset")??0),query.get("search")??"",query.get("sort")??"newest"));
   });
 }
 // Binary upload is bounded while streaming; multipart parsing cannot allocate an unlimited body.

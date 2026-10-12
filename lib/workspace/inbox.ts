@@ -7,10 +7,12 @@ import {promisify} from "node:util";
 import {PDFDocument} from "pdf-lib";
 import {maxUploadBytes} from "@/content/tools/upload-limits";
 import {readLimitedBody} from "@/lib/validation/body";
+import type {InboxReceipt} from "@/lib/studio/inbox-types";
+export type {InboxStatus} from "@/lib/studio/inbox-types";
+import type {InboxStatus} from "@/lib/studio/inbox-types";
 
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 export const inboxMaxBytes = maxUploadBytes("import_pdf");
-export type InboxStatus = "received" | "accepted" | "archived";
 type Row = {
   id: string; user_id: string; request_id: string; name: string; object_key: string;
   size: number; sha256: string; page_count: number | null; protected_pdf: boolean;
@@ -53,7 +55,8 @@ function ownerId(userId:string) {
 function receiptId(id:string) {
   if (!uuid.test(id)) throw new InboxError("not_found",404);
 }
-function publicReceipt(row:Row) {
+function publicReceipt(row:Row): InboxReceipt {
+  if (row.status === "uploading") throw new InboxError("inbox_unavailable",503);
   return {id:row.id,name:row.name,size:row.size,pageCount:row.page_count,isProtected:row.protected_pdf,
     origin:row.origin,status:row.status,documentId:row.document_id,createdAt:row.created_at,
     acceptedAt:row.accepted_at,archivedAt:row.archived_at};
@@ -107,10 +110,13 @@ export async function receiveInboxPdf(userId:string,requestId:string,name:string
   await request(storagePath(row,userId),{method:"POST",headers:{"Content-Type":"application/pdf","x-upsert":"true"},body:Uint8Array.from(bytes)});
   return publicReceipt(await rpc("finish_workspace_inbox",{p_user_id:userId,p_id:row.id}));
 }
-export async function listInbox(userId:string,status:InboxStatus="received",offset=0) {
+export async function listInbox(userId:string,status:InboxStatus="received",offset=0,search="",sort="newest") {
   ownerId(userId);
-  if (!["received","accepted","archived"].includes(status) || !Number.isSafeInteger(offset) || offset<0 || offset>10000) throw new InboxError("invalid_request",400);
-  const response = await request(`/rest/v1/workspace_inbox?user_id=eq.${encodeURIComponent(userId)}&status=eq.${status}&select=*&order=created_at.desc,id.desc&limit=50&offset=${offset}`,{headers:{Prefer:"count=exact"}});
+  if (!["received","accepted","archived"].includes(status) || !Number.isSafeInteger(offset) || offset<0 || offset>10000 || search.length>180 || !["newest","oldest"].includes(sort)) throw new InboxError("invalid_request",400);
+  const term=search.trim().replace(/[\\%_*]/g,"\\$&");
+  const query=new URLSearchParams({user_id:`eq.${userId}`,status:`eq.${status}`,select:"*",order:`created_at.${sort==="oldest"?"asc":"desc"},id.desc`,limit:"50",offset:String(offset)});
+  if (term) query.set("name",`ilike.%${term}%`);
+  const response = await request(`/rest/v1/workspace_inbox?${query}`,{headers:{Prefer:"count=exact"}});
   const rows = await response.json() as Row[];
   const total = Number(response.headers.get("content-range")?.split("/")[1]);
   if (!Number.isSafeInteger(total)) throw new InboxError("inbox_unavailable",503);

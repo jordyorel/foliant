@@ -120,6 +120,23 @@ describe("Inbox API ownership and transitions",()=>{
     expect(fetchMock.mock.calls[0][0]).toContain(`user_id=eq.${owner}`);
     expect(response.headers.get("cache-control")).toContain("no-store");
   });
+  it("searches filenames server-side without treating filename underscores as wildcards",async()=>{
+    const fetchMock=vi.fn(async(_url:string)=>Response.json([],{headers:{"content-range":"*/0"}}));
+    vi.stubGlobal("fetch",fetchMock);
+    const response=await GET(new Request("http://localhost/api/studio/inbox?status=accepted&offset=50&search=resume_100%25&sort=oldest"));
+    expect(response.status).toBe(200);
+    const query=new URL(fetchMock.mock.calls[0][0]).searchParams;
+    expect(query.get("user_id")).toBe(`eq.${owner}`);
+    expect(query.get("status")).toBe("eq.accepted");
+    expect(query.get("offset")).toBe("50");
+    expect(query.get("order")).toBe("created_at.asc,id.desc");
+    expect(query.get("name")).toBe("ilike.%resume\\_100\\%%");
+  });
+  it.each(["sort=invalid","search="+"x".repeat(181),"offset=-1"])("rejects invalid list filters %s",async query=>{
+    const fetchMock=vi.fn();vi.stubGlobal("fetch",fetchMock);
+    expect((await GET(new Request(`http://localhost/api/studio/inbox?${query}`))).status).toBe(400);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
   it("does not disclose a missing or foreign file or issue a storage read",async()=>{
     const fetchMock=vi.fn(async()=>Response.json([]));vi.stubGlobal("fetch",fetchMock);
     expect((await fileGET(new Request("http://localhost/file"),params)).status).toBe(404);
