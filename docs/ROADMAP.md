@@ -43,8 +43,9 @@ la validation complète du parcours de lancement.
   appliquée sur Supabase le 12 octobre ; RLS et RPC privées vérifiées. Tests API
   simulés et PostgreSQL local : rollback, retries, isolation, PDF protégé et deux
   acceptations concurrentes sans doublon. 330 tests réussis, un ignoré ; TypeScript valide.
-- [ ] Construire l’interface Inbox : dépôt distinct de l’import d’outils, liste,
-  détail, compteur réel, quatre langues et QA bureau/mobile.
+- [x] Construire l’interface Inbox : dépôt distinct de l’import d’outils, liste,
+  recherche/tri serveur, filtres, pagination, détail/aperçu/actions, compteur réel,
+  quatre langues et QA Chromium bureau/mobile avec API simulées (12 octobre).
 - [ ] Valider Inbox lot A dans le navigateur avec deux comptes réels : original
   intact, V1 conservée après reconnexion, règles après acceptation et isolation.
 - [ ] Activer le worker indépendant sur hébergement et valider un arrêt/redémarrage
@@ -53,11 +54,12 @@ la validation complète du parcours de lancement.
   complet et téléphone réel, sauvegarde/reprise, rétention planifiée,
   exploitation et validation sur hébergement. Déploiement différé par choix.
 
-Prochaine étape : interface Inbox V1, détaillée dans `docs/INBOX_V1.md`. Le modèle
-de réception et l'ajout transactionnel à Documents sont en place (lot A), puis connecter un
-fournisseur email entrant réel (lot B). Aucun partage au seul moment de réception.
+Prochaine étape : recette Inbox V1 avec deux comptes réels, détaillée dans
+`docs/INBOX_V1.md`. L’interface et l'ajout transactionnel à Documents sont en
+place (lot A), puis connecter un fournisseur email entrant réel (lot B).
+Aucun partage au seul moment de réception.
 
-L’interface et la recette Inbox, OCR/IA, équipes, facturation et signatures certifiées restent à développer
+La recette Inbox reste à effectuer ; OCR/IA, équipes, facturation et signatures certifiées restent à développer
 ou différés. Les extensions d'édition inspirées de Sejda restent hors priorité.
 Les anciennes sections ci-dessous conservent l'historique ; ce point et la
 checklist de lancement priment pour lire l'état actuel.
@@ -142,14 +144,14 @@ Deferred: billing, teams, Inbox, OCR/AI, certified signatures and advanced Offic
   API, origine d’import explicite, V1/enqueue atomiques, archivage ; tests locaux
   d’isolation/concurrence/panne et 330 tests automatisés réussis (12 octobre).
 - [ ] Développer Inbox lot A : stockage privé, dépôt PDF, liste/détail, acceptation
-  transactionnelle en V1 et archivage récupérable ; reste interface et recette
+  transactionnelle en V1 et archivage récupérable ; interface implémentée, reste recette
   Supabase avec deux comptes réels avant clôture du lot.
 - [ ] Connecter Inbox lot B : domaine/fournisseur entrant, webhook vérifié, pièces
   jointes et retries ; réception email réelle validée avant annonce de disponibilité.
 - [x] Add single-process admission control: default two active jobs and twenty waiting jobs, bounded server configuration, FIFO execution and HTTP 503 with Retry-After when saturated. Recheck temporary source expiry and Guest revocation before execution.
 - [x] Prepare authenticated pre-stop draining: refuse new jobs, finish accepted FIFO work, report 202 until drained then 200. Protect input/output files of accepted jobs from retention cleanup; remove inactive unregistered result files after six hours.
 - [ ] Wire the deployment pre-stop hook to drain before sending termination, set a bounded shutdown deadline and verify on the deployed server. Forced termination still requires restart recovery; nested processor scratch files and corrupt metadata are not covered by orphan-output cleanup.
-Automatisations V1 is closed (11 October): atomic first save applied on Supabase and the normal Next.js/Supabase flow validated with two real accounts. Local PostgreSQL crash/restart and the real worker script pass three isolated scenarios; hosting worker activation and full application restart QA remain launch gates. Inbox server foundation is implemented and its migration applied (12 October); next is the Inbox interface and real-account acceptance QA, keeping ingestion separate from document approval and automated rules. PDF job snapshots still require a persistent single-writer volume; the Supabase workflow queue does not make PDF jobs multi-instance. Production edge protection remains pending.
+Automatisations V1 is closed (11 October): atomic first save applied on Supabase and the normal Next.js/Supabase flow validated with two real accounts. Local PostgreSQL crash/restart and the real worker script pass three isolated scenarios; hosting worker activation and full application restart QA remain launch gates. Inbox server foundation is implemented and its migration applied (12 October); Inbox interface and simulated browser QA now pass; next is real-account acceptance QA, keeping ingestion separate from document approval and automated rules. PDF job snapshots still require a persistent single-writer volume; the Supabase workflow queue does not make PDF jobs multi-instance. Production edge protection remains pending.
 
 ## Feature Status Labels
 

@@ -8,6 +8,7 @@ import {getStudioCopy, isStudioViewKey, studioViewKeys} from "@/content/studio";
 import {routing, type Locale} from "@/lib/i18n/routing";
 import {localizedAlternates, openGraphLocale, siteName} from "@/lib/seo";
 import {buildStudioDocuments} from "@/lib/studio/documents";
+import {inboxCopy} from "@/content/inbox";
 
 type Props = {
   params: Promise<{locale: string; view: string}>;
@@ -32,7 +33,7 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
 
   const locale = rawLocale as Locale;
   const copy = getStudioCopy(locale);
-  const viewCopy = copy.views[rawView];
+  const viewCopy = rawView === "inbox" ? inboxCopy[locale] : copy.views[rawView];
   const title = `${viewCopy.title} - Foliant Studio`;
 
   return {

@@ -1,7 +1,8 @@
 # Inbox V1
 
 Statut : socle serveur implemente et migration appliquee sur Supabase
-(12 octobre 2026). Interface et recette reelle Lot A restent a faire.
+(12 octobre 2026). Interface Lot A implementee ; recette reelle avec deux
+comptes encore a effectuer avant de cloturer le lot.
 Ce document detaille le lot Inbox de la roadmap principale, sans remplacer celle-ci.
 
 ## Role
@@ -34,7 +35,7 @@ une action distincte, pour ne pas transformer tout import Guest en reception.
 ## Lot A - Reception Et Tri
 
 - Page `/[locale]/studio/inbox`, navigation Studio et compteur de receptions
-  a traiter reels ; conserver Bientot disponible tant que le module n'est pas actif.
+  a traiter reels ; aucun compteur fictif ou reception email simulee.
 - Depot manuel de PDF, sans simulation de reception email ni documents fictifs.
 - Liste compacte, recherche par nom, filtres a traiter/ajoutes/archives et tri
   par date ; etats de chargement, vide et erreur distincts.
@@ -138,5 +139,19 @@ traitement ou approbation automatique a la reception, facturation et premium.
   RLS entre deux utilisateurs fictifs, archive/restauration et PDF protege.
   Deux connexions acceptant simultanement produisent un document, une V1,
   un evenement d'acceptation. Aucun document personnel utilise.
-- Restent : interface quatre langues/bureau/mobile, compteur reel et recette
-  navigateur/Supabase entre deux vrais comptes. Lot A non cloture ; Lot B non commence.
+- Interface Lot A implementee dans Studio : depot distinct, recherche serveur,
+  tri par date, filtres, pagination de 50 receptions, detail, apercu prive,
+  telechargement original, acceptation et archive/restauration. Le compteur
+  mesure les receptions a traiter ; une erreur ne devient jamais un faux zero.
+- Validation Chromium avec API simulees : pagination de 51 receptions, recherche/
+  tri, PDF protege sans apercu, archive/restauration, navigation apres acceptation,
+  fichier invalide, retry de depot avec la meme cle d'idempotence, panne/retry et
+  effacement de l'affichage a la deconnexion. Quatre langues a 390 px sans
+  debordement ; detail au clavier avec focus sur le titre. Aucun compte reel utilise.
+- Configuration cloud Supabase et bucket prive verifies en lecture seule.
+  Ces controles ne valident pas la recette navigateur avec deux comptes.
+- Validation de cette interface : 340 tests automatises reussis, un ignore
+  (cas qpdf absent), TypeScript et build de production valides.
+- Reste : recette navigateur/Supabase entre deux vrais comptes, conservation
+  apres reconnexion, isolation et automations apres acceptation. Lot A non
+  cloture ; Lot B non commence. Aucun document personnel modifie.

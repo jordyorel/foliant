@@ -19,6 +19,8 @@ import {StudioApprovals} from "@/components/studio/StudioApprovals";
 import {approvalCopy} from "@/content/approvals";
 import {workflowCopy} from "@/content/workflows";
 import {StudioWorkflows} from "@/components/studio/StudioWorkflows";
+import {StudioInbox, useInboxCount} from "@/components/studio/StudioInbox";
+import {inboxCopy} from "@/content/inbox";
 
 const StudioToolUploadDialog = dynamic(() => import("@/components/studio/StudioDocumentWorkspace").then((module) => module.StudioToolUploadDialog), {ssr: false});
 
@@ -158,16 +160,16 @@ function formatMetricBytes(bytes: number) {
   return `${value >= 10 ? value.toFixed(1) : value.toFixed(2)} ${units[unitIndex]}`;
 }
 
-function kpisFor(copy: ReturnType<typeof getStudioCopy>, documents: StudioDocument[], approvals: typeof approvalCopy.en) {
+function kpisFor(copy: ReturnType<typeof getStudioCopy>, documents: StudioDocument[], approvals: typeof approvalCopy.en, inbox: typeof inboxCopy.en, inboxCount: number | null, signedIn: boolean) {
   const storage = documents.reduce((total, document) => total + (document.resultSize ?? document.inputSize ?? 0), 0);
 
   return [
     {
       key: "inbox",
       label: copy.kpis.inbox[0],
-      value: copy.metrics.comingSoon,
-      detail: copy.metrics.comingSoonDetail,
-      isComingSoon: true
+      value: inboxCount === null ? "—" : String(inboxCount),
+      detail: signedIn ? inboxCount === null ? inbox.unavailable : inbox.pending : inbox.signIn,
+      isComingSoon: false
     },
     {
       key: "approvals",
@@ -266,6 +268,8 @@ export function StudioDashboard({initialDocuments, locale, view = "documents"}: 
   const copy = getStudioCopy(locale);
   const approvals = approvalCopy[locale] ?? approvalCopy.en;
   const workflows = workflowCopy[locale] ?? workflowCopy.en;
+  const inbox = inboxCopy[locale] ?? inboxCopy.en;
+  const inboxMetric = useInboxCount(account.user?.id);
   const catalog = useTranslations("catalog");
   const home = useTranslations("home");
   const activeView = view;
@@ -384,8 +388,8 @@ export function StudioDashboard({initialDocuments, locale, view = "documents"}: 
   );
   const selectedAction = selectedDocument ? actionLabelFor(selectedDocument) : "";
   const selectedFields = selectedDocument ? selectedFieldsFor(copy, selectedDocument, selectedAction) : [];
-  const kpis = kpisFor(copy, baseDocuments, approvals);
-  const viewCopy = activeView === "approvals" ? {...copy.views.approvals, title: approvals.title, subtitle: approvals.subtitle} : activeView === "workflows" ? {...copy.views.workflows,title:workflows.title,subtitle:workflows.subtitle} : copy.views[activeView];
+  const kpis = kpisFor(copy, baseDocuments, approvals, inbox, inboxMetric.count, Boolean(account.user));
+  const viewCopy = activeView === "inbox" ? {...copy.views.inbox, title: inbox.title, subtitle: inbox.subtitle} : activeView === "approvals" ? {...copy.views.approvals, title: approvals.title, subtitle: approvals.subtitle} : activeView === "workflows" ? {...copy.views.workflows,title:workflows.title,subtitle:workflows.subtitle} : copy.views[activeView];
   const launcherItems = launcherCategory ? studioToolItems.filter((item) => item.category === launcherCategory) : [];
   const studioImportItem = studioToolItems.find((item) => item.tool === "reorder_pdf");
   const uploadErrorLabels: ErrorLabels = {
@@ -438,7 +442,7 @@ export function StudioDashboard({initialDocuments, locale, view = "documents"}: 
         </Link>
       </aside>
 
-      <main className={`studio-main${activeView === "approvals" || activeView === "workflows" ? " is-approvals" : ""}`}>
+      <main className={`studio-main${activeView === "inbox" || activeView === "approvals" || activeView === "workflows" ? " is-approvals" : ""}`}>
         <header className="studio-header">
           <div>
             <span>{copy.header.eyebrow}</span>
@@ -448,7 +452,7 @@ export function StudioDashboard({initialDocuments, locale, view = "documents"}: 
 
           <div className="studio-header-actions">
             <StudioAccountButton locale={locale} />
-            {activeView !== "approvals" && activeView !== "workflows" ? <label className="studio-search">
+            {activeView === "documents" ? <label className="studio-search">
               <i className="ti ti-search" aria-hidden="true" />
               <input
                 type="search"
@@ -467,11 +471,12 @@ export function StudioDashboard({initialDocuments, locale, view = "documents"}: 
 
         <nav className="studio-workspace-links" aria-label={copy.header.eyebrow}>
           <Link href={`/${locale}/studio`} aria-current={activeView === "documents" ? "page" : undefined}><i className="ti ti-files" aria-hidden="true" />{copy.nav.documents}</Link>
+          <Link href={`/${locale}/studio/inbox`} aria-current={activeView === "inbox" ? "page" : undefined}><i className="ti ti-inbox" aria-hidden="true" />{inbox.title}{inboxMetric.count !== null ? <span className="studio-inbox-count">{inboxMetric.count}</span> : null}</Link>
           <Link href={`/${locale}/studio/approvals`} aria-current={activeView === "approvals" ? "page" : undefined}><i className="ti ti-checkup-list" aria-hidden="true" />{approvals.title}</Link>
           <Link href={`/${locale}/studio/workflows`} aria-current={activeView === "workflows" ? "page" : undefined}><i className="ti ti-route" aria-hidden="true" />{workflows.title}</Link>
         </nav>
 
-        {activeView === "approvals" ? <StudioApprovals locale={locale} /> : activeView === "workflows" ? <StudioWorkflows locale={locale} /> : activeView !== "documents" ? (
+        {activeView === "inbox" ? <StudioInbox locale={locale} onChanged={inboxMetric.refresh} /> : activeView === "approvals" ? <StudioApprovals locale={locale} /> : activeView === "workflows" ? <StudioWorkflows locale={locale} /> : activeView !== "documents" ? (
           <ModuleView copy={copy} documents={baseDocuments} locale={locale} view={activeView} />
         ) : (
           <>
@@ -480,7 +485,7 @@ export function StudioDashboard({initialDocuments, locale, view = "documents"}: 
           {kpis.map((item) => (
             <article className="studio-kpi" data-coming-soon={item.isComingSoon || undefined} key={item.key}>
               <span>{item.label}</span>
-              {item.key === "approvals" || item.key === "automation" ? <Link href={`/${locale}/studio/${item.key === "automation" ? "workflows" : "approvals"}`}>{item.value}<i className="ti ti-arrow-up-right" aria-hidden="true" /></Link> : <strong className={item.isComingSoon ? "studio-kpi-coming-soon" : undefined}>{item.value}</strong>}
+              {item.key === "inbox" || item.key === "approvals" || item.key === "automation" ? <Link href={`/${locale}/studio/${item.key === "automation" ? "workflows" : item.key}`}>{item.value}<i className="ti ti-arrow-up-right" aria-hidden="true" /></Link> : <strong className={item.isComingSoon ? "studio-kpi-coming-soon" : undefined}>{item.value}</strong>}
               <p>{item.detail}</p>
             </article>
           ))}
