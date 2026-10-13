@@ -60,7 +60,12 @@ place (lot A), puis connecter un fournisseur email entrant réel (lot B).
 Aucun partage au seul moment de réception.
 
 La recette Inbox reste à effectuer ; OCR/IA, équipes, facturation et signatures certifiées restent à développer
-ou différés. Les extensions d'édition inspirées de Sejda restent hors priorité.
+ou différés. Le prochain chantier de développement cadré est l'édition du texte
+existant inspirée de Sejda : plan technique et critères dans
+`docs/PDF_TEXT_EDITOR_V1.md`. Commencer par le prototype de détection de police
+et d'export natif avant l'interface ; fonctionnalité non implémentée. La réception
+email reste différée pendant ce chantier. Images, formes et liens restent des
+extensions distinctes, sans promesse de parité avec l'éditeur Sejda.
 Les anciennes sections ci-dessous conservent l'historique ; ce point et la
 checklist de lancement priment pour lire l'état actuel.
 
