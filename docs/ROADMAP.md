@@ -64,7 +64,9 @@ ou différés. Le prochain chantier de développement cadré est l'édition du t
 existant inspirée de Sejda : plan technique et critères dans
 `docs/PDF_TEXT_EDITOR_V1.md`. Commencer par le prototype de détection de police
 et d'export natif avant l'interface ; fonctionnalité non implémentée. La réception
-email reste différée pendant ce chantier. Images, formes et liens restent des
+email reste différée pendant ce chantier. Première preuve native hors interface
+réalisée sur polices standard : `docs/PDF_TEXT_EDITOR_PROTOTYPE.md`. Gate polices
+embarquées et sélection au clic encore ouverts. Images, formes et liens restent des
 extensions distinctes, sans promesse de parité avec l'éditeur Sejda.
 Les anciennes sections ci-dessous conservent l'historique ; ce point et la
 checklist de lancement priment pour lire l'état actuel.

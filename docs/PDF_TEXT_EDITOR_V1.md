@@ -1,6 +1,8 @@
 # Édition du texte existant — V1
 
-Statut : plan technique et critères de validation. Fonctionnalité non implémentée.
+Statut : plan technique et critères de validation. Premier prototype natif
+hors interface réalisé sur polices standard ; bilan dans
+`PDF_TEXT_EDITOR_PROTOTYPE.md`. Fonctionnalité Studio non implémentée.
 Référence produit : expérience décrite de Sejda (clic sur le texte et récupération
 de son style), sans supposer connaître son moteur ni garantir la même couverture.
 La recette réelle Inbox reste ouverte ; réception email et déploiement différés.

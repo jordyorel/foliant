@@ -1,0 +1,31 @@
+// Offline synthetic demo. Requires Node 24; no network or account access.
+import {mkdir, mkdtemp, writeFile} from 'node:fs/promises';
+import path from 'node:path';
+import {PDFDocument, StandardFonts, rgb} from 'pdf-lib';
+import {analyzeExistingTextPrototype, replaceExistingTextPrototype} from '../processors/pdf/existing-text-prototype.ts';
+
+const root = path.resolve('.tmp/pdf-text-prototype');
+await mkdir(root,{recursive:true});
+const directory = await mkdtemp(path.join(root,'demo-'));
+const pdf = await PDFDocument.create();
+const page = pdf.addPage([612,792]);
+const title = await pdf.embedFont(StandardFonts.HelveticaBold);
+const font = await pdf.embedFont(StandardFonts.Helvetica);
+page.drawText('Foliant — native text editing prototype',{font:title,size:20,x:48,y:740});
+page.drawText('Synthetic PDF / no personal document',{font,size:12,x:48,y:709});
+page.drawRectangle({x:40,y:624,width:532,height:48,color:rgb(.85,.93,.97)});
+page.drawText('Original phrase sufficiently long',{font,size:18,x:48,y:640,color:rgb(.2,.1,.6)});
+page.drawText('Neighboring text must remain unchanged.',{font,size:14,x:48,y:594});
+page.drawRectangle({x:48,y:536,width:96,height:28,color:rgb(.95,.64,.38)});
+page.drawLine({start:{x:48,y:524},end:{x:564,y:524},thickness:1,color:rgb(.3,.3,.3)});
+const before = await pdf.save();
+const manifest = await analyzeExistingTextPrototype(before);
+const segment = manifest.segments.find(item=>item.text==='Original phrase sufficiently long');
+if (!segment) throw new Error('Demo line could not be analyzed');
+const after = await replaceExistingTextPrototype(before,manifest.sourceHash,[{id:segment.id,text:'Texte corrigé : œ, ñ, ã'}]);
+const result = await analyzeExistingTextPrototype(after);
+if (!result.segments.some(item=>item.text==='Texte corrigé : œ, ñ, ã') || result.segments.some(item=>item.text===segment.text)) throw new Error('Demo replacement failed');
+for(const [filename,bytes] of [['before.pdf',before],['after.pdf',after],['manifest.json',JSON.stringify(manifest,null,2)]])await writeFile(path.join(directory,filename),bytes,{mode:0o600,flag:'wx'});
+console.log(`Demo saved: ${directory}`);
+console.log(`Detected ${segment.fontName}, ${segment.fontSize} pt; original PDF text replaced; neighboring segments preserved.`);
+console.log('Offline prototype only; not connected to the Studio editor.');
